@@ -20,10 +20,10 @@ Un sistema simple para registrar hábitos diarios y ver tu progreso.
 
 - ---
 
-✔️ Cumplí: realizaste el hábito correctamente.
-✖️ No cumplí: no realizaste el hábito.
-➖ Cuenta como cumplido: el hábito se considera realizado aunque no fue necesario hacerlo (por ejemplo, regar plantas pero llovió).
+- ✔️ Cumplí: realizaste el hábito correctamente.
+- ✖️ No cumplí: no realizaste el hábito.
+- ➖ Cuenta como cumplido: el hábito se considera realizado aunque no fue necesario hacerlo (por ejemplo, regar plantas pero llovió).
 
-✔️ Completed: you performed the habit successfully.
-✖️ Not completed: you did not perform the habit.
-➖ Counted as completed: the habit is marked as done even though it wasn’t needed (for example, watering plants but it rained).
+- ✔️ Completed: you performed the habit successfully.
+- ✖️ Not completed: you did not perform the habit.
+- ➖ Counted as completed: the habit is marked as done even though it wasn’t needed (for example, watering plants but it rained).
