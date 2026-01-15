@@ -2,6 +2,8 @@
 
 Un sistema simple para registrar hábitos diarios y ver tu progreso.
 
+<img width="1365" height="592" alt="image" src="https://github.com/user-attachments/assets/9a2751e2-c476-4204-8ec5-71097ec9e347" />
+
 ---
 
 ## 🇪🇸 Español
