@@ -8,22 +8,24 @@ Un sistema simple para registrar hábitos diarios y ver tu progreso.
 
 ---
 
-## 🇪🇸 Español
+## Español
 - Registra hábitos.
 - Ve tus rachas y métricas básicas.
-
----
-
-## En English
-- Track habits.
-- See streaks and basic metrics.
-
-- ---
 
 - ✔️ Cumplí: realizaste el hábito correctamente.
 - ✖️ No cumplí: no realizaste el hábito.
 - ➖ Cuenta como cumplido: El hábito se considera realizado aunque no fue necesario hacerlo (Por ejemplo: Regar plantas pero llovió).
 
+---
+
+## English
+- Track habits.
+- See streaks and basic metrics.
+
 - ✔️ Completed: you performed the habit successfully.
 - ✖️ Not completed: you did not perform the habit.
 - ➖ Counted as completed: The habit is marked as done even though it wasn’t needed (For example: Watering plants but it rained).
+
+- ---
+
+
