@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Habit Tracker v5.5</title>
+    <title>Habit Tracker</title>
     <style>
-        /* --- VARIABLES & THEME --- */
+        /* --- VARIABLES --- */
         :root {
             --bg-body: #ffffff;
             --bg-surface: #f9fafb;
@@ -19,7 +19,6 @@
             --success: #22c55e;
             --toast-bg: #111111;
             --toast-text: #ffffff;
-            --gold: #fbbf24;
             --scrollbar-thumb: #9ca3af;
             --scrollbar-bg: #e5e7eb;
             --menu-bg: #ffffff;
@@ -38,7 +37,6 @@
             --success: #22c55e;
             --toast-bg: #ffffff;
             --toast-text: #000000;
-            --gold: #fbbf24;
             --scrollbar-thumb: #333333;
             --scrollbar-bg: #000000;
             --menu-bg: #0a0a0a;
@@ -50,10 +48,7 @@
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background-color: var(--bg-body);
             color: var(--text-main);
-            position: fixed; 
-            inset: 0;
-            width: 100%;
-            height: 100%;
+            position: fixed; inset: 0; width: 100%; height: 100%;
             display: flex; flex-direction: column; overflow: hidden;
             transition: background-color 0.3s, color 0.3s;
             zoom: 0.85; 
@@ -69,10 +64,7 @@
         .gap-2 { gap: 8px; }
         .items-center { align-items: center; }
         .justify-between { justify-content: space-between; }
-        .justify-center { justify-content: center; }
         .flex-1 { flex: 1; }
-        .flex-none { flex: none; }
-        .w-full { width: 100%; }
         .relative { position: relative; }
         .absolute { position: absolute; }
         .text-sm { font-size: 0.875rem; }
@@ -80,9 +72,6 @@
         .font-bold { font-weight: 700; }
         .uppercase { text-transform: uppercase; }
         .tracking-widest { letter-spacing: 0.1em; }
-        .truncate { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .transition { transition: all 0.2s ease; }
-        .opacity-0 { opacity: 0; }
         .text-muted { color: var(--text-muted); }
         
         /* --- SCROLLBAR --- */
@@ -98,7 +87,6 @@
             background-color: var(--bg-body); z-index: 30; flex: none;
             display: flex; justify-content: space-between; align-items: center;
         }
-
         .btn-icon { padding: 8px; border-radius: 999px; display: flex; align-items: center; justify-content: center; }
         .btn-icon:hover { background-color: var(--bg-surface-hover); }
 
@@ -123,144 +111,67 @@
             flex: 1; display: flex; flex-direction: column;
             overflow: hidden; min-height: 0; position: relative;
         }
-
         #calendarHeader { 
             flex: none; display: flex; 
             border-bottom: 1px solid var(--border-color); 
             background-color: var(--bg-body); overflow: hidden; 
+            box-sizing: border-box; 
         }
-
         #habitsContainer { 
-            flex: 1; 
-            overflow-y: auto; 
-            overflow-x: auto; 
-            position: relative; 
+            flex: 1; overflow-y: auto; overflow-x: auto; position: relative; 
             background-color: var(--bg-body);
         }
 
         /* --- QUOTE SECTION --- */
         #quoteContainer {
             flex: none; height: 140px; 
-            border-top: 1px solid var(--border-color);
-            background-color: var(--bg-surface);
-            padding: 16px;
-            display: flex; 
-            align-items: center; 
-            justify-content: center;
-            text-align: center;
-            cursor: pointer;
-            transition: background-color 0.2s;
-            position: relative;
+            border-top: 1px solid var(--border-color); background-color: var(--bg-surface);
+            padding: 16px; display: flex; align-items: center; justify-content: center;
+            text-align: center; cursor: pointer; transition: background-color 0.2s; position: relative;
         }
         #quoteContainer:hover { background-color: var(--bg-surface-hover); }
-        #quoteDisplay {
-            width: 100%;
-            white-space: pre-wrap;
-            line-height: 1.3;
-            font-weight: 500;
-            color: var(--text-main);
-            opacity: 0.9;
-            transition: font-size 0.3s;
-        }
-        .empty-quote-placeholder {
-            font-style: italic; color: var(--text-muted); opacity: 0.5; font-size: 0.9rem;
-        }
+        #quoteDisplay { width: 100%; white-space: pre-wrap; line-height: 1.3; font-weight: 500; color: var(--text-main); opacity: 0.9; }
 
         /* --- GRID STYLES --- */
+        .row-structure { display: flex; width: 100%; min-width: max-content; }
+
         .sticky-col-left {
             position: sticky; left: 0; z-index: 20;
             background-color: var(--bg-body);
             border-right: 1px solid var(--border-color);
+            width: 220px; flex-shrink: 0;
         }
-        
         .sticky-col-right {
             position: sticky; right: 0; z-index: 20;
             background-color: var(--bg-body);
             border-left: 1px solid var(--border-color);
+            width: 50px; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
         }
 
         .grid-header-cell {
-            padding: 12px; 
-            width: 200px;
-            flex-shrink: 0;
+            padding: 12px; height: 100%;
             font-size: 0.75rem; font-weight: 700; color: var(--text-muted);
             text-transform: uppercase; letter-spacing: 0.05em;
-            background-color: var(--bg-body); display: flex; align-items: center;
+            display: flex; align-items: center;
         }
 
+        .days-container { display: flex; flex: 1; }
+
         .day-header {
-            flex: 1; min-width: 40px;
+            flex: 1; min-width: 34px;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             padding: 8px 0; border-right: 1px solid var(--border-color);
-            color: var(--text-muted);
-            transition: all 0.5s;
+            color: var(--text-muted); transition: all 0.5s;
         }
         .day-header.today {
             background-color: var(--primary); color: var(--on-primary);
             border-bottom-left-radius: 6px; border-bottom-right-radius: 6px;
         }
         .week-separator { border-right: 1px solid var(--border-color); position: relative; }
-        .week-separator::after {
-            content: ''; position: absolute; right: -1px; top: 0; bottom: 0; width: 1px;
-            background: linear-gradient(to bottom, transparent, var(--border-color), transparent);
-        }
-
-        /* --- CATEGORY HEADER --- */
-        .category-group-header {
-            display: flex; width: 100%; min-width: max-content;
-            background-color: var(--bg-surface); border-bottom: 1px solid var(--border-color);
-            position: sticky; left: 0;
-        }
-        .cat-header-sticky {
-            width: 200px;
-            flex-shrink: 0; padding: 6px 12px;
-            font-size: 0.7rem; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase;
-            color: var(--text-muted); cursor: pointer; display: flex; align-items: center; gap: 8px;
-            background-color: var(--bg-surface);
-            border-right: 1px solid var(--border-color);
-            position: sticky; left: 0; z-index: 25;
-        }
-        .cat-header-sticky:hover { color: var(--text-main); }
-        .cat-header-fill { flex: 1; background-color: var(--bg-surface); }
-        
-        /* ROWS & DRAG */
-        .habit-row {
-            display: flex; 
-            min-height: 56px; 
-            min-width: max-content;
-            border-bottom: 1px solid var(--border-color);
-            transition: background-color 0.2s;
-            background-color: var(--bg-body);
-        }
-        .habit-row:hover { background-color: var(--bg-surface-hover); }
-        .habit-row.dragging { opacity: 0.5; background-color: var(--bg-surface); }
-        .habit-row.drag-over { border-top: 2px solid var(--primary); }
-
-        .habit-name-cell {
-            width: 200px;
-            flex-shrink: 0; padding-left: 8px; padding-right: 4px;
-            display: flex; justify-content: space-between; align-items: center;
-        }
-        
-        .streak-badge {
-            display: flex; align-items: center; gap: 2px;
-            font-size: 0.7rem; font-weight: bold;
-            color: var(--text-muted); margin-left: auto; margin-right: 6px;
-        }
-        .streak-badge.active { color: #f97316; }
-
-        .drag-handle { cursor: grab; padding: 4px; color: var(--border-color); display: flex; align-items: center; }
-        
-        .btn-kebab {
-            width: 24px; height: 24px; border-radius: 4px;
-            display: flex; align-items: center; justify-content: center;
-            color: var(--text-muted); transition: all 0.2s;
-            flex-shrink: 0;
-        }
-        .btn-kebab:hover { background-color: var(--bg-surface); color: var(--text-main); }
         
         .cell-btn {
-            flex: 1; min-width: 40px;
+            flex: 1; min-width: 34px;
             border-right: 1px solid var(--border-color);
             display: flex; align-items: center; justify-content: center;
             cursor: pointer; user-select: none; font-size: 0.9rem;
@@ -269,173 +180,102 @@
         .cell-btn:active { transform: scale(0.9); }
         .cell-btn.today-border { border-bottom: 2px solid var(--text-main); }
 
+        /* FIX VISIBILIDAD DE LOS GUIONES EN DARK MODE */
         .state-fail { color: #ef4444; }
-        .state-skip { background-color: var(--bg-surface); color: var(--text-muted); }
-        html.dark .state-skip { background-color: #1a1a1a; color: #444; }
+        .state-skip { background-color: var(--bg-surface); color: var(--text-muted); font-weight: bold; }
+        html.dark .state-skip { background-color: #1a1a1a; color: #888888; } /* Gris más claro para que se vea */
 
-        /* --- MENÚ LATERAL (REDISEÑADO v5.5) --- */
-        #menuOverlay { background-color: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 50; transition: opacity 0.3s; }
-        
-        #menuContent {
-            position: fixed; top: 0; left: 0; height: 100%; width: 300px;
-            background-color: var(--menu-bg); border-right: 1px solid var(--border-color);
-            z-index: 51; transform: translateX(-100%); transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-            box-shadow: 10px 0 40px rgba(0,0,0,0.2);
-            display: flex; flex-direction: column;
+        /* --- CATEGORY & ROWS --- */
+        .category-group-header {
+            display: flex; width: 100%; min-width: max-content;
+            background-color: var(--bg-surface); border-bottom: 1px solid var(--border-color);
+            position: sticky; left: 0;
         }
-        #menuContent.open { transform: translateX(0); }
-
-        .menu-header {
-            padding: 32px 24px 24px 24px; display: flex; justify-content: space-between; align-items: center;
+        .cat-header-sticky {
+            width: 220px; flex-shrink: 0; padding: 6px 12px;
+            font-size: 0.7rem; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase;
+            color: var(--text-muted); display: flex; align-items: center; justify-content: space-between;
+            background-color: var(--bg-surface); border-right: 1px solid var(--border-color);
+            position: sticky; left: 0; z-index: 25;
         }
+        .cat-info { display: flex; align-items: center; gap: 8px; cursor: pointer; flex: 1; }
+        .cat-info:hover { color: var(--text-main); }
+        .menu-btn-shared { opacity: 0; padding: 2px 6px; border-radius: 4px; transition: all 0.2s; font-size: 1.1em; cursor: pointer; color: var(--text-muted); }
+        .menu-btn-shared:hover { background-color: var(--bg-surface-hover); color: var(--text-main); }
+        .cat-header-sticky:hover .menu-btn-shared { opacity: 1; }
+        .cat-header-fill { flex: 1; background-color: var(--bg-surface); }
+        
+        .cat-status-dot { width: 8px; height: 8px; border-radius: 50%; margin-left: 8px; flex-shrink: 0; transition: background-color 0.3s, box-shadow 0.3s; }
 
-        .menu-scroll-area { flex: 1; overflow-y: auto; padding: 0 24px 32px 24px; }
-        
-        .menu-section { margin-bottom: 32px; }
-        
-        .menu-section-label {
-            font-size: 0.7rem; font-weight: 800; text-transform: uppercase; 
-            letter-spacing: 0.1em; color: var(--text-muted); opacity: 0.7;
-            margin-bottom: 12px; display: block; margin-left: 4px;
+        /* --- SUBCATEGORY ROW --- */
+        .subcategory-row {
+            display: flex; width: 100%; min-width: max-content;
+            background-color: var(--bg-surface); border-bottom: 1px solid var(--border-color);
+            transition: background-color 0.2s;
         }
+        .subcategory-row.drag-over { background-color: var(--bg-surface-hover); }
+        
+        .subcat-label {
+            width: 220px; position: sticky; left: 0; z-index: 22; padding: 4px 12px;
+            font-size: 0.65rem; font-weight: 700; text-transform: uppercase;
+            color: var(--text-muted); opacity: 0.9; letter-spacing: 0.05em;
+            background-color: var(--bg-surface); border-right: 1px solid var(--border-color);
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .subcat-click-area { display: flex; align-items: center; gap: 6px; cursor: pointer; flex: 1; height: 100%; }
+        .subcat-label:hover .menu-btn-shared { opacity: 1; }
+        .subcat-line { flex: 1; opacity: 0.1; background-image: linear-gradient(90deg, var(--text-muted) 30%, transparent 0%); background-size: 6px 1px; background-repeat: repeat-x; background-position: center; }
 
-        .menu-row {
-            width: 100%; text-align: left; padding: 14px 4px;
+        /* ROWS */
+        .habit-row {
+            min-height: 56px; border-bottom: 1px solid var(--border-color);
+            background-color: var(--bg-body); transition: background-color 0.2s;
+        }
+        .habit-row:hover { background-color: var(--bg-surface-hover); }
+        .habit-row.dragging { opacity: 0.4; }
+        .habit-name-cell {
+            width: 220px; flex-shrink: 0; padding-left: 8px; padding-right: 4px;
             display: flex; justify-content: space-between; align-items: center;
-            font-size: 0.95rem; font-weight: 500; color: var(--text-main);
-            transition: all 0.2s; border-bottom: 1px solid var(--bg-surface-hover);
-            cursor: pointer;
         }
-        .menu-row:hover { opacity: 0.7; padding-left: 8px; }
-        .menu-row-content { display: flex; align-items: center; gap: 12px; }
-        .menu-icon { color: var(--text-muted); display: flex; }
-        
-        /* Switch mejorado */
-        .switch-toggle {
-            width: 40px; height: 22px; background-color: var(--bg-surface-hover);
-            border-radius: 99px; position: relative; border: 1px solid var(--border-color);
-            transition: background 0.3s, border-color 0.3s; cursor: pointer;
-        }
+        .drag-handle { cursor: grab; margin-right: 6px; color: var(--text-muted); opacity: 0.3; font-size: 1.2em; display: flex; align-items: center; }
+        .habit-row:hover .drag-handle { opacity: 1; }
+        .streak-badge { display: flex; align-items: center; gap: 2px; font-size: 0.7rem; font-weight: bold; color: var(--text-muted); margin-left: auto; margin-right: 6px; }
+        .streak-badge.active { color: #f97316; }
+
+        /* --- MENÚ LATERAL --- */
+        #menuOverlay { background-color: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 50; transition: opacity 0.3s; }
+        #menuContent { position: fixed; top: 0; left: 0; height: 100%; width: 300px; background-color: var(--menu-bg); border-right: 1px solid var(--border-color); z-index: 51; transform: translateX(-100%); transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); box-shadow: 10px 0 40px rgba(0,0,0,0.2); display: flex; flex-direction: column; }
+        #menuContent.open { transform: translateX(0); }
+        .menu-header { padding: 32px 24px 24px 24px; display: flex; justify-content: space-between; align-items: center; }
+        .menu-scroll-area { flex: 1; overflow-y: auto; padding: 0 24px 32px 24px; }
+        .menu-section { margin-bottom: 32px; }
+        .menu-section-label { font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); opacity: 0.7; margin-bottom: 12px; display: block; margin-left: 4px; }
+        .menu-row { width: 100%; text-align: left; padding: 14px 4px; display: flex; justify-content: space-between; align-items: center; font-size: 0.95rem; font-weight: 500; color: var(--text-main); border-bottom: 1px solid var(--bg-surface-hover); cursor: pointer; }
+        .switch-toggle { width: 40px; height: 22px; background-color: var(--bg-surface-hover); border-radius: 99px; position: relative; border: 1px solid var(--border-color); transition: background 0.3s, border-color 0.3s; cursor: pointer; }
         .switch-toggle.active { background-color: var(--text-main); border-color: var(--text-main); }
-        .switch-toggle::after {
-            content: ''; position: absolute; left: 2px; top: 2px; width: 16px; height: 16px;
-            background-color: var(--text-muted); border-radius: 50%; transition: transform 0.3s, background-color 0.3s;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.2);
-        }
+        .switch-toggle::after { content: ''; position: absolute; left: 2px; top: 2px; width: 16px; height: 16px; background-color: var(--text-muted); border-radius: 50%; transition: transform 0.3s, background-color 0.3s; box-shadow: 0 1px 2px rgba(0,0,0,0.2); }
         .switch-toggle.active::after { transform: translateX(18px); background-color: var(--bg-body); }
 
-        /* Selector de estilo segmentado */
-        .segmented-control {
-            display: flex; background-color: var(--bg-surface);
-            padding: 4px; border-radius: 12px; gap: 4px; margin-top: 8px;
-            border: 1px solid var(--border-color);
-        }
-        .segment-opt {
-            flex: 1; padding: 8px; text-align: center; border-radius: 8px;
-            font-size: 0.75rem; font-weight: 600; color: var(--text-muted);
-            transition: all 0.2s; cursor: pointer;
-        }
-        .segment-opt.active {
-            background-color: var(--bg-body); color: var(--text-main);
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-        }
-
-        .danger-zone {
-            margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color);
-        }
-        .delete-btn {
-            color: var(--danger); font-size: 0.85rem; font-weight: 600; 
-            width: 100%; text-align: left; padding: 12px 4px;
-            display: flex; align-items: center; gap: 12px;
-        }
-
-        /* --- MODALES --- */
-        #genericModal, #newHabitModal, #confirmModal {
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            z-index: 60; background-color: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
-            display: flex; align-items: center; justify-content: center;
-            padding: 16px; opacity: 0; pointer-events: none; transition: opacity 0.2s;
-        }
+        #genericModal, #newHabitModal, #confirmModal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 60; background-color: rgba(0,0,0,0.6); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; padding: 16px; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
         #genericModal.active, #newHabitModal.active, #confirmModal.active { opacity: 1; pointer-events: auto; }
-        
-        .modal-card {
-            background-color: var(--bg-body); width: 100%; max-width: 380px; border-radius: 20px; padding: 24px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.4); border: 1px solid var(--border-color);
-            position: relative; animation: scaleIn 0.2s ease-out; margin: 0;
-            max-height: 80vh; overflow-y: auto;
-        }
-
-        input.clean-input, textarea.clean-input {
-            width: 100%; font-size: 1.25rem; background: transparent;
-            border: none; border-bottom: 2px solid var(--border-color);
-            padding: 8px 0; margin-bottom: 24px; outline: none;
-            resize: none;
-        }
+        .modal-card { background-color: var(--bg-body); width: 100%; max-width: 380px; border-radius: 20px; padding: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.4); border: 1px solid var(--border-color); position: relative; animation: scaleIn 0.2s ease-out; margin: 0; max-height: 80vh; overflow-y: auto; }
+        input.clean-input, textarea.clean-input { width: 100%; font-size: 1.25rem; background: transparent; border: none; border-bottom: 2px solid var(--border-color); padding: 8px 0; margin-bottom: 24px; outline: none; resize: none; }
         input.clean-input:focus, textarea.clean-input:focus { border-color: var(--text-main); }
-
-        .primary-btn {
-            width: 100%; padding: 14px; background-color: var(--primary); color: var(--on-primary);
-            border-radius: 12px; font-weight: bold; font-size: 0.875rem; text-align: center;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
-        .primary-btn:active { transform: scale(0.98); }
-
-        .secondary-btn {
-            width: 100%; padding: 14px; background-color: var(--bg-surface); color: var(--text-main);
-            border-radius: 12px; font-weight: bold; font-size: 0.875rem; text-align: center;
-        }
-        .secondary-btn:hover { background-color: var(--bg-surface-hover); }
-
-        .option-btn {
-            width: 100%; padding: 14px; text-align: left; border-radius: 12px; margin-bottom: 8px;
-            font-size: 0.9rem; font-weight: 500; display: flex; align-items: center; gap: 12px;
-            background-color: var(--bg-surface); color: var(--text-main);
-            border: 1px solid transparent;
-        }
-        .option-btn:hover { background-color: var(--bg-surface-hover); border-color: var(--border-color); }
-
-        /* --- TOAST --- */
+        .primary-btn { width: 100%; padding: 14px; background-color: var(--primary); color: var(--on-primary); border-radius: 12px; font-weight: bold; font-size: 0.875rem; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .secondary-btn { width: 100%; padding: 14px; background-color: var(--bg-surface); color: var(--text-main); border-radius: 12px; font-weight: bold; font-size: 0.875rem; text-align: center; }
+        .option-btn { width: 100%; padding: 14px; text-align: left; border-radius: 12px; margin-bottom: 8px; font-size: 0.9rem; font-weight: 500; display: flex; align-items: center; gap: 12px; background-color: var(--bg-surface); color: var(--text-main); border: 1px solid transparent; }
+        .chip { padding: 6px 12px; border-radius: 99px; font-size: 0.75rem; border: 1px solid var(--border-color); background: var(--bg-surface); cursor: pointer; color: var(--text-muted); transition: all 0.2s; }
+        .chip.selected { background-color: var(--primary); color: var(--on-primary); border-color: var(--primary); }
         #toast-container { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%); z-index: 100; pointer-events: none; }
-        .toast {
-            background-color: var(--toast-bg); color: var(--toast-text);
-            padding: 10px 24px; border-radius: 99px; box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-            font-size: 0.85rem; font-weight: 600; margin-top: 8px; animation: slideUp 0.3s forwards;
-            display: flex; align-items: center; gap: 8px;
-        }
-
+        .toast { background-color: var(--toast-bg); color: var(--toast-text); padding: 10px 24px; border-radius: 99px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); font-size: 0.85rem; font-weight: 600; margin-top: 8px; animation: slideUp 0.3s forwards; }
         @keyframes slideUp { 0% { transform: translateY(20px); opacity: 0; } 100% { transform: translateY(0); opacity: 1; } }
         @keyframes scaleIn { 0% { transform: scale(0.95); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
-
-        /* --- ESTILOS DINÁMICOS --- */
-        #categoryTags { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 32px; }
-        .category-tag {
-            padding: 6px 14px; border-radius: 99px; font-size: 0.75rem; border: 1px solid var(--border-color);
-            color: var(--text-muted); cursor: pointer; transition: all 0.2s;
-            display: flex; align-items: center; justify-content: center;
-        }
-        .color-picker-wrapper {
-            width: 30px; height: 30px; border-radius: 50%; overflow: hidden; 
-            border: 2px solid var(--border-color); flex-shrink: 0; cursor: pointer;
-        }
-        input[type="color"] {
-            width: 200%; height: 200%; transform: translate(-25%, -25%); border: none; cursor: pointer; padding: 0;
-        }
-        .cat-list-item {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 12px; background-color: var(--bg-surface);
-            border-radius: 12px; margin-bottom: 8px; border: 1px solid transparent;
-        }
-        .cat-color-dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; margin-right: 8px; border: 1px solid rgba(0,0,0,0.1); }
-        
-        /* --- CONFETTI CANVAS --- */
-        #confettiCanvas {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            pointer-events: none; z-index: 150;
-        }
+        .color-picker-wrapper { width: 30px; height: 30px; border-radius: 50%; overflow: hidden; border: 2px solid var(--border-color); flex-shrink: 0; cursor: pointer; }
+        input[type="color"] { width: 200%; height: 200%; transform: translate(-25%, -25%); border: none; cursor: pointer; padding: 0; }
+        #confettiCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 150; }
     </style>
 </head>
 <body>
-    
     <canvas id="confettiCanvas"></canvas>
     <audio id="tick-audio" src="https://www.soundjay.com/clock/sounds/clock-ticking-2.mp3" preload="auto"></audio>
 
@@ -443,10 +283,8 @@
         <button onclick="window.toggleMenu(true)" class="btn-icon">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
         </button>
-        <h1 class="font-bold text-sm tracking-widest uppercase">Habit Tracker</h1>
-        <button onclick="window.toggleNewHabit(true)" class="btn-new">
-            <span>+</span> <span>Nuevo</span>
-        </button>
+        <h1 class="font-bold text-sm tracking-widest uppercase">Habit Tracker v7.1</h1>
+        <button onclick="window.toggleNewHabit(true)" class="btn-new"><span>+</span> <span>Nuevo</span></button>
     </header>
 
     <div class="date-bar">
@@ -458,748 +296,340 @@
     <main id="mainContent">
         <div id="calendarHeader"></div>
         <div id="habitsContainer"></div>
-        
         <div id="quoteContainer" onclick="editQuote()">
             <div id="quoteDisplay" class="empty-quote-placeholder">Haz clic para escribir una frase...</div>
-            <div class="absolute" style="bottom: 8px; right: 12px; font-size: 0.7rem; color: var(--text-muted); opacity: 0.3;">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
-            </div>
         </div>
     </main>
 
     <div id="menuOverlay" onclick="window.toggleMenu(false)" class="hidden opacity-0 fixed inset-0"></div>
     <div id="menuContent">
-        <div class="menu-header">
-            <h3 class="font-bold text-2xl">Ajustes</h3>
-            <button onclick="window.toggleMenu(false)" class="btn-icon">✕</button>
-        </div>
-        
+        <div class="menu-header"><h3 class="font-bold text-2xl">Ajustes</h3><button onclick="window.toggleMenu(false)" class="btn-icon">✕</button></div>
         <div class="menu-scroll-area">
-            
             <div class="menu-section">
                 <label class="menu-section-label">General</label>
-                
-                <div class="menu-row" onclick="toggleClockSound()">
-                    <div class="menu-row-content">
-                        <div class="menu-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg></div>
-                        <span>🕑</span>
-                    </div>
-                    <div id="toggleSound" class="switch-toggle"></div>
-                </div>
-
-                <div class="menu-row" onclick="toggleDarkMode()">
-                    <div class="menu-row-content">
-                        <div class="menu-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg></div>
-                        <span>Modo Oscuro</span>
-                    </div>
-                    <div id="toggleDark" class="switch-toggle"></div>
-                </div>
+                <div class="menu-row" onclick="toggleClockSound()"><span>🕑 Sonido Reloj</span><div id="toggleSound" class="switch-toggle"></div></div>
+                <div class="menu-row" onclick="toggleDarkMode()"><span>🌗 Modo Oscuro</span><div id="toggleDark" class="switch-toggle"></div></div>
             </div>
-
             <div class="menu-section">
-                <label class="menu-section-label">Gestión de Datos</label>
-                
-                <div class="menu-row" onclick="openSubMenu('categories')">
-                    <div class="menu-row-content">
-                        <div class="menu-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg></div>
-                        <span>Categorías</span>
-                    </div>
-                    <span style="color:var(--text-muted)">›</span>
-                </div>
-
-                <div class="menu-row" onclick="openAnnualProgress()">
-                    <div class="menu-row-content">
-                        <div class="menu-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20V10"></path><path d="M18 20V4"></path><path d="M6 20v-4"></path></svg></div>
-                        <span>Progreso Anual</span>
-                    </div>
-                    <span style="color:var(--text-muted)">›</span>
-                </div>
-
-                <div class="menu-row" onclick="openSubMenu('archive')">
-                    <div class="menu-row-content">
-                        <div class="menu-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="21 8 21 21 3 21 3 8"></polyline><rect x="1" y="3" width="22" height="5"></rect><line x1="10" y1="12" x2="14" y2="12"></line></svg></div>
-                        <span>Archivo</span>
-                    </div>
-                    <span style="color:var(--text-muted)">›</span>
-                </div>
-
-                <div class="menu-row" onclick="openSubMenu('backup')">
-                    <div class="menu-row-content">
-                        <div class="menu-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg></div>
-                        <span>Backup / Restore</span>
-                    </div>
-                    <span style="color:var(--text-muted)">›</span>
-                </div>
+                <label class="menu-section-label">Gestión</label>
+                <div class="menu-row" onclick="openSubMenu('categories')"><span>Categorías</span><span>›</span></div>
+                <div class="menu-row" onclick="openSubMenu('archive')"><span>Archivo</span><span>›</span></div>
+                <div class="menu-row" onclick="openSubMenu('backup')"><span>Backup</span><span>›</span></div>
             </div>
-            
-            <div class="menu-section">
-                <label class="menu-section-label">Estilo Visual</label>
-                <div class="segmented-control">
-                    <div onclick="setCellStyle('striped')" class="segment-opt" id="styleOpt-striped">Rayado</div>
-                    <div onclick="setCellStyle('solid')" class="segment-opt" id="styleOpt-solid">Sólido</div>
-                    <div onclick="setCellStyle('dot')" class="segment-opt" id="styleOpt-dot">Punto</div>
-                </div>
-            </div>
-
-            <div class="danger-zone">
-                <button onclick="resetData()" class="delete-btn">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                    Eliminar todos los datos
-                </button>
-            </div>
-            
-            <div style="margin-top:24px; text-align: center; font-size: 0.65rem; color: var(--text-muted); opacity: 0.4;">v5.5</div>
+            <div class="danger-zone"><button onclick="resetData()" class="delete-btn">🗑️ Eliminar todo</button></div>
         </div>
     </div>
 
-    <div id="genericModal" onclick="closeGenericModal()">
-        <div id="gModalContent" onclick="event.stopPropagation()" class="modal-card">
-            <button onclick="closeGenericModal()" class="absolute" style="top: 16px; right: 16px; color: var(--text-muted);">✕</button>
-            <h3 id="gModalTitle" class="font-bold text-lg mb-4">Título</h3>
-            <div id="gModalBody"></div> 
-        </div>
-    </div>
-
-    <div id="confirmModal" onclick="closeConfirm()">
-        <div class="modal-card" onclick="event.stopPropagation()">
-            <h3 class="font-bold text-lg mb-2">¿Estás seguro?</h3>
-            <p id="confirmMessage" class="text-sm text-muted mb-6" style="color: var(--text-muted);">Esta acción no se puede deshacer.</p>
-            <div class="flex gap-2">
-                <button onclick="closeConfirm()" class="secondary-btn">Cancelar</button>
-                <button id="btnConfirmAction" class="primary-btn" style="background-color: var(--danger); color: white;">Confirmar</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="newHabitModal" onclick="window.toggleNewHabit(false)">
+    <div id="genericModal" onclick="closeGenericModal()" class="hidden"><div id="gModalContent" onclick="event.stopPropagation()" class="modal-card"><button onclick="closeGenericModal()" class="absolute" style="top:16px; right:16px; color:var(--text-muted);">✕</button><h3 id="gModalTitle" class="font-bold text-lg mb-4">Título</h3><div id="gModalBody"></div></div></div>
+    <div id="confirmModal" onclick="closeConfirm()" class="hidden"><div class="modal-card" onclick="event.stopPropagation()"><h3 class="font-bold text-lg mb-2">¿Estás seguro?</h3><div class="flex gap-2"><button onclick="closeConfirm()" class="secondary-btn">Cancelar</button><button id="btnConfirmAction" class="primary-btn" style="background-color:var(--danger);">Confirmar</button></div></div></div>
+    
+    <div id="newHabitModal" onclick="window.toggleNewHabit(false)" class="hidden">
         <div onclick="event.stopPropagation()" class="modal-card">
-            <div class="flex justify-between items-center mb-6">
-                <h3 class="font-bold text-lg">Nuevo Hábito</h3>
-                <button onclick="window.toggleNewHabit(false)" class="text-sm" style="color: var(--text-muted);">Cancelar</button>
-            </div>
-            <input type="text" id="habitNameInput" placeholder="Nombre del hábito..." class="clean-input" autocomplete="off">
-            <div class="flex justify-between items-center mb-2">
-                <p class="text-xs font-bold uppercase tracking-widest" style="color: var(--text-muted);">Categoría</p>
-            </div>
-            <div id="categoryTags"></div>
-            
-            <div id="inlineCategoryCreator" class="hidden mb-8 flex gap-2 items-center">
-                <div class="color-picker-wrapper"><input type="color" id="inlineCatColor" value="#3b82f6"></div>
-                <input id="inlineCatInput" placeholder="Nombre..." style="flex:1; background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 8px; padding: 8px; outline: none;">
-                <button onclick="createInlineCategory()" style="background: var(--primary); color: var(--on-primary); padding: 8px 12px; border-radius: 8px; font-weight: bold; font-size: 0.75rem;">OK</button>
-                <button onclick="toggleInlineCreator(false)" style="color: var(--text-muted); padding: 0 8px;">✕</button>
-            </div>
-            <button onclick="createHabit()" class="primary-btn">Crear Hábito</button>
+            <h3 class="font-bold text-lg mb-6">Nuevo Hábito</h3>
+            <input type="text" id="habitNameInput" placeholder="Nombre..." class="clean-input" autocomplete="off">
+            <label class="text-xs font-bold uppercase tracking-widest mb-2 block" style="color: var(--text-muted);">Categoría</label>
+            <div id="categoryChips" style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px;"></div>
+            <div id="inlineCategoryCreator" class="hidden mb-4 flex gap-2 items-center"><div class="color-picker-wrapper"><input type="color" id="inlineCatColor" value="#3b82f6"></div><input id="inlineCatInput" placeholder="Categoría..." style="flex:1; background:var(--bg-surface); border:1px solid var(--border-color); border-radius:8px; padding:8px;"><button onclick="createInlineCategory()" class="primary-btn" style="width:auto; padding:8px 12px; font-size:0.75rem;">OK</button></div>
+            <div id="subcatSection" class="hidden"><label class="text-xs font-bold uppercase tracking-widest mb-2 block" style="color:var(--text-muted);">Subcategoría</label><div id="subcatChips" style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px;"></div><input type="text" id="manualSubcatInput" placeholder="O escribe una nueva..." class="clean-input" style="font-size:0.9rem; padding:8px; border:1px solid var(--border-color); border-radius:8px; margin-bottom:24px;"></div>
+            <button onclick="createHabit()" class="primary-btn">Crear</button>
         </div>
     </div>
 
     <div id="toast-container"></div>
 
     <script>
-        const DEFAULT_CATEGORIES = [
-            { id: 'gen', name: 'General', color: '#9ca3af' },
-            { id: 'work', name: 'Trabajo', color: '#60a5fa' },
-            { id: 'health', name: 'Salud', color: '#f87171' }
-        ];
-
-        let state = {
-            habits: [],
-            categories: JSON.parse(JSON.stringify(DEFAULT_CATEGORIES)),
-            settings: { darkMode: true, cellStyle: 'striped', collapsedCats: {}, clockSound: false, dailyNote: "" }, 
-            viewDate: new Date()
-        };
-        let selectedCategory = null;
-        let dragSrcEl = null;
-        let confirmCallback = null;
-        let clockInterval = null;
+        const DEFAULT_CATEGORIES = [{ id: 'gen', name: 'General', color: '#9ca3af', subcategories: [] }];
+        let state = { habits: [], categories: JSON.parse(JSON.stringify(DEFAULT_CATEGORIES)), settings: { darkMode: true, collapsedCats: {}, collapsedSubCats: {}, clockSound: false, dailyNote: "" }, viewDate: new Date() };
+        let selectedCategory = null; let selectedSubcat = ""; let confirmCallback = null; let clockInterval = null; let draggedHabitId = null;
         const tickAudio = document.getElementById('tick-audio');
-        let lastClicked = null;
-
-        function getContrastYIQ(hexcolor){
-            if(!hexcolor) return 'black';
-            hexcolor = hexcolor.replace("#", "");
-            if(hexcolor.length === 3) hexcolor = hexcolor[0]+hexcolor[0]+hexcolor[1]+hexcolor[1]+hexcolor[2]+hexcolor[2];
-            var r = parseInt(hexcolor.substr(0,2),16);
-            var g = parseInt(hexcolor.substr(2,2),16);
-            var b = parseInt(hexcolor.substr(4,2),16);
-            var yiq = ((r*299)+(g*587)+(b*114))/1000;
-            return (yiq >= 128) ? 'black' : 'white';
-        }
 
         function init() {
             try {
-                const loaded = JSON.parse(localStorage.getItem('habitTrackerV5'));
+                let loaded = JSON.parse(localStorage.getItem('habitTrackerV5'));
+                if(!loaded) loaded = JSON.parse(localStorage.getItem('habitTrackerV6_3')) || JSON.parse(localStorage.getItem('habitTrackerV6_1'));
                 if (loaded) {
-                    state.habits = loaded.habits || [];
-                    state.categories = loaded.categories && loaded.categories.length > 0 ? loaded.categories : state.categories;
-                    state.settings = loaded.settings || { darkMode: true, cellStyle: 'striped', collapsedCats: {}, clockSound: false, dailyNote: "" };
-                } else {
-                    const prev = JSON.parse(localStorage.getItem('habitTrackerV4_1')) || JSON.parse(localStorage.getItem('habitTrackerV4_0'));
-                    if(prev) {
-                        state.habits = prev.habits || [];
-                        state.categories = prev.categories || [];
-                        state.settings = prev.settings || state.settings;
-                    }
+                    state = loaded; state.viewDate = new Date(state.viewDate || new Date());
+                    if(state.categories) state.categories.forEach(c => { if(!c.subcategories) c.subcategories = []; });
+                    if(!state.settings.collapsedSubCats) state.settings.collapsedSubCats = {};
                 }
-            } catch (e) { console.error('Error cargando datos', e); }
-
-            if (state.settings.darkMode) document.documentElement.classList.add('dark'); 
-            else document.documentElement.classList.remove('dark'); 
-            
-            // Ensure dailyNote exists in settings for older versions
-            if(state.settings.dailyNote === undefined) state.settings.dailyNote = "";
-
-            updateSwitches();
-            updateStyleSelectors();
-            renderCalendar();
-            renderQuote();
-            
+            } catch (e) {}
+            applyTheme(); updateSwitches(); renderCalendar(); renderQuote();
             if(state.settings.clockSound) playClockAudio(true);
-
-            document.getElementById('btnConfirmAction').onclick = () => {
-                if(confirmCallback) confirmCallback();
-                closeConfirm();
-            };
+            window.addEventListener('resize', syncHeaderWidth);
+            document.getElementById('btnConfirmAction').onclick = () => { if(confirmCallback) confirmCallback(); closeConfirm(); };
         }
 
-        function saveData() {
-            localStorage.setItem('habitTrackerV5', JSON.stringify({
-                habits: state.habits,
-                categories: state.categories,
-                settings: state.settings
-            }));
-        }
+        function saveData() { localStorage.setItem('habitTrackerV5', JSON.stringify(state)); }
+        function applyTheme() { if (state.settings.darkMode) document.documentElement.classList.add('dark'); else document.documentElement.classList.remove('dark'); }
+        function updateSwitches() { const d = document.getElementById('toggleDark'), s = document.getElementById('toggleSound'); if(state.settings.darkMode) d.classList.add('active'); else d.classList.remove('active'); if(state.settings.clockSound) s.classList.add('active'); else s.classList.remove('active'); }
+        function toggleClockSound() { state.settings.clockSound = !state.settings.clockSound; saveData(); updateSwitches(); playClockAudio(state.settings.clockSound); }
+        function playClockAudio(play) { if(play) { tickAudio.currentTime=0; tickAudio.volume=0.3; tickAudio.play().catch(()=>{}); if(clockInterval) clearInterval(clockInterval); clockInterval = setInterval(()=>{ tickAudio.currentTime=0; tickAudio.play().catch(()=>{}); }, 1000); } else { if(clockInterval) clearInterval(clockInterval); clockInterval=null; tickAudio.pause(); } }
 
-        /* --- QUOTE LOGIC --- */
-        function renderQuote() {
-            const display = document.getElementById('quoteDisplay');
-            const text = state.settings.dailyNote;
-            
-            if (!text || text.trim() === "") {
-                display.innerText = "Haz clic para escribir una frase...";
-                display.className = "empty-quote-placeholder";
-                display.style.fontSize = "0.9rem";
-                return;
-            }
+        /* --- DRAG DROP --- */
+        function handleDragStart(e, id) { draggedHabitId = id; e.dataTransfer.effectAllowed='move'; e.target.classList.add('dragging'); }
+        function handleDragEnd(e) { e.target.classList.remove('dragging'); document.querySelectorAll('.subcategory-row').forEach(el => el.classList.remove('drag-over')); }
+        function allowDrop(e) { e.preventDefault(); e.currentTarget.classList.add('drag-over'); }
+        function handleDragLeave(e) { e.currentTarget.classList.remove('drag-over'); }
+        function dropOnSubcat(e, catId, subName) { e.preventDefault(); e.currentTarget.classList.remove('drag-over'); const h = state.habits.find(x => x.id == draggedHabitId); if(h) { const tCat = state.categories.find(c => c.id == catId); if(tCat && h.category.id != catId) h.category = tCat; h.subcategory = subName; saveData(); renderCalendar(); showToast('Movido'); } }
+        function dropOnHabit(e, targetId) { e.preventDefault(); const tH = state.habits.find(h=>h.id==targetId), dH = state.habits.find(h=>h.id==draggedHabitId); if(tH && dH && targetId!=draggedHabitId) { if(dH.category.id!=tH.category.id) dH.category=tH.category; dH.subcategory=tH.subcategory; saveData(); renderCalendar(); } }
 
-            display.innerText = text;
-            display.className = "";
-            
-            const len = text.length;
-            const lines = text.split('\n').length;
-            
-            if (len < 25 && lines === 1) {
-                display.style.fontSize = "2rem";
-            } else if (len < 60 && lines <= 2) {
-                display.style.fontSize = "1.5rem"; 
-            } else if (len < 120) {
-                display.style.fontSize = "1.1rem"; 
-            } else {
-                display.style.fontSize = "0.9rem"; 
-            }
-        }
-
-        function editQuote() {
-            const current = state.settings.dailyNote || "";
-            const html = `
-                <div class="flex flex-col gap-4">
-                    <textarea id="quoteInput" class="clean-input" style="height: 120px; border: 1px solid var(--border-color); border-radius: 8px; padding: 12px; font-size: 1rem;" placeholder="Escribe aquí...">${current}</textarea>
-                    <button onclick="saveQuote()" class="primary-btn">Guardar Nota</button>
-                </div>
-            `;
-            openGenericModal('Frase / Notas', html);
-            setTimeout(() => {
-                const el = document.getElementById('quoteInput');
-                el.focus();
-                el.setSelectionRange(el.value.length, el.value.length);
-            }, 100);
-        }
-
-        function saveQuote() {
-            const val = document.getElementById('quoteInput').value;
-            state.settings.dailyNote = val;
-            saveData();
-            renderQuote();
-            closeGenericModal();
-        }
-
-        /* --- STANDARD FUNCTIONS --- */
-        function updateSwitches() {
-            const darkSw = document.getElementById('toggleDark');
-            const soundSw = document.getElementById('toggleSound');
-            if(state.settings.darkMode) darkSw.classList.add('active'); else darkSw.classList.remove('active');
-            if(state.settings.clockSound) soundSw.classList.add('active'); else soundSw.classList.remove('active');
-        }
-
-        function toggleClockSound() {
-            state.settings.clockSound = !state.settings.clockSound;
-            saveData();
-            updateSwitches();
-            playClockAudio(state.settings.clockSound);
-        }
-
-        function playClockAudio(play) {
-            if(play) {
-                tickAudio.currentTime = 0; tickAudio.volume = 0.3;
-                tickAudio.play().catch(e => console.log("User interaction needed for audio"));
-                if(clockInterval) clearInterval(clockInterval);
-                clockInterval = setInterval(() => { tickAudio.currentTime = 0; tickAudio.play().catch(e => {}); }, 1000);
-            } else {
-                if(clockInterval) clearInterval(clockInterval); clockInterval = null; tickAudio.pause();
-            }
-        }
-
-        function setCellStyle(style) {
-            state.settings.cellStyle = style; saveData(); updateStyleSelectors(); renderCalendar();
-        }
-
-        function updateStyleSelectors() {
-            ['striped', 'solid', 'dot'].forEach(s => {
-                const el = document.getElementById('styleOpt-'+s);
-                if(state.settings.cellStyle === s) el.classList.add('active');
-                else el.classList.remove('active');
-            });
-        }
-
-        function toggleCategory(catId) {
-            const isCollapsed = state.settings.collapsedCats[catId];
-            state.settings.collapsedCats[catId] = !isCollapsed;
-            saveData(); renderCalendar();
-        }
-
-        function showConfirm(msg, callback) {
-            document.getElementById('confirmMessage').innerText = msg; confirmCallback = callback;
-            const el = document.getElementById('confirmModal'); el.classList.remove('hidden');
-            setTimeout(() => el.classList.add('active'), 10);
-        }
-
-        function closeConfirm() {
-            const el = document.getElementById('confirmModal'); el.classList.remove('active');
-            setTimeout(() => el.classList.add('hidden'), 200); confirmCallback = null;
-        }
-
-        function handleDragStart(e) {
-            dragSrcEl = this; e.dataTransfer.effectAllowed = 'move';
-            e.dataTransfer.setData('text/plain', this.getAttribute('data-id'));
-            this.classList.add('dragging');
-        }
-        function handleDragOver(e) { if (e.preventDefault) e.preventDefault(); e.dataTransfer.dropEffect = 'move'; return false; }
-        function handleDragEnter(e) { this.classList.add('drag-over'); }
-        function handleDragLeave(e) { this.classList.remove('drag-over'); }
-        function handleDrop(e) {
-            if (e.stopPropagation) e.stopPropagation();
-            const dragId = dragSrcEl.getAttribute('data-id');
-            const dropId = this.getAttribute('data-id');
-            if (dragSrcEl !== this) {
-                const oldIndex = state.habits.findIndex(h => h.id == dragId);
-                const newIndex = state.habits.findIndex(h => h.id == dropId);
-                if(oldIndex > -1 && newIndex > -1) {
-                    const [movedItem] = state.habits.splice(oldIndex, 1);
-                    state.habits.splice(newIndex, 0, movedItem);
-                    saveData(); renderCalendar();
-                }
-            }
-            return false;
-        }
-        function handleDragEnd(e) {
-            document.querySelectorAll('.habit-row').forEach(row => { row.classList.remove('drag-over'); row.classList.remove('dragging'); });
-        }
-
+        /* --- RENDER --- */
         function renderCalendar() {
             const container = document.getElementById('habitsContainer');
             const headerContainer = document.getElementById('calendarHeader');
             container.innerHTML = ''; headerContainer.innerHTML = '';
-
+            
             const dateStr = state.viewDate.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
             document.getElementById('currentMonthDisplay').innerText = dateStr;
-
-            const year = state.viewDate.getFullYear();
-            const month = state.viewDate.getMonth();
+            const year = state.viewDate.getFullYear(), month = state.viewDate.getMonth();
             const daysInMonth = new Date(year, month + 1, 0).getDate();
-            const now = new Date();
-            const todayISO = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+            const n = new Date(); const todayISO = `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`;
+
+            let headerHTML = `<div class="row-structure"><div class="sticky-col-left grid-header-cell">Hábito</div><div class="days-container">`;
+            for (let i = 1; i <= daysInMonth; i++) {
+                const d = new Date(year, month, i);
+                const iso = `${year}-${String(month+1).padStart(2,'0')}-${String(i).padStart(2,'0')}`;
+                const sep = d.getDay() === 0 ? 'week-separator' : '';
+                headerHTML += `<div class="day-header ${iso===todayISO?'today':''} ${sep}"><span>${d.toLocaleDateString('es-ES',{weekday:'narrow'})}</span><span>${i}</span></div>`;
+            }
+            headerHTML += `</div><div class="sticky-col-right grid-header-cell">%</div></div>`;
+            headerContainer.innerHTML = headerHTML;
 
             const activeHabits = state.habits.filter(h => !h.archived);
-            
-            let headerHTML = `<div class="sticky-col-left grid-header-cell">Hábito</div>`;
-            let daysHTML = '<div class="flex flex-1">';
-            
-            for (let i = 1; i <= daysInMonth; i++) {
-                const dateCheck = new Date(year, month, i);
-                const isToday = `${year}-${String(month+1).padStart(2,'0')}-${String(i).padStart(2,'0')}` === todayISO;
-                const dayName = dateCheck.toLocaleDateString('es-ES', { weekday: 'narrow' });
-                const sepClass = dateCheck.getDay() === 0 ? 'week-separator' : '';
+            if (activeHabits.length === 0) { container.innerHTML = `<div style="padding:40px; text-align:center; color:var(--text-muted);">No hay hábitos.</div>`; return; }
 
-                daysHTML += `<div class="day-header ${isToday ? 'today' : ''} ${sepClass}"><span style="font-size: 9px; opacity: 0.7; line-height: 1; margin-bottom: 2px;">${dayName}</span><span style="font-size: 12px; font-weight: bold; line-height: 1;">${i}</span></div>`;
-            }
-            daysHTML += '</div>';
-            const statsHTML = `<div class="sticky-col-right grid-header-cell" style="width: 60px; justify-content: center;">%</div>`;
-            headerContainer.innerHTML = `<div class="flex w-full min-w-full">${headerHTML}${daysHTML}${statsHTML}</div>`;
-
-            if (activeHabits.length === 0) {
-                container.innerHTML = `<div style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text-muted);"><p class="text-sm">No hay hábitos creados aún.</p><button onclick="window.toggleNewHabit(true)" style="margin-top: 8px; font-size: 0.75rem; font-weight: bold; border-bottom: 1px solid currentColor; padding-bottom: 2px;">Crear Hábito</button></div>`;
-                return;
-            }
-
-            const gridWrapper = document.createElement('div');
-            gridWrapper.className = 'flex flex-col w-full min-w-full';
+            const grid = document.createElement('div'); grid.className = 'flex flex-col min-w-max';
 
             state.categories.forEach(cat => {
-                const catHabits = activeHabits.filter(h => h.category && h.category.id === cat.id);
-                if (catHabits.length === 0) return;
+                const catHabits = activeHabits.filter(h => h.category.id == cat.id);
+                if (catHabits.length === 0 && (!cat.subcategories || cat.subcategories.length === 0)) return;
 
-                const isCollapsed = state.settings.collapsedCats[cat.id];
-                const arrow = isCollapsed ? '►' : '▼';
-                
-                // CALCULAR ESTADO DE HOY
-                let allDoneToday = false;
-                if(catHabits.length > 0) {
-                    allDoneToday = catHabits.every(h => {
-                        const s = h.history[todayISO];
-                        return s === 'done' || s === 'skip';
-                    });
+                let dotColor = null;
+                if (catHabits.length > 0) {
+                    const allDone = catHabits.every(h => { const s = h.history[todayISO]; return s === 'done' || s === 'skip'; });
+                    dotColor = allDone ? 'var(--success)' : 'var(--danger)';
                 }
-                const statusColor = (catHabits.length > 0 && allDoneToday) ? 'var(--success)' : 'var(--danger)';
-                const statusDot = `<div style="width:8px; height:8px; border-radius:50%; background-color:${statusColor}; margin-left:8px; box-shadow: 0 0 4px ${statusColor};"></div>`;
-
-                const catHeader = document.createElement('div');
-                catHeader.className = 'category-group-header';
-                catHeader.innerHTML = `
-                    <div class="cat-header-sticky" onclick="toggleCategory('${cat.id}')">
-                        <span style="font-size: 0.7rem; color: ${cat.color};">${arrow}</span>
-                        <span>${cat.name}</span>
-                        ${statusDot}
-                    </div>
-                    <div class="cat-header-fill"></div>
-                `;
-                gridWrapper.appendChild(catHeader);
+                const isCollapsed = state.settings.collapsedCats[cat.id];
+                const catHead = document.createElement('div'); catHead.className = 'category-group-header';
+                let dotHTML = dotColor ? `<div class="cat-status-dot" style="background:${dotColor}; box-shadow:0 0 4px ${dotColor};"></div>` : '';
+                
+                catHead.innerHTML = `<div class="cat-header-sticky"><div class="cat-info" onclick="toggleCategory('${cat.id}')"><span style="color:${cat.color}; font-size:0.7rem;">${isCollapsed?'►':'▼'}</span><span>${cat.name}</span>${dotHTML}</div><button onclick="openCategoryMenu('${cat.id}')" class="menu-btn-shared">⋮</button></div><div class="cat-header-fill"></div>`;
+                grid.appendChild(catHead);
 
                 if (isCollapsed) return;
 
-                catHabits.forEach(habit => {
-                    const row = document.createElement('div');
-                    row.className = 'habit-row';
-                    row.setAttribute('draggable', 'true'); row.setAttribute('data-id', habit.id);
-                    row.addEventListener('dragstart', handleDragStart); row.addEventListener('dragenter', handleDragEnter);
-                    row.addEventListener('dragover', handleDragOver); row.addEventListener('dragleave', handleDragLeave);
-                    row.addEventListener('drop', handleDrop); row.addEventListener('dragend', handleDragEnd);
+                const grouped = {};
+                catHabits.forEach(h => { const s = h.subcategory ? h.subcategory.trim() : ""; if(!grouped[s]) grouped[s] = []; grouped[s].push(h); });
+                const definedSubs = cat.subcategories || [];
+                const allSubKeys = new Set([...Object.keys(grouped), ...definedSubs]);
+                const sortedKeys = Array.from(allSubKeys).sort((a,b) => { if(a==="") return -1; if(b==="") return 1; return a.localeCompare(b); });
 
-                    let catColor = habit.category && habit.category.color.startsWith('#') ? habit.category.color : '#9ca3af';
-                    
-                    let streak = 0; 
-                    const strNow = new Date();
-                    for(let k=0; k<365; k++){
-                        const d = new Date(strNow); d.setDate(d.getDate()-k);
-                        const iso = d.toISOString().split('T')[0];
-                        if(habit.history[iso] === 'done' || habit.history[iso] === 'skip') streak++;
-                        else if (k>0) break;
-                    }
-                    
-                    const showStreak = habit.showStreak !== false;
-                    const streakClass = (streak > 0 && showStreak) ? 'active' : '';
-                    const streakHTML = showStreak ? 
-                        `<div class="streak-badge ${streakClass}"><span>🔥</span> <span>${streak}</span></div>` : 
-                        `<div class="streak-badge"></div>`;
-
-                    row.innerHTML += `
-                        <div class="sticky-col-left habit-name-cell">
-                            <div class="drag-handle"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M8 6a2 2 0 1 0 0 4 2 2 0 0 0 0-4z M8 14a2 2 0 1 0 0 4 2 2 0 0 0 0-4z M16 6a2 2 0 1 0 0 4 2 2 0 0 0 0-4z M16 14a2 2 0 1 0 0 4 2 2 0 0 0 0-4z" /></svg></div>
-                            <div class="flex items-center gap-2 overflow-hidden" style="gap: 8px; flex:1; min-width:0;">
-                                <div class="flex-none rounded-full" style="width: 6px; height: 6px; background-color: ${catColor}; flex-shrink: 0;"></div>
-                                <span class="text-sm font-medium" style="white-space: normal; line-height: 1.2; word-break: break-word;">${habit.name}</span>
-                            </div>
-                            ${streakHTML}
-                            <button onclick="openHabitOptions(${habit.id})" class="btn-kebab"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0-6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 12c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"></path></svg></button>
-                        </div>`;
-
-                    let cells = '<div class="flex flex-1">';
-                    let checks = 0;
-                    for (let i = 1; i <= daysInMonth; i++) {
-                        const dateCheck = new Date(year, month, i);
-                        const iso = `${year}-${String(month+1).padStart(2,'0')}-${String(i).padStart(2,'0')}`;
-                        const status = habit.history[iso];
-                        if (status === 'done' || status === 'skip') checks++;
-                        
-                        let cls = 'cell-btn ';
-                        if (dateCheck.getDay() === 0) cls += 'week-separator ';
-                        
-                        let style = '', txt = '';
-                        if (status === 'done') { 
-                            const contrast = getContrastYIQ(catColor);
-                            const styleMode = state.settings.cellStyle;
-
-                            if (styleMode === 'solid') {
-                                style = `background-color: ${catColor}; color: ${contrast}; font-weight: bold;`; txt = '✓';
-                            } else if (styleMode === 'dot') {
-                                txt = `<div style="width: 12px; height: 12px; border-radius: 50%; background-color: ${catColor};"></div>`;
-                            } else {
-                                style = `background-image: repeating-linear-gradient(45deg, ${catColor}, ${catColor} 6px, transparent 6px, transparent 12px); color: ${contrast}; font-weight: bold; text-shadow: 0 0 3px rgba(0,0,0,0.3);`;
-                                txt = '✓';
-                            }
+                sortedKeys.forEach(subKey => {
+                    if(subKey !== "") {
+                        // --- LOGICA DE SEMÁFORO PARA SUBCATEGORÍAS ---
+                        let subDotColor = null;
+                        const subHabits = grouped[subKey] || [];
+                        if (subHabits.length > 0) {
+                            const subAllDone = subHabits.every(h => { const s = h.history[todayISO]; return s === 'done' || s === 'skip'; });
+                            subDotColor = subAllDone ? 'var(--success)' : 'var(--danger)';
                         }
-                        else if (status === 'fail') { cls += 'state-fail'; txt = '✗'; }
-                        else if (status === 'skip') { cls += 'state-skip'; txt = '−'; }
-                        
-                        if (`${year}-${String(month+1).padStart(2,'0')}-${String(i).padStart(2,'0')}` === todayISO) cls += ' today-border';
-                        
-                        cells += `<div onclick="toggleDay(${habit.id}, '${iso}', event)" class="${cls}" style="${style}">${txt}</div>`;
+                        const subDotHTML = subDotColor ? `<div class="cat-status-dot" style="background:${subDotColor}; margin-right:auto; margin-left:8px;"></div>` : '';
+
+                        const subKeyId = `${cat.id}_${subKey}`;
+                        const isSubCollapsed = state.settings.collapsedSubCats[subKeyId];
+                        const subArrow = isSubCollapsed ? '►' : '▼';
+                        const subRow = document.createElement('div'); subRow.className = 'subcategory-row';
+                        subRow.ondragover = (e) => allowDrop(e); subRow.ondragleave = (e) => handleDragLeave(e); subRow.ondrop = (e) => dropOnSubcat(e, cat.id, subKey);
+                        // Añadido subDotHTML y ajuste de layout
+                        subRow.innerHTML = `<div class="subcat-label" style="border-left:4px solid ${cat.color};"><div class="subcat-click-area" onclick="toggleSubCat('${cat.id}', '${subKey}')"><span style="font-size:0.6rem;">${subArrow}</span><span>${subKey}</span>${subDotHTML}</div><button class="menu-btn-shared" onclick="openSubcatMenu('${cat.id}', '${subKey}')">⋮</button></div><div class="subcat-line"></div>`;
+                        grid.appendChild(subRow);
+                        if(isSubCollapsed) return;
                     }
-                    cells += '</div>';
-                    row.innerHTML += cells;
-                    const percent = Math.round((checks / daysInMonth) * 100);
-                    row.innerHTML += `<div class="sticky-col-right" style="width: 60px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background-color: var(--bg-body); border-left: 1px solid var(--border-color);"><span class="text-xs font-bold" style="color: var(--text-muted);">${percent}%</span></div>`;
-                    gridWrapper.appendChild(row);
+
+                    (grouped[subKey] || []).forEach(h => {
+                        const row = document.createElement('div'); row.className = 'habit-row row-structure';
+                        row.draggable = true; row.ondragstart = (e) => handleDragStart(e, h.id); row.ondragend = (e) => handleDragEnd(e); row.ondragover = (e) => e.preventDefault(); row.ondrop = (e) => dropOnHabit(e, h.id);
+
+                        let streak = 0; const dNow = new Date();
+                        for(let k=0;k<365;k++){ const iso = dNow.toISOString().split('T')[0]; if(h.history[iso]==='done') streak++; else if(k>0) break; dNow.setDate(dNow.getDate()-1); }
+
+                        let cells = `<div class="sticky-col-left habit-name-cell" onclick="openHabitOptions(${h.id})"><div class="flex items-center gap-2 overflow-hidden" style="flex:1"><div class="drag-handle">::</div><div style="width:6px; height:6px; border-radius:50%; background:${cat.color}"></div><span class="text-sm font-medium truncate">${h.name}</span></div>${(h.showStreak!==false && streak>0) ? `<div class="streak-badge active">🔥 ${streak}</div>` : ''}</div><div class="days-container">`;
+
+                        let checks=0;
+                        for(let i=1; i<=daysInMonth; i++) {
+                            const loopIso = `${year}-${String(month+1).padStart(2,'0')}-${String(i).padStart(2,'0')}`;
+                            const isToday = loopIso === todayISO;
+                            const stat = h.history[loopIso];
+                            if(stat==='done' || stat==='skip') checks++;
+                            const dObj = new Date(year, month, i);
+                            let cls = 'cell-btn ' + (dObj.getDay()===0?'week-separator ':'') + (isToday?'today-border':'');
+                            let style = '', txt = '';
+                            if(stat==='done') { style=`color:${cat.color}; font-weight:bold;`; txt='✓'; if(state.settings.cellStyle==='solid') { style=`background:${cat.color}; color:#fff;`; } }
+                            else if(stat==='fail') { style='color:var(--danger);'; txt='✗'; }
+                            else if(stat==='skip') { cls+='state-skip'; txt='−'; } // FIX: Guión visible
+                            cells += `<div onclick="toggleDay(${h.id}, '${loopIso}')" class="${cls}" style="${style}">${txt}</div>`;
+                        }
+                        cells += `</div><div class="sticky-col-right grid-header-cell">${Math.round((checks/daysInMonth)*100)}%</div>`;
+                        row.innerHTML = cells;
+                        grid.appendChild(row);
+                    });
                 });
             });
-
-            container.appendChild(gridWrapper);
+            container.appendChild(grid);
             container.onscroll = () => { headerContainer.scrollLeft = container.scrollLeft; };
+            setTimeout(syncHeaderWidth, 0);
         }
 
-        function toggleInlineCreator(show) {
-            const tags = document.getElementById('categoryTags'), creator = document.getElementById('inlineCategoryCreator');
-            if(show) { tags.classList.add('hidden'); creator.classList.remove('hidden'); creator.classList.add('flex'); document.getElementById('inlineCatInput').focus(); }
-            else { tags.classList.remove('hidden'); creator.classList.add('hidden'); creator.classList.remove('flex'); }
-        }
-        function createInlineCategory() {
-            const input = document.getElementById('inlineCatInput'), colorInput = document.getElementById('inlineCatColor');
-            if(input.value.trim()) {
-                const newCat = {id: Date.now(), name: input.value.trim(), color: colorInput.value};
-                state.categories.push(newCat); selectedCategory = newCat; 
-                saveData(); renderCategoryTags(); toggleInlineCreator(false); input.value = '';
-            }
-        }
-        function renderCategoryTags() {
-            const tags = document.getElementById('categoryTags'); tags.innerHTML = '';
-            if (!selectedCategory || !state.categories.find(c => c.id === selectedCategory.id)) selectedCategory = state.categories[0];
-            state.categories.forEach(cat => {
-                const btn = document.createElement('button');
-                const isActive = selectedCategory && cat.id === selectedCategory.id;
-                btn.className = `category-tag`; btn.innerText = cat.name;
-                if (isActive) { btn.style.backgroundColor = cat.color; btn.style.borderColor = cat.color; btn.style.color = getContrastYIQ(cat.color); btn.style.fontWeight = 'bold'; }
-                btn.onclick = () => { selectedCategory = cat; renderCategoryTags(); };
-                tags.appendChild(btn);
-            });
-            const addBtn = document.createElement('button');
-            addBtn.className = "category-tag"; addBtn.style.borderStyle = "dashed"; addBtn.innerText = "+";
-            addBtn.onclick = () => toggleInlineCreator(true); tags.appendChild(addBtn);
+        function syncHeaderWidth() {
+            const container = document.getElementById('habitsContainer');
+            const header = document.getElementById('calendarHeader');
+            if(!container || !header) return;
+            const scrollbarWidth = container.offsetWidth - container.clientWidth;
+            header.style.paddingRight = `${scrollbarWidth}px`;
         }
 
-        window.toggleNewHabit = function(show) {
-            const el = document.getElementById('newHabitModal');
-            if(show) {
-                if (state.categories.length === 0) toggleInlineCreator(true); else { toggleInlineCreator(false); renderCategoryTags(); }
-                el.classList.remove('hidden'); setTimeout(() => el.classList.add('active'), 10);
-                setTimeout(() => document.getElementById('habitNameInput').focus(), 100);
-            } else { el.classList.remove('active'); setTimeout(() => el.classList.add('hidden'), 200); }
-        }
-
-        function createHabit() {
-            const input = document.getElementById('habitNameInput'), name = input.value.trim();
-            if (!name) return showToast('Escribe un nombre');
-            if(!selectedCategory && state.categories.length === 0) return showToast('Crea una categoría primero');
-            state.habits.push({ id: Date.now(), name: name, category: selectedCategory || state.categories[0], history: {}, archived: false, showStreak: true, created: new Date().toISOString() });
-            saveData(); input.value = ''; window.toggleNewHabit(false); setTimeout(() => { renderCalendar(); showToast('Hábito creado'); }, 50);
-        }
-
-        function toggleDay(id, iso, event) {
-            const h = state.habits.find(x => x.id === id); if (!h) return;
-            const getNextState = (current) => {
-                if (!current) return 'done'; if (current === 'done') return 'fail'; if (current === 'fail') return 'skip'; return null;
-            };
-
-            if (event && event.shiftKey && lastClicked && lastClicked.id === id) {
-                const start = new Date(lastClicked.iso); const end = new Date(iso);
-                const startD = start < end ? start : end; const endD = start < end ? end : start;
-                const targetState = getNextState(h.history[iso]);
-                const loop = new Date(startD);
-                while(loop <= endD) {
-                    const loopIso = loop.toISOString().split('T')[0];
-                    if (targetState) h.history[loopIso] = targetState; else delete h.history[loopIso];
-                    loop.setDate(loop.getDate() + 1);
-                }
-                if(targetState === 'done') playSound();
-            } else {
-                const next = getNextState(h.history[iso]);
-                if (next) { h.history[iso] = next; if(next==='done') playSound(); } else delete h.history[iso];
-                lastClicked = { id: id, iso: iso };
-            }
-            saveData(); 
-            const activeHabits = state.habits.filter(x => !x.archived);
-            if(activeHabits.length > 0) {
-                const allComplete = activeHabits.every(hab => { const s = hab.history[iso]; return s === 'done' || s === 'skip'; });
-                if(allComplete) { triggerConfetti(); showToast("¡Día Perfecto!"); }
-            }
-            renderCalendar();
-        }
-        
-        function changeMonth(delta) { state.viewDate.setMonth(state.viewDate.getMonth() + delta); renderCalendar(); }
-        window.toggleMenu = function(show) { 
-            const o = document.getElementById('menuOverlay'), c = document.getElementById('menuContent'); 
-            if(show){ o.classList.remove('hidden'); setTimeout(() => { o.classList.remove('opacity-0'); c.classList.add('open'); }, 10); } 
-            else { o.classList.add('opacity-0'); c.classList.remove('open'); setTimeout(() => o.classList.add('hidden'), 300); } 
-        }
-
-        function addCategory() { 
-            const i = document.getElementById('newCatInput'), cIn = document.getElementById('newCatColorInput');
-            if(i.value.trim()){ state.categories.push({id:Date.now(), name:i.value.trim(), color: cIn.value}); saveData(); openSubMenu('categories'); } 
-        }
-        function removeCategory(i) { 
-            closeGenericModal();
-            showConfirm('¿Eliminar esta categoría?', () => { state.categories.splice(i,1); saveData(); showToast('Categoría eliminada'); openSubMenu('categories'); });
-        }
-        function switchToNewHabit() { closeGenericModal(); setTimeout(()=>window.toggleNewHabit(true),300); }
-        
-        function openHabitOptions(id) {
+        /* --- LOGIC --- */
+        function toggleCategory(id) { state.settings.collapsedCats[id] = !state.settings.collapsedCats[id]; saveData(); renderCalendar(); }
+        function toggleSubCat(catId, subName) { const key = `${catId}_${subName}`; state.settings.collapsedSubCats[key] = !state.settings.collapsedSubCats[key]; saveData(); renderCalendar(); }
+        function toggleDay(id, iso) {
             const h = state.habits.find(x => x.id === id); if(!h) return;
-            const html = `
-                <div style="display:flex; flex-direction:column; gap:8px;">
-                    <button onclick="startRename(${id})" class="option-btn"><span style="opacity:0.6;">✏️</span> Renombrar</button>
-                    <button onclick="startChangeCategory(${id})" class="option-btn"><span style="opacity:0.6;">📂</span> Mover a otra categoría</button>
-                    <button onclick="toggleStreakVisibility(${id})" class="option-btn"><span style="opacity:0.6;">🔥</span> ${h.showStreak===false?'Mostrar Racha':'Ocultar Racha'}</button>
-                    <button onclick="archiveHabit(${id})" class="option-btn"><span style="opacity:0.6;">📦</span> Archivar</button>
-                    <button onclick="deleteHabit(${id})" class="option-btn" style="color:#ef4444; background:rgba(239,68,68,0.1); border-color:transparent;"><span style="opacity:0.6;">🗑️</span> Eliminar</button>
-                </div>`;
-            openGenericModal(h.name, html);
+            const curr = h.history[iso];
+            if(!curr) { h.history[iso] = 'done'; playSound(); triggerConfetti(); } else if(curr==='done') h.history[iso] = 'fail'; else if(curr==='fail') h.history[iso] = 'skip'; else delete h.history[iso];
+            saveData(); renderCalendar();
         }
+        function changeMonth(d) { state.viewDate.setMonth(state.viewDate.getMonth()+d); renderCalendar(); }
 
-        function startChangeCategory(id) {
+        /* --- MENUS --- */
+        function openSubcatMenu(catId, subName) {
             closeGenericModal();
             setTimeout(() => {
-                let html = `<p class="text-sm text-muted mb-4">Selecciona la nueva categoría:</p><div class="flex flex-col gap-2">`;
-                state.categories.forEach(cat => {
-                    html += `<button onclick="confirmChangeCategory(${id}, '${cat.id}')" class="option-btn" style="justify-content:space-between;">
-                        <div class="flex items-center gap-2"><div class="cat-color-dot" style="background-color: ${cat.color}"></div>${cat.name}</div>
-                        </button>`;
-                });
-                html += `</div>`;
-                openGenericModal('Mover Hábito', html);
-            }, 250);
-        }
-
-        function confirmChangeCategory(habitId, catId) {
-            const h = state.habits.find(x => x.id === habitId); const newCat = state.categories.find(c => c.id == catId);
-            if(h && newCat) { h.category = newCat; saveData(); renderCalendar(); closeGenericModal(); showToast(`Movido a ${newCat.name}`); }
-        }
-
-        function toggleStreakVisibility(id) {
-            const h = state.habits.find(x => x.id === id);
-            if(h) { h.showStreak = h.showStreak === false ? true : false; saveData(); renderCalendar(); closeGenericModal(); }
-        }
-
-        function startRename(id) {
-            const h = state.habits.find(x => x.id === id); if(!h) return;
-            closeGenericModal();
-            setTimeout(() => {
-                const html = `<div class="flex flex-col gap-4"><input id="renameInput" class="clean-input" value="${h.name}" placeholder="Nuevo nombre..."><button onclick="saveRename(${id})" class="primary-btn">Guardar</button></div>`;
-                openGenericModal('Renombrar Hábito', html); setTimeout(() => document.getElementById('renameInput').focus(), 100);
+                const html = `<div class="text-sm text-muted mb-4">Subcategoría: <b>${subName}</b></div><button onclick="startMoveSubcat('${catId}', '${subName}')" class="option-btn">📂 Mover a otra categoría</button><button onclick="deleteSubcatDirect('${catId}', '${subName}')" class="option-btn" style="color:var(--danger)">🗑️ Eliminar Subcategoría</button>`;
+                openGenericModal('Opciones', html);
             }, 300);
         }
-
-        function saveRename(id) {
-            const val = document.getElementById('renameInput').value.trim();
-            if(val) { state.habits.find(h => h.id === id).name = val; saveData(); renderCalendar(); closeGenericModal(); showToast('Hábito renombrado'); }
+        function deleteSubcatDirect(catId, subName) {
+            closeGenericModal();
+            showConfirm('¿Eliminar etiqueta? Los hábitos no se borrarán.', () => {
+                const cat = state.categories.find(c => c.id == catId);
+                if(cat) {
+                    cat.subcategories = cat.subcategories.filter(s => s !== subName);
+                    state.habits.forEach(h => { if(h.category.id == catId && h.subcategory === subName) { h.subcategory = ""; } });
+                    saveData(); renderCalendar(); showToast('Eliminada');
+                }
+            });
         }
-
-        function openSubMenu(type) {
-            const menuOverlay = document.getElementById('menuOverlay');
-            if (!menuOverlay.classList.contains('hidden')) window.toggleMenu(false);
-            if (type === 'categories') {
-                let html = '<div style="display:flex; flex-direction:column; gap:8px;">';
-                state.categories.forEach((c, i) => { 
-                    html += `<div class="cat-list-item"><div class="flex items-center"><span class="cat-color-dot" style="background-color: ${c.color}"></span><span class="font-medium text-sm">${c.name}</span></div><button onclick="removeCategory(${i})" style="color: var(--text-muted); font-size: 0.7rem;">ELIMINAR</button></div>`; 
+        function startMoveSubcat(currentCatId, subName) {
+            closeGenericModal();
+            setTimeout(() => {
+                let html = '<p class="text-sm text-muted mb-2">Selecciona nueva categoría:</p><div class="flex flex-col gap-2">';
+                state.categories.forEach(cat => {
+                    if(cat.id != currentCatId) { html += `<button onclick="processMoveSubcat('${currentCatId}', '${cat.id}', '${subName}')" class="option-btn"><div class="flex items-center gap-2"><div class="cat-color-dot" style="background:${cat.color}"></div>${cat.name}</div></button>`; }
                 });
-                html += `</div><div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border-color);"><label class="text-xs font-bold uppercase tracking-widest" style="color: var(--text-muted); display: block; margin-bottom: 8px;">Nueva Categoría</label><div class="flex gap-2 items-center relative"><div class="color-picker-wrapper"><input type="color" id="newCatColorInput" value="#10b981"></div><input id="newCatInput" placeholder="Ej: Deportes..." style="flex:1; background: var(--bg-surface); padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); outline: none;"><button onclick="addCategory()" style="background: var(--primary); color: var(--on-primary); padding: 0 12px; height: 38px; border-radius: 6px; font-weight: bold; font-size: 0.75rem;">+</button></div></div>`;
-                if(state.categories.length>0) html+=`<div style="margin-top: 16px;"><button onclick="switchToNewHabit()" style="width:100%; padding:12px; background:#4ade80; color:#000; font-weight:bold; border-radius:8px;">Ir a Crear Hábito →</button></div>`;
-                openGenericModal('Gestionar Categorías', html);
-            } 
-            else if (type === 'archive') {
-                const arch = state.habits.filter(h => h.archived); if (!arch.length) return showToast('Archivo vacío');
+                html += '</div>';
+                openGenericModal('Mover ' + subName, html);
+            }, 300);
+        }
+        function processMoveSubcat(oldCatId, newCatId, subName) {
+            const oldCat = state.categories.find(c => c.id == oldCatId);
+            const newCat = state.categories.find(c => c.id == newCatId);
+            if(oldCat && newCat) {
+                oldCat.subcategories = oldCat.subcategories.filter(s => s !== subName);
+                if(!newCat.subcategories) newCat.subcategories = [];
+                if(!newCat.subcategories.includes(subName)) newCat.subcategories.push(subName);
+                state.habits.forEach(h => { if(h.category.id == oldCatId && h.subcategory === subName) { h.category = newCat; } });
+                saveData(); renderCalendar(); closeGenericModal(); showToast(`Movida a ${newCat.name}`);
+            }
+        }
+        function openCategoryMenu(id) {
+            const cat = state.categories.find(c => c.id == id);
+            openGenericModal(cat.name, `<button onclick="promptSub('${id}')" class="option-btn">➕ Nueva Subcategoría</button><button onclick="manageSubcats('${id}')" class="option-btn">📂 Gestionar Subcategorías</button><div style="height:1px; background:var(--border-color); margin:8px 0;"></div><button onclick="deleteCat('${id}')" class="option-btn" style="color:var(--danger)">🗑️ Eliminar Categoría</button>`);
+        }
+        function promptSub(id) {
+            closeGenericModal(); setTimeout(()=>{
+                openGenericModal('Nueva Subcategoría', `<input id="subIn" class="clean-input" placeholder="Nombre..." onkeyup="if(event.key==='Enter') saveSub('${id}')"><button onclick="saveSub('${id}')" class="primary-btn">Guardar</button>`);
+                setTimeout(()=>document.getElementById('subIn').focus(),300);
+            },300);
+        }
+        function saveSub(id) {
+            const n = document.getElementById('subIn').value.trim();
+            if(n) { 
+                const cat = state.categories.find(c => c.id == id);
+                if(cat) {
+                    if(!cat.subcategories) cat.subcategories = [];
+                    if(!cat.subcategories.includes(n)) { cat.subcategories.push(n); saveData(); showToast('Añadida'); } else { showToast('Ya existe'); }
+                    closeGenericModal(); renderCalendar(); setTimeout(() => manageSubcats(id), 350);
+                }
+            }
+        }
+        function deleteCat(id) {
+            closeGenericModal();
+            showConfirm('¿Borrar categoría y sus hábitos?', () => { 
+                state.habits = state.habits.filter(h => h.category.id != id);
+                state.categories = state.categories.filter(c => c.id != id); 
+                saveData(); renderCalendar(); 
+            });
+        }
+        function manageSubcats(catId) {
+            closeGenericModal();
+            setTimeout(() => {
+                const cat = state.categories.find(c => c.id == catId);
+                if(!cat || !cat.subcategories) return;
                 let html = '<div style="display:flex; flex-direction:column; gap:8px;">';
-                arch.forEach(h => html += `<div style="display:flex; justify-content:between; padding:12px; background:var(--bg-surface); border-radius:8px;"><span class="text-sm">${h.name}</span><button onclick="unarchive(${h.id})" class="text-xs font-bold" style="color:#60a5fa;">Recuperar</button></div>`);
-                openGenericModal('Archivo', html + '</div>');
-            } else if (type === 'backup') {
-                openGenericModal('Backup', `<button onclick="downloadData()" class="primary-btn" style="margin-bottom:12px;">Descargar Backup</button><input type="file" onchange="uploadData(this)" style="display:block; width:100%; font-size:0.8rem; color:var(--text-muted);">`);
+                if(cat.subcategories.length === 0) { html += '<p class="text-sm text-muted">No hay subcategorías.</p>'; } 
+                else { cat.subcategories.forEach(sub => { html += `<div style="display:flex; justify-content:space-between; padding:12px; background:var(--bg-surface); border-radius:8px;"><span class="text-sm">${sub}</span><button onclick="deleteSub('${catId}', '${sub}')" style="color:var(--danger); font-weight:bold;">✕</button></div>`; }); }
+                html += '</div><div style="margin-top:16px; border-top:1px solid var(--border-color); padding-top:12px;"><button onclick="closeGenericModal()" class="secondary-btn" style="width:100%">Cerrar</button></div>';
+                openGenericModal('Subcategorías: ' + cat.name, html);
+            }, 300);
+        }
+        function deleteSub(catId, subName) {
+            const cat = state.categories.find(c => c.id == catId);
+            if(cat) {
+                cat.subcategories = cat.subcategories.filter(s => s !== subName);
+                state.habits.forEach(h => { if(h.category.id == catId && h.subcategory === subName) { h.subcategory = ""; } });
+                saveData(); closeGenericModal(); setTimeout(() => manageSubcats(catId), 300); renderCalendar();
             }
         }
 
+        /* --- OTHERS --- */
+        window.toggleMenu = function(show) { const o = document.getElementById('menuOverlay'), c = document.getElementById('menuContent'); if(show){ o.classList.remove('hidden'); setTimeout(() => { o.classList.remove('opacity-0'); c.classList.add('open'); }, 10); } else { o.classList.add('opacity-0'); c.classList.remove('open'); setTimeout(() => o.classList.add('hidden'), 300); } }
+        function openSubMenu(type) {
+            window.toggleMenu(false);
+            if (type === 'categories') {
+                let html = '<div style="display:flex; flex-direction:column; gap:8px;">';
+                state.categories.forEach((c, i) => { html += `<div class="cat-list-item"><div class="flex items-center"><span class="cat-color-dot" style="background-color: ${c.color}"></span><span class="font-medium text-sm">${c.name}</span></div><button onclick="removeCategory(${i})" style="color: var(--text-muted); font-size: 0.7rem;">ELIMINAR</button></div>`; });
+                html += `</div><div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border-color);"><label class="text-xs font-bold uppercase tracking-widest" style="color: var(--text-muted); display: block; margin-bottom: 8px;">Nueva Categoría</label><div class="flex gap-2 items-center relative"><div class="color-picker-wrapper"><input type="color" id="newCatColorInput" value="#10b981"></div><input id="newCatInput" placeholder="Ej: Deportes..." style="flex:1; background: var(--bg-surface); padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); outline: none;"><button onclick="addCategory()" class="primary-btn" style="padding: 0 12px; height: 38px;">+</button></div></div>`;
+                openGenericModal('Gestionar Categorías', html);
+            } 
+            else if (type === 'archive') { /* ... */ } 
+            else if (type === 'backup') { openGenericModal('Backup', `<button onclick="downloadData()" class="primary-btn" style="margin-bottom:12px;">Descargar Backup</button><input type="file" onchange="uploadData(this)" style="display:block; width:100%; font-size:0.8rem; color:var(--text-muted);">`); }
+        }
+        function addCategory() { const i = document.getElementById('newCatInput'), cIn = document.getElementById('newCatColorInput'); if(i.value.trim()){ state.categories.push({id:Date.now(), name:i.value.trim(), color: cIn.value, subcategories:[]}); saveData(); openSubMenu('categories'); } }
+        function removeCategory(i) { closeGenericModal(); const cat = state.categories[i]; showConfirm('¿Eliminar esta categoría?', () => { state.categories.splice(i,1); if(cat) state.habits = state.habits.filter(h => h.category.id != cat.id); saveData(); showToast('Categoría eliminada'); openSubMenu('categories'); renderCalendar(); }); }
+        
+        window.toggleNewHabit = function(show) { const el = document.getElementById('newHabitModal'); if(show) { selectedCategory = state.categories[0]; selectedSubcat = ""; if(state.categories.length === 0) toggleInlineCreator(true); else { toggleInlineCreator(false); renderCategoryChips(); } document.getElementById('habitNameInput').value = ""; document.getElementById('manualSubcatInput').value = ""; el.classList.remove('hidden'); setTimeout(()=>el.classList.add('active'),10); setTimeout(() => document.getElementById('habitNameInput').focus(), 100); } else { el.classList.remove('active'); setTimeout(()=>el.classList.add('hidden'),200); } }
+        function renderCategoryChips() { const c = document.getElementById('categoryChips'); c.innerHTML=''; state.categories.forEach(cat => { const d = document.createElement('div'); d.className = `chip ${selectedCategory.id===cat.id?'selected':''}`; d.innerText = cat.name; d.onclick = () => { selectedCategory = cat; selectedSubcat = ""; renderCategoryChips(); }; c.appendChild(d); }); renderSubcatChips(); }
+        function renderSubcatChips() { const s = document.getElementById('subcatSection'), c = document.getElementById('subcatChips'); c.innerHTML=''; s.classList.remove('hidden'); if(selectedCategory.subcategories && selectedCategory.subcategories.length > 0) { selectedCategory.subcategories.forEach(sub => { const d = document.createElement('div'); d.className = `chip ${selectedSubcat===sub?'selected':''}`; d.innerText = sub; d.onclick = () => { selectedSubcat = (selectedSubcat===sub)?"":sub; renderSubcatChips(); }; c.appendChild(d); }); } else { c.innerHTML = '<span class="text-xs text-muted">Sin subcategorías guardadas.</span>'; } }
+        function createHabit() { const n = document.getElementById('habitNameInput').value.trim(); const m = document.getElementById('manualSubcatInput').value.trim(); let finalSub = selectedSubcat || m; if(!n) return showToast('Falta el nombre'); if(!selectedCategory) return showToast('Elige categoría'); if(finalSub && !selectedCategory.subcategories.includes(finalSub)) { selectedCategory.subcategories.push(finalSub); } state.habits.push({ id:Date.now(), name:n, category:selectedCategory, subcategory:finalSub, history:{}, archived:false, created:new Date().toISOString() }); saveData(); window.toggleNewHabit(false); renderCalendar(); showToast('Hábito creado'); }
+        function toggleInlineCreator(show) { const chipC = document.getElementById('categoryChips'), creator = document.getElementById('inlineCategoryCreator'); if(show) { chipC.classList.add('hidden'); creator.classList.remove('hidden'); creator.classList.add('flex'); } else { chipC.classList.remove('hidden'); creator.classList.add('hidden'); creator.classList.remove('flex'); } }
+        function createInlineCategory() { const i = document.getElementById('inlineCatInput'), c = document.getElementById('inlineCatColor'); if(i.value.trim()){ const nc={id:Date.now(), name:i.value.trim(), color:c.value, subcategories:[]}; state.categories.push(nc); selectedCategory=nc; saveData(); renderCategoryChips(); toggleInlineCreator(false); } }
+
+        function openGenericModal(t, c) { document.getElementById('gModalTitle').innerText=t; document.getElementById('gModalBody').innerHTML=c; const el=document.getElementById('genericModal'); el.classList.remove('hidden'); setTimeout(()=>el.classList.add('active'),10); }
+        function closeGenericModal() { const el=document.getElementById('genericModal'); el.classList.remove('active'); setTimeout(()=>el.classList.add('hidden'),200); }
+        function showConfirm(m, cb) { document.getElementById('confirmMessage').innerText=m; confirmCallback=cb; const el=document.getElementById('confirmModal'); el.classList.remove('hidden'); setTimeout(()=>el.classList.add('active'),10); }
+        function closeConfirm() { const el=document.getElementById('confirmModal'); el.classList.remove('active'); setTimeout(()=>el.classList.add('hidden'),200); confirmCallback=null; }
+        function showToast(m) { const t=document.createElement('div'); t.className='toast'; t.innerText=m; document.getElementById('toast-container').appendChild(t); setTimeout(()=>t.remove(),3000); }
+        function editQuote() { openGenericModal('Frase', `<textarea id="qIn" class="clean-input">${state.settings.dailyNote||""}</textarea><button onclick="saveQ()" class="primary-btn">Guardar</button>`); }
+        function saveQ() { state.settings.dailyNote = document.getElementById('qIn').value; saveData(); renderQuote(); closeGenericModal(); }
+        function renderQuote() { document.getElementById('quoteDisplay').innerText = state.settings.dailyNote || "Haz clic para escribir una frase..."; }
+        function openHabitOptions(id) { const h = state.habits.find(x => x.id === id); openGenericModal(h.name, `<button onclick="deleteHabit(${id})" class="option-btn" style="color:var(--danger)">🗑️ Eliminar</button>`); }
+        function deleteHabit(id) { closeGenericModal(); state.habits=state.habits.filter(h=>h.id!==id); saveData(); renderCalendar(); showToast('Eliminado'); }
+        function resetData() { localStorage.clear(); location.reload(); }
+        function toggleDarkMode() { state.settings.darkMode=!state.settings.darkMode; applyTheme(); updateSwitches(); saveData(); }
         function unarchive(id) { state.habits.find(h=>h.id===id).archived=false; saveData(); renderCalendar(); closeGenericModal(); showToast('Recuperado'); }
-        function archiveHabit(id) { state.habits.find(h=>h.id===id).archived=true; saveData(); renderCalendar(); closeGenericModal(); showToast('Archivado'); }
-        function deleteHabit(id) { closeGenericModal(); showConfirm('¿Eliminar hábito permanentemente?', () => { state.habits = state.habits.filter(h=>h.id!==id); saveData(); renderCalendar(); showToast('Eliminado'); }); }
-        
-        function openGenericModal(t, c) { document.getElementById('gModalTitle').innerText = t; document.getElementById('gModalBody').innerHTML = c; const el = document.getElementById('genericModal'); el.classList.remove('hidden'); setTimeout(() => el.classList.add('active'), 10); }
-        function closeGenericModal() { const el = document.getElementById('genericModal'); el.classList.remove('active'); setTimeout(() => el.classList.add('hidden'), 200); }
-        
-        function showToast(msg) { const t=document.createElement('div'); t.className='toast'; t.innerText=msg; document.getElementById('toast-container').appendChild(t); setTimeout(()=>t.remove(), 3000); }
-        function toggleDarkMode() { state.settings.darkMode = !state.settings.darkMode; if(state.settings.darkMode) document.documentElement.classList.add('dark'); else document.documentElement.classList.remove('dark'); updateSwitches(); saveData(); }
-        
-        function resetData() { window.toggleMenu(false); showConfirm('¿Borrar TODOS los datos?', () => { localStorage.removeItem('habitTrackerV5'); localStorage.removeItem('habitTrackerV4_1'); location.reload(); }); }
-        
         function downloadData() { const a=document.createElement('a'); a.href="data:text/json;charset=utf-8,"+encodeURIComponent(JSON.stringify(state)); a.download="habit_tracker_backup.json"; a.click(); }
         function uploadData(i) { const r=new FileReader(); r.onload=e=>{ try{state=JSON.parse(e.target.result);saveData();location.reload();}catch(x){showToast('Error archivo');}}; r.readAsText(i.files[0]); }
         function playSound() { try { const c=new(window.AudioContext||window.webkitAudioContext); const o=c.createOscillator();const g=c.createGain(); o.connect(g);g.connect(c.destination); o.frequency.value=800; g.gain.setValueAtTime(0.05,c.currentTime); g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+0.05); o.start();o.stop(c.currentTime+0.05); } catch(e){} }
-
-        // --- PROGRESO ANUAL ---
-        let statsYear = new Date().getFullYear();
-        function openAnnualProgress() { window.toggleMenu(false); renderAnnualList(); }
-        function renderAnnualList() {
-            const habits = state.habits.filter(h => !h.archived);
-            let html = `<div class="flex justify-between items-center mb-4"><button onclick="changeStatsYear(-1)" class="btn-icon">&lt;</button><span class="font-bold text-lg">${statsYear}</span><button onclick="changeStatsYear(1)" class="btn-icon">&gt;</button></div><div style="max-height: 50vh; overflow-y: auto;">`;
-            if (habits.length === 0) { html += `<p class="text-sm text-muted text-center py-4">No hay hábitos activos.</p>`; } else {
-                habits.forEach(h => {
-                    const stats = calculateYearStats(h, statsYear);
-                    html += `<div onclick="renderHabitHeatmap(${h.id})" class="option-btn" style="flex-direction:column; align-items:flex-start; gap:8px;"><div class="flex justify-between w-full items-center"><div class="flex items-center gap-2"><div class="cat-color-dot" style="background-color: ${h.category.color}"></div><span class="font-bold text-sm">${h.name}</span></div><span class="text-xs font-bold" style="color: var(--text-muted);">${stats.percentage}%</span></div><div style="width: 100%; height: 6px; background: var(--bg-body); border-radius: 99px; overflow: hidden; border:1px solid var(--border-color);"><div style="width: ${stats.percentage}%; height: 100%; background-color: ${h.category.color}; transition: width 0.5s;"></div></div></div>`;
-                });
-            }
-            html += `</div>`; openGenericModal('Progreso Anual', html);
-        }
-        function renderHabitHeatmap(habitId) {
-            const h = state.habits.find(x => x.id === habitId); if(!h) return;
-            const daysInYear = isLeapYear(statsYear) ? 366 : 365; const startDate = new Date(statsYear, 0, 1);
-            let html = `<button onclick="renderAnnualList()" class="option-btn mb-4" style="padding: 8px 0; background: transparent; border:none;"><span style="color: var(--text-muted);">← Volver a la lista</span></button><div class="flex items-center gap-2 mb-4"><div class="cat-color-dot" style="width: 16px; height: 16px; background-color: ${h.category.color}"></div><h3 class="font-bold text-lg">${h.name} <span style="opacity:0.5">(${statsYear})</span></h3></div><div style="display: flex; flex-wrap: wrap; gap: 2px; justify-content: flex-start; margin-top: 16px;">`;
-            for (let i = 0; i < daysInYear; i++) {
-                const d = new Date(startDate); d.setDate(d.getDate() + i); const iso = d.toISOString().split('T')[0]; const status = h.history[iso];
-                let style = ''; let title = `${d.toLocaleDateString('es-ES', {day:'numeric', month:'short'})}: `;
-                if (status === 'done') { style = `background-color: ${h.category.color};`; title += 'Completado'; } else if (status === 'fail') { style = `background-color: var(--danger); opacity: 0.5;`; title += 'Fallado'; } else if (status === 'skip') { style = `background-color: ${h.category.color}; opacity: 0.5;`; title += 'Omitido'; } else { style = `background-color: var(--bg-surface-hover);`; title += 'Sin registro'; }
-                html += `<div style="width:10px; height:10px; border-radius:2px; ${style}" title="${title}"></div>`;
-            }
-            html += `</div>`; openGenericModal(h.name, html);
-        }
-        function changeStatsYear(delta) { statsYear += delta; renderAnnualList(); }
-        function isLeapYear(year) { return (year % 4 === 0 && year % 100 !== 0) || (year % 400 === 0); }
-        function calculateYearStats(habit, year) {
-            let done = 0; const days = isLeapYear(year) ? 366 : 365; const start = new Date(year, 0, 1);
-            for (let i = 0; i < days; i++) {
-                const d = new Date(start); d.setDate(d.getDate() + i); const iso = d.toISOString().split('T')[0]; const s = habit.history[iso];
-                if (s === 'done' || s === 'skip') done++;
-            }
-            return { percentage: Math.round((done / days) * 100) };
-        }
-
-        // --- SIMPLE CANVAS CONFETTI ---
-        function triggerConfetti() {
-            const canvas = document.getElementById('confettiCanvas'); const ctx = canvas.getContext('2d');
-            canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-            const particles = []; const colors = ['#ec4899', '#8b5cf6', '#3b82f6', '#fbbf24', '#10b981'];
-            for (let i = 0; i < 100; i++) {
-                particles.push({
-                    x: canvas.width / 2, y: canvas.height / 2, w: Math.random() * 8 + 4, h: Math.random() * 4 + 4,
-                    vx: (Math.random() - 0.5) * 15, vy: (Math.random() - 0.5) * 15, color: colors[Math.floor(Math.random() * colors.length)],
-                    angle: Math.random() * 360, life: 80
-                });
-            }
-            function animate() {
-                ctx.clearRect(0, 0, canvas.width, canvas.height); let active = false;
-                particles.forEach(p => {
-                    if (p.life > 0) {
-                        active = true; p.x += p.vx; p.y += p.vy; p.vy += 0.5; p.life--;
-                        ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.angle); ctx.fillStyle = p.color; ctx.fillRect(-p.w/2, -p.h/2, p.w, p.h); ctx.restore();
-                    }
-                });
-                if (active) requestAnimationFrame(animate);
-            }
-            animate();
-        }
+        function triggerConfetti() { const c=document.getElementById('confettiCanvas'); const x=c.getContext('2d'); c.width=window.innerWidth; c.height=window.innerHeight; const p=[]; for(let i=0;i<40;i++) p.push({x:Math.random()*c.width, y:-20, vx:(Math.random()-0.5)*5, vy:Math.random()*5+2, c:'#fbbf24', l:100}); function a(){x.clearRect(0,0,c.width,c.height); p.forEach(e=>{if(e.l>0){e.x+=e.vx;e.y+=e.vy;e.l--;x.fillStyle=e.c;x.fillRect(e.x,e.y,6,6);}}); requestAnimationFrame(a);} a(); }
 
         init();
     </script>
