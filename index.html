@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Habit Tracker</title>
+    <title>Habit Tracker v7.2 Fixed</title>
     <style>
         /* --- VARIABLES --- */
         :root {
@@ -136,13 +136,14 @@
         .row-structure { display: flex; width: 100%; min-width: max-content; }
 
         .sticky-col-left {
-            position: sticky; left: 0; z-index: 20;
-            background-color: var(--bg-body);
+            position: sticky; left: 0; z-index: 40; /* FIX: Z-index mayor */
+            background-color: var(--bg-body); /* FIX: Color solido para no ver a través */
             border-right: 1px solid var(--border-color);
             width: 220px; flex-shrink: 0;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.05); /* Sombra para separar visualmente al hacer scroll */
         }
         .sticky-col-right {
-            position: sticky; right: 0; z-index: 20;
+            position: sticky; right: 0; z-index: 40;
             background-color: var(--bg-body);
             border-left: 1px solid var(--border-color);
             width: 50px; flex-shrink: 0;
@@ -180,10 +181,9 @@
         .cell-btn:active { transform: scale(0.9); }
         .cell-btn.today-border { border-bottom: 2px solid var(--text-main); }
 
-        /* FIX VISIBILIDAD DE LOS GUIONES EN DARK MODE */
         .state-fail { color: #ef4444; }
         .state-skip { background-color: var(--bg-surface); color: var(--text-muted); font-weight: bold; }
-        html.dark .state-skip { background-color: #1a1a1a; color: #888888; } /* Gris más claro para que se vea */
+        html.dark .state-skip { background-color: #1a1a1a; color: #888888; }
 
         /* --- CATEGORY & ROWS --- */
         .category-group-header {
@@ -196,15 +196,24 @@
             font-size: 0.7rem; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase;
             color: var(--text-muted); display: flex; align-items: center; justify-content: space-between;
             background-color: var(--bg-surface); border-right: 1px solid var(--border-color);
-            position: sticky; left: 0; z-index: 25;
+            position: sticky; left: 0; z-index: 45; /* FIX: Mayor que los hábitos */
+            box-shadow: 2px 0 5px rgba(0,0,0,0.05);
         }
         .cat-info { display: flex; align-items: center; gap: 8px; cursor: pointer; flex: 1; }
         .cat-info:hover { color: var(--text-main); }
-        .menu-btn-shared { opacity: 0; padding: 2px 6px; border-radius: 4px; transition: all 0.2s; font-size: 1.1em; cursor: pointer; color: var(--text-muted); }
-        .menu-btn-shared:hover { background-color: var(--bg-surface-hover); color: var(--text-main); }
-        .cat-header-sticky:hover .menu-btn-shared { opacity: 1; }
-        .cat-header-fill { flex: 1; background-color: var(--bg-surface); }
         
+        /* FIX: Botones de menú siempre visibles pero sutiles */
+        .menu-btn-shared { 
+            opacity: 1; 
+            color: var(--border-color); 
+            padding: 2px 6px; border-radius: 4px; transition: all 0.2s; font-size: 1.1em; cursor: pointer; 
+        }
+        html.dark .menu-btn-shared { color: #333; }
+        .menu-btn-shared:hover, .cat-header-sticky:hover .menu-btn-shared, .subcat-label:hover .menu-btn-shared { 
+            background-color: var(--bg-surface-hover); color: var(--text-main); 
+        }
+
+        .cat-header-fill { flex: 1; background-color: var(--bg-surface); }
         .cat-status-dot { width: 8px; height: 8px; border-radius: 50%; margin-left: 8px; flex-shrink: 0; transition: background-color 0.3s, box-shadow 0.3s; }
 
         /* --- SUBCATEGORY ROW --- */
@@ -216,14 +225,14 @@
         .subcategory-row.drag-over { background-color: var(--bg-surface-hover); }
         
         .subcat-label {
-            width: 220px; position: sticky; left: 0; z-index: 22; padding: 4px 12px;
+            width: 220px; position: sticky; left: 0; z-index: 42; padding: 4px 12px;
             font-size: 0.65rem; font-weight: 700; text-transform: uppercase;
             color: var(--text-muted); opacity: 0.9; letter-spacing: 0.05em;
             background-color: var(--bg-surface); border-right: 1px solid var(--border-color);
             display: flex; align-items: center; justify-content: space-between;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.05);
         }
         .subcat-click-area { display: flex; align-items: center; gap: 6px; cursor: pointer; flex: 1; height: 100%; }
-        .subcat-label:hover .menu-btn-shared { opacity: 1; }
         .subcat-line { flex: 1; opacity: 0.1; background-image: linear-gradient(90deg, var(--text-muted) 30%, transparent 0%); background-size: 6px 1px; background-repeat: repeat-x; background-position: center; }
 
         /* ROWS */
@@ -283,7 +292,7 @@
         <button onclick="window.toggleMenu(true)" class="btn-icon">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
         </button>
-        <h1 class="font-bold text-sm tracking-widest uppercase">Habit Tracker v7.1</h1>
+        <h1 class="font-bold text-sm tracking-widest uppercase">Habit Tracker v7.2</h1>
         <button onclick="window.toggleNewHabit(true)" class="btn-new"><span>+</span> <span>Nuevo</span></button>
     </header>
 
@@ -316,12 +325,12 @@
                 <div class="menu-row" onclick="openSubMenu('archive')"><span>Archivo</span><span>›</span></div>
                 <div class="menu-row" onclick="openSubMenu('backup')"><span>Backup</span><span>›</span></div>
             </div>
-            <div class="danger-zone"><button onclick="resetData()" class="delete-btn">🗑️ Eliminar todo</button></div>
+            <div class="danger-zone"><button onclick="resetData()" class="delete-btn" style="color:var(--danger); font-weight:bold; margin-top:20px; text-align:left; width:100%;">🗑️ Eliminar todo</button></div>
         </div>
     </div>
 
     <div id="genericModal" onclick="closeGenericModal()" class="hidden"><div id="gModalContent" onclick="event.stopPropagation()" class="modal-card"><button onclick="closeGenericModal()" class="absolute" style="top:16px; right:16px; color:var(--text-muted);">✕</button><h3 id="gModalTitle" class="font-bold text-lg mb-4">Título</h3><div id="gModalBody"></div></div></div>
-    <div id="confirmModal" onclick="closeConfirm()" class="hidden"><div class="modal-card" onclick="event.stopPropagation()"><h3 class="font-bold text-lg mb-2">¿Estás seguro?</h3><div class="flex gap-2"><button onclick="closeConfirm()" class="secondary-btn">Cancelar</button><button id="btnConfirmAction" class="primary-btn" style="background-color:var(--danger);">Confirmar</button></div></div></div>
+    <div id="confirmModal" onclick="closeConfirm()" class="hidden"><div class="modal-card" onclick="event.stopPropagation()"><h3 id="confirmMessage" class="font-bold text-lg mb-2">¿Estás seguro?</h3><div class="flex gap-2"><button onclick="closeConfirm()" class="secondary-btn">Cancelar</button><button id="btnConfirmAction" class="primary-btn" style="background-color:var(--danger);">Confirmar</button></div></div></div>
     
     <div id="newHabitModal" onclick="window.toggleNewHabit(false)" class="hidden">
         <div onclick="event.stopPropagation()" class="modal-card">
@@ -426,7 +435,6 @@
 
                 sortedKeys.forEach(subKey => {
                     if(subKey !== "") {
-                        // --- LOGICA DE SEMÁFORO PARA SUBCATEGORÍAS ---
                         let subDotColor = null;
                         const subHabits = grouped[subKey] || [];
                         if (subHabits.length > 0) {
@@ -440,7 +448,6 @@
                         const subArrow = isSubCollapsed ? '►' : '▼';
                         const subRow = document.createElement('div'); subRow.className = 'subcategory-row';
                         subRow.ondragover = (e) => allowDrop(e); subRow.ondragleave = (e) => handleDragLeave(e); subRow.ondrop = (e) => dropOnSubcat(e, cat.id, subKey);
-                        // Añadido subDotHTML y ajuste de layout
                         subRow.innerHTML = `<div class="subcat-label" style="border-left:4px solid ${cat.color};"><div class="subcat-click-area" onclick="toggleSubCat('${cat.id}', '${subKey}')"><span style="font-size:0.6rem;">${subArrow}</span><span>${subKey}</span>${subDotHTML}</div><button class="menu-btn-shared" onclick="openSubcatMenu('${cat.id}', '${subKey}')">⋮</button></div><div class="subcat-line"></div>`;
                         grid.appendChild(subRow);
                         if(isSubCollapsed) return;
@@ -466,7 +473,7 @@
                             let style = '', txt = '';
                             if(stat==='done') { style=`color:${cat.color}; font-weight:bold;`; txt='✓'; if(state.settings.cellStyle==='solid') { style=`background:${cat.color}; color:#fff;`; } }
                             else if(stat==='fail') { style='color:var(--danger);'; txt='✗'; }
-                            else if(stat==='skip') { cls+='state-skip'; txt='−'; } // FIX: Guión visible
+                            else if(stat==='skip') { cls+='state-skip'; txt='−'; }
                             cells += `<div onclick="toggleDay(${h.id}, '${loopIso}')" class="${cls}" style="${style}">${txt}</div>`;
                         }
                         cells += `</div><div class="sticky-col-right grid-header-cell">${Math.round((checks/daysInMonth)*100)}%</div>`;
@@ -499,14 +506,50 @@
         }
         function changeMonth(d) { state.viewDate.setMonth(state.viewDate.getMonth()+d); renderCalendar(); }
 
-        /* --- MENUS --- */
+        /* --- MENUS & RENAMING --- */
         function openSubcatMenu(catId, subName) {
             closeGenericModal();
             setTimeout(() => {
-                const html = `<div class="text-sm text-muted mb-4">Subcategoría: <b>${subName}</b></div><button onclick="startMoveSubcat('${catId}', '${subName}')" class="option-btn">📂 Mover a otra categoría</button><button onclick="deleteSubcatDirect('${catId}', '${subName}')" class="option-btn" style="color:var(--danger)">🗑️ Eliminar Subcategoría</button>`;
+                const html = `
+                    <div class="text-sm text-muted mb-4">Subcategoría: <b>${subName}</b></div>
+                    <button onclick="renameSubcat('${catId}', '${subName}')" class="option-btn">✏️ Renombrar</button>
+                    <button onclick="startMoveSubcat('${catId}', '${subName}')" class="option-btn">📂 Mover a otra categoría</button>
+                    <button onclick="deleteSubcatDirect('${catId}', '${subName}')" class="option-btn" style="color:var(--danger)">🗑️ Eliminar Subcategoría</button>
+                `;
                 openGenericModal('Opciones', html);
             }, 300);
         }
+        
+        /* RENOMBRAR SUBCATEGORÍA */
+        function renameSubcat(catId, oldName) {
+            closeGenericModal();
+            setTimeout(() => {
+                const html = `
+                    <input id="renameSubInput" class="clean-input" value="${oldName}" placeholder="Nuevo nombre...">
+                    <button onclick="processRenameSubcat('${catId}', '${oldName}')" class="primary-btn">Guardar</button>
+                `;
+                openGenericModal('Renombrar Subcategoría', html);
+            }, 300);
+        }
+        function processRenameSubcat(catId, oldName) {
+            const newName = document.getElementById('renameSubInput').value.trim();
+            if(!newName || newName === oldName) { closeGenericModal(); return; }
+            const cat = state.categories.find(c => c.id == catId);
+            if(cat) {
+                // Actualizar lista de subcategorías
+                const idx = cat.subcategories.indexOf(oldName);
+                if(idx !== -1) cat.subcategories[idx] = newName;
+                // Actualizar hábitos
+                state.habits.forEach(h => {
+                    if(h.category.id == catId && h.subcategory === oldName) {
+                        h.subcategory = newName;
+                    }
+                });
+                saveData(); renderCalendar(); closeGenericModal(); showToast('Renombrado');
+            }
+        }
+
+        /* BORRAR SUBCATEGORÍA */
         function deleteSubcatDirect(catId, subName) {
             closeGenericModal();
             showConfirm('¿Eliminar etiqueta? Los hábitos no se borrarán.', () => {
@@ -540,10 +583,41 @@
                 saveData(); renderCalendar(); closeGenericModal(); showToast(`Movida a ${newCat.name}`);
             }
         }
+
+        /* MENU CATEGORIA */
         function openCategoryMenu(id) {
             const cat = state.categories.find(c => c.id == id);
-            openGenericModal(cat.name, `<button onclick="promptSub('${id}')" class="option-btn">➕ Nueva Subcategoría</button><button onclick="manageSubcats('${id}')" class="option-btn">📂 Gestionar Subcategorías</button><div style="height:1px; background:var(--border-color); margin:8px 0;"></div><button onclick="deleteCat('${id}')" class="option-btn" style="color:var(--danger)">🗑️ Eliminar Categoría</button>`);
+            openGenericModal(cat.name, `
+                <button onclick="renameCategory('${id}')" class="option-btn">✏️ Renombrar Categoría</button>
+                <button onclick="promptSub('${id}')" class="option-btn">➕ Nueva Subcategoría</button>
+                <button onclick="manageSubcats('${id}')" class="option-btn">📂 Gestionar Subcategorías</button>
+                <div style="height:1px; background:var(--border-color); margin:8px 0;"></div>
+                <button onclick="deleteCat('${id}')" class="option-btn" style="color:var(--danger)">🗑️ Eliminar Categoría</button>
+            `);
         }
+        
+        /* RENOMBRAR CATEGORÍA */
+        function renameCategory(id) {
+            closeGenericModal();
+            const cat = state.categories.find(c => c.id == id);
+            setTimeout(() => {
+                openGenericModal('Renombrar Categoría', `
+                    <input id="renameCatInput" class="clean-input" value="${cat.name}">
+                    <button onclick="saveRenamedCategory('${id}')" class="primary-btn">Guardar</button>
+                `);
+            }, 300);
+        }
+        function saveRenamedCategory(id) {
+            const val = document.getElementById('renameCatInput').value.trim();
+            if(val) {
+                const cat = state.categories.find(c => c.id == id);
+                cat.name = val;
+                // Actualizar referencias en hábitos
+                state.habits.forEach(h => { if(h.category.id == id) h.category.name = val; });
+                saveData(); renderCalendar(); closeGenericModal();
+            }
+        }
+
         function promptSub(id) {
             closeGenericModal(); setTimeout(()=>{
                 openGenericModal('Nueva Subcategoría', `<input id="subIn" class="clean-input" placeholder="Nombre..." onkeyup="if(event.key==='Enter') saveSub('${id}')"><button onclick="saveSub('${id}')" class="primary-btn">Guardar</button>`);
@@ -621,7 +695,34 @@
         function editQuote() { openGenericModal('Frase', `<textarea id="qIn" class="clean-input">${state.settings.dailyNote||""}</textarea><button onclick="saveQ()" class="primary-btn">Guardar</button>`); }
         function saveQ() { state.settings.dailyNote = document.getElementById('qIn').value; saveData(); renderQuote(); closeGenericModal(); }
         function renderQuote() { document.getElementById('quoteDisplay').innerText = state.settings.dailyNote || "Haz clic para escribir una frase..."; }
-        function openHabitOptions(id) { const h = state.habits.find(x => x.id === id); openGenericModal(h.name, `<button onclick="deleteHabit(${id})" class="option-btn" style="color:var(--danger)">🗑️ Eliminar</button>`); }
+        
+        /* HABIT OPTIONS & RENAMING */
+        function openHabitOptions(id) { 
+            const h = state.habits.find(x => x.id === id); 
+            openGenericModal(h.name, `
+                <button onclick="renameHabit(${id})" class="option-btn">✏️ Renombrar</button>
+                <button onclick="deleteHabit(${id})" class="option-btn" style="color:var(--danger)">🗑️ Eliminar</button>
+            `); 
+        }
+        function renameHabit(id) {
+            closeGenericModal();
+            const h = state.habits.find(x => x.id === id);
+            setTimeout(() => {
+                openGenericModal('Renombrar Hábito', `
+                    <input id="renameHabitInput" class="clean-input" value="${h.name}">
+                    <button onclick="saveRenamedHabit(${id})" class="primary-btn">Guardar</button>
+                `);
+            }, 300);
+        }
+        function saveRenamedHabit(id) {
+            const val = document.getElementById('renameHabitInput').value.trim();
+            if(val) {
+                const h = state.habits.find(x => x.id === id);
+                h.name = val;
+                saveData(); renderCalendar(); closeGenericModal();
+            }
+        }
+
         function deleteHabit(id) { closeGenericModal(); state.habits=state.habits.filter(h=>h.id!==id); saveData(); renderCalendar(); showToast('Eliminado'); }
         function resetData() { localStorage.clear(); location.reload(); }
         function toggleDarkMode() { state.settings.darkMode=!state.settings.darkMode; applyTheme(); updateSwitches(); saveData(); }
