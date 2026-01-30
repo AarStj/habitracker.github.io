@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Habit Tracker v7.2 Fixed</title>
+    <title>Habit Tracker</title>
     <style>
         /* --- VARIABLES --- */
         :root {
@@ -122,7 +122,7 @@
             background-color: var(--bg-body);
         }
 
-        /* --- QUOTE SECTION --- */
+        /* --- QUOTE --- */
         #quoteContainer {
             flex: none; height: 140px; 
             border-top: 1px solid var(--border-color); background-color: var(--bg-surface);
@@ -132,18 +132,17 @@
         #quoteContainer:hover { background-color: var(--bg-surface-hover); }
         #quoteDisplay { width: 100%; white-space: pre-wrap; line-height: 1.3; font-weight: 500; color: var(--text-main); opacity: 0.9; }
 
-        /* --- GRID STYLES --- */
+        /* --- GRID --- */
         .row-structure { display: flex; width: 100%; min-width: max-content; }
 
         .sticky-col-left {
-            position: sticky; left: 0; z-index: 40; /* FIX: Z-index mayor */
-            background-color: var(--bg-body); /* FIX: Color solido para no ver a través */
+            position: sticky; left: 0; z-index: 20;
+            background-color: var(--bg-body);
             border-right: 1px solid var(--border-color);
             width: 220px; flex-shrink: 0;
-            box-shadow: 2px 0 5px rgba(0,0,0,0.05); /* Sombra para separar visualmente al hacer scroll */
         }
         .sticky-col-right {
-            position: sticky; right: 0; z-index: 40;
+            position: sticky; right: 0; z-index: 20;
             background-color: var(--bg-body);
             border-left: 1px solid var(--border-color);
             width: 50px; flex-shrink: 0;
@@ -177,13 +176,13 @@
             display: flex; align-items: center; justify-content: center;
             cursor: pointer; user-select: none; font-size: 0.9rem;
             position: relative;
+            transition: background-color 0.1s;
         }
-        .cell-btn:active { transform: scale(0.9); }
+        .cell-btn:active { transform: scale(0.95); }
         .cell-btn.today-border { border-bottom: 2px solid var(--text-main); }
-
-        .state-fail { color: #ef4444; }
+        
         .state-skip { background-color: var(--bg-surface); color: var(--text-muted); font-weight: bold; }
-        html.dark .state-skip { background-color: #1a1a1a; color: #888888; }
+        html.dark .state-skip { background-color: #1a1a1a; color: #888888; } 
 
         /* --- CATEGORY & ROWS --- */
         .category-group-header {
@@ -196,27 +195,18 @@
             font-size: 0.7rem; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase;
             color: var(--text-muted); display: flex; align-items: center; justify-content: space-between;
             background-color: var(--bg-surface); border-right: 1px solid var(--border-color);
-            position: sticky; left: 0; z-index: 45; /* FIX: Mayor que los hábitos */
-            box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+            position: sticky; left: 0; z-index: 25;
         }
         .cat-info { display: flex; align-items: center; gap: 8px; cursor: pointer; flex: 1; }
         .cat-info:hover { color: var(--text-main); }
-        
-        /* FIX: Botones de menú siempre visibles pero sutiles */
-        .menu-btn-shared { 
-            opacity: 1; 
-            color: var(--border-color); 
-            padding: 2px 6px; border-radius: 4px; transition: all 0.2s; font-size: 1.1em; cursor: pointer; 
-        }
-        html.dark .menu-btn-shared { color: #333; }
-        .menu-btn-shared:hover, .cat-header-sticky:hover .menu-btn-shared, .subcat-label:hover .menu-btn-shared { 
-            background-color: var(--bg-surface-hover); color: var(--text-main); 
-        }
-
+        .menu-btn-shared { opacity: 0; padding: 2px 6px; border-radius: 4px; transition: all 0.2s; font-size: 1.1em; cursor: pointer; color: var(--text-muted); }
+        .menu-btn-shared:hover { background-color: var(--bg-surface-hover); color: var(--text-main); }
+        .cat-header-sticky:hover .menu-btn-shared { opacity: 1; }
         .cat-header-fill { flex: 1; background-color: var(--bg-surface); }
+        
         .cat-status-dot { width: 8px; height: 8px; border-radius: 50%; margin-left: 8px; flex-shrink: 0; transition: background-color 0.3s, box-shadow 0.3s; }
 
-        /* --- SUBCATEGORY ROW --- */
+        /* --- SUBCATEGORY --- */
         .subcategory-row {
             display: flex; width: 100%; min-width: max-content;
             background-color: var(--bg-surface); border-bottom: 1px solid var(--border-color);
@@ -225,17 +215,17 @@
         .subcategory-row.drag-over { background-color: var(--bg-surface-hover); }
         
         .subcat-label {
-            width: 220px; position: sticky; left: 0; z-index: 42; padding: 4px 12px;
+            width: 220px; position: sticky; left: 0; z-index: 22; padding: 4px 12px;
             font-size: 0.65rem; font-weight: 700; text-transform: uppercase;
             color: var(--text-muted); opacity: 0.9; letter-spacing: 0.05em;
             background-color: var(--bg-surface); border-right: 1px solid var(--border-color);
             display: flex; align-items: center; justify-content: space-between;
-            box-shadow: 2px 0 5px rgba(0,0,0,0.05);
         }
         .subcat-click-area { display: flex; align-items: center; gap: 6px; cursor: pointer; flex: 1; height: 100%; }
+        .subcat-label:hover .menu-btn-shared { opacity: 1; }
         .subcat-line { flex: 1; opacity: 0.1; background-image: linear-gradient(90deg, var(--text-muted) 30%, transparent 0%); background-size: 6px 1px; background-repeat: repeat-x; background-position: center; }
 
-        /* ROWS */
+        /* --- HABIT ROW --- */
         .habit-row {
             min-height: 56px; border-bottom: 1px solid var(--border-color);
             background-color: var(--bg-body); transition: background-color 0.2s;
@@ -251,7 +241,7 @@
         .streak-badge { display: flex; align-items: center; gap: 2px; font-size: 0.7rem; font-weight: bold; color: var(--text-muted); margin-left: auto; margin-right: 6px; }
         .streak-badge.active { color: #f97316; }
 
-        /* --- MENÚ LATERAL --- */
+        /* --- MENUS --- */
         #menuOverlay { background-color: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 50; transition: opacity 0.3s; }
         #menuContent { position: fixed; top: 0; left: 0; height: 100%; width: 300px; background-color: var(--menu-bg); border-right: 1px solid var(--border-color); z-index: 51; transform: translateX(-100%); transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); box-shadow: 10px 0 40px rgba(0,0,0,0.2); display: flex; flex-direction: column; }
         #menuContent.open { transform: translateX(0); }
@@ -260,6 +250,10 @@
         .menu-section { margin-bottom: 32px; }
         .menu-section-label { font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); opacity: 0.7; margin-bottom: 12px; display: block; margin-left: 4px; }
         .menu-row { width: 100%; text-align: left; padding: 14px 4px; display: flex; justify-content: space-between; align-items: center; font-size: 0.95rem; font-weight: 500; color: var(--text-main); border-bottom: 1px solid var(--bg-surface-hover); cursor: pointer; }
+        
+        .cat-list-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid var(--bg-surface-hover); }
+        .cat-color-dot { width: 14px; height: 14px; border-radius: 50%; display: inline-block; margin-right: 10px; border: 1px solid var(--border-color); }
+        
         .switch-toggle { width: 40px; height: 22px; background-color: var(--bg-surface-hover); border-radius: 99px; position: relative; border: 1px solid var(--border-color); transition: background 0.3s, border-color 0.3s; cursor: pointer; }
         .switch-toggle.active { background-color: var(--text-main); border-color: var(--text-main); }
         .switch-toggle::after { content: ''; position: absolute; left: 2px; top: 2px; width: 16px; height: 16px; background-color: var(--text-muted); border-radius: 50%; transition: transform 0.3s, background-color 0.3s; box-shadow: 0 1px 2px rgba(0,0,0,0.2); }
@@ -273,8 +267,6 @@
         .primary-btn { width: 100%; padding: 14px; background-color: var(--primary); color: var(--on-primary); border-radius: 12px; font-weight: bold; font-size: 0.875rem; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
         .secondary-btn { width: 100%; padding: 14px; background-color: var(--bg-surface); color: var(--text-main); border-radius: 12px; font-weight: bold; font-size: 0.875rem; text-align: center; }
         .option-btn { width: 100%; padding: 14px; text-align: left; border-radius: 12px; margin-bottom: 8px; font-size: 0.9rem; font-weight: 500; display: flex; align-items: center; gap: 12px; background-color: var(--bg-surface); color: var(--text-main); border: 1px solid transparent; }
-        .chip { padding: 6px 12px; border-radius: 99px; font-size: 0.75rem; border: 1px solid var(--border-color); background: var(--bg-surface); cursor: pointer; color: var(--text-muted); transition: all 0.2s; }
-        .chip.selected { background-color: var(--primary); color: var(--on-primary); border-color: var(--primary); }
         #toast-container { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%); z-index: 100; pointer-events: none; }
         .toast { background-color: var(--toast-bg); color: var(--toast-text); padding: 10px 24px; border-radius: 99px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); font-size: 0.85rem; font-weight: 600; margin-top: 8px; animation: slideUp 0.3s forwards; }
         @keyframes slideUp { 0% { transform: translateY(20px); opacity: 0; } 100% { transform: translateY(0); opacity: 1; } }
@@ -282,6 +274,47 @@
         .color-picker-wrapper { width: 30px; height: 30px; border-radius: 50%; overflow: hidden; border: 2px solid var(--border-color); flex-shrink: 0; cursor: pointer; }
         input[type="color"] { width: 200%; height: 200%; transform: translate(-25%, -25%); border: none; cursor: pointer; padding: 0; }
         #confettiCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 150; }
+
+        /* --- MODAL (v7.5) --- */
+        .modern-modal-content {
+            background: var(--bg-body);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 32px;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            animation: scaleIn 0.2s ease-out;
+            position: relative;
+        }
+
+        .modal-header { margin-bottom: 8px; }
+        .modal-title { font-size: 1.5rem; font-weight: 800; letter-spacing: -0.02em; color: var(--text-main); margin-bottom: 4px; }
+        .modal-subtitle { font-size: 0.85rem; color: var(--text-muted); }
+
+        .input-group { position: relative; display: flex; flex-direction: column; gap: 8px; }
+        .input-label { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); display: flex; justify-content: space-between; align-items: center; }
+        .modern-input { background-color: var(--bg-surface); border: 2px solid transparent; border-radius: 12px; padding: 14px 16px; font-size: 1rem; color: var(--text-main); width: 100%; outline: none; transition: all 0.2s; }
+        .modern-input:focus { background-color: var(--bg-body); border-color: var(--primary); box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.1); }
+
+        .chips-scroll-area { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+
+        .chip-modern { padding: 8px 16px; border-radius: 12px; font-size: 0.8rem; font-weight: 600; background-color: var(--bg-surface); border: 1px solid var(--border-color); color: var(--text-muted); cursor: pointer; transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1); display: flex; align-items: center; gap: 6px; user-select: none; }
+        .chip-modern:hover { background-color: var(--bg-surface-hover); color: var(--text-main); transform: translateY(-1px); }
+        .chip-modern.active { background-color: var(--primary); color: var(--on-primary); border-color: var(--primary); box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+        .chip-dot { width: 8px; height: 8px; border-radius: 50%; background-color: currentColor; opacity: 0.7; }
+
+        .creator-box { display: flex; gap: 8px; align-items: center; background: var(--bg-surface-hover); padding: 6px; border-radius: 14px; animation: fadeIn 0.2s ease-out; }
+        .creator-btn-ok { background: var(--primary); color: var(--on-primary); border-radius: 10px; padding: 0 16px; height: 42px; font-weight: bold; font-size: 0.8rem; display: flex; align-items: center; transition: transform 0.1s; }
+        .creator-btn-ok:active { transform: scale(0.95); }
+
+        .mini-btn { font-size: 0.7rem; font-weight: 700; padding: 4px 8px; background: var(--bg-surface-hover); border-radius: 6px; color: var(--primary); cursor: pointer; }
+        .mini-btn:hover { background: var(--border-color); }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -292,7 +325,7 @@
         <button onclick="window.toggleMenu(true)" class="btn-icon">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
         </button>
-        <h1 class="font-bold text-sm tracking-widest uppercase">Habit Tracker v7.2</h1>
+        <h1 class="font-bold text-sm tracking-widest uppercase">Habit Tracker v7.9</h1>
         <button onclick="window.toggleNewHabit(true)" class="btn-new"><span>+</span> <span>Nuevo</span></button>
     </header>
 
@@ -320,27 +353,58 @@
                 <div class="menu-row" onclick="toggleDarkMode()"><span>🌗 Modo Oscuro</span><div id="toggleDark" class="switch-toggle"></div></div>
             </div>
             <div class="menu-section">
+                <label class="menu-section-label">Visual</label>
+                <div class="menu-row" onclick="toggleIconStyle()"><span>🔳 Estilo Casillas</span><div id="toggleIconStyle" class="switch-toggle"></div></div>
+            </div>
+            <div class="menu-section">
                 <label class="menu-section-label">Gestión</label>
                 <div class="menu-row" onclick="openSubMenu('categories')"><span>Categorías</span><span>›</span></div>
-                <div class="menu-row" onclick="openSubMenu('archive')"><span>Archivo</span><span>›</span></div>
                 <div class="menu-row" onclick="openSubMenu('backup')"><span>Backup</span><span>›</span></div>
             </div>
-            <div class="danger-zone"><button onclick="resetData()" class="delete-btn" style="color:var(--danger); font-weight:bold; margin-top:20px; text-align:left; width:100%;">🗑️ Eliminar todo</button></div>
+            <div class="danger-zone"><button onclick="resetData()" class="delete-btn" style="color:var(--danger); text-align:left; width:100%; padding:14px 4px; font-weight:bold;">🗑️ Eliminar todo</button></div>
         </div>
     </div>
 
     <div id="genericModal" onclick="closeGenericModal()" class="hidden"><div id="gModalContent" onclick="event.stopPropagation()" class="modal-card"><button onclick="closeGenericModal()" class="absolute" style="top:16px; right:16px; color:var(--text-muted);">✕</button><h3 id="gModalTitle" class="font-bold text-lg mb-4">Título</h3><div id="gModalBody"></div></div></div>
-    <div id="confirmModal" onclick="closeConfirm()" class="hidden"><div class="modal-card" onclick="event.stopPropagation()"><h3 id="confirmMessage" class="font-bold text-lg mb-2">¿Estás seguro?</h3><div class="flex gap-2"><button onclick="closeConfirm()" class="secondary-btn">Cancelar</button><button id="btnConfirmAction" class="primary-btn" style="background-color:var(--danger);">Confirmar</button></div></div></div>
+    <div id="confirmModal" onclick="closeConfirm()" class="hidden"><div class="modal-card" onclick="event.stopPropagation()"><h3 class="font-bold text-lg mb-2">¿Estás seguro?</h3><div class="flex gap-2"><button onclick="closeConfirm()" class="secondary-btn">Cancelar</button><button id="btnConfirmAction" class="primary-btn" style="background-color:var(--danger);">Confirmar</button></div></div></div>
     
     <div id="newHabitModal" onclick="window.toggleNewHabit(false)" class="hidden">
-        <div onclick="event.stopPropagation()" class="modal-card">
-            <h3 class="font-bold text-lg mb-6">Nuevo Hábito</h3>
-            <input type="text" id="habitNameInput" placeholder="Nombre..." class="clean-input" autocomplete="off">
-            <label class="text-xs font-bold uppercase tracking-widest mb-2 block" style="color: var(--text-muted);">Categoría</label>
-            <div id="categoryChips" style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px;"></div>
-            <div id="inlineCategoryCreator" class="hidden mb-4 flex gap-2 items-center"><div class="color-picker-wrapper"><input type="color" id="inlineCatColor" value="#3b82f6"></div><input id="inlineCatInput" placeholder="Categoría..." style="flex:1; background:var(--bg-surface); border:1px solid var(--border-color); border-radius:8px; padding:8px;"><button onclick="createInlineCategory()" class="primary-btn" style="width:auto; padding:8px 12px; font-size:0.75rem;">OK</button></div>
-            <div id="subcatSection" class="hidden"><label class="text-xs font-bold uppercase tracking-widest mb-2 block" style="color:var(--text-muted);">Subcategoría</label><div id="subcatChips" style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px;"></div><input type="text" id="manualSubcatInput" placeholder="O escribe una nueva..." class="clean-input" style="font-size:0.9rem; padding:8px; border:1px solid var(--border-color); border-radius:8px; margin-bottom:24px;"></div>
-            <button onclick="createHabit()" class="primary-btn">Crear</button>
+        <div onclick="event.stopPropagation()" class="modern-modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Nuevo Hábito</h3>
+                <p class="modal-subtitle">Define tu próximo objetivo diario</p>
+            </div>
+            <div class="input-group">
+                <input type="text" id="habitNameInput" placeholder="Ej: Leer 15 minutos..." class="modern-input" autocomplete="off">
+            </div>
+            <div class="input-group">
+                <div class="input-label">
+                    <span>Categoría</span>
+                    <button onclick="toggleCatCreator(true)" id="btnNewCat" class="mini-btn">+ NUEVA</button>
+                </div>
+                <div id="categoryChips" class="chips-scroll-area"></div>
+                <div id="catCreator" class="creator-box hidden">
+                    <div class="color-picker-wrapper" style="width:42px; height:42px; border-width:0;">
+                        <input type="color" id="newCatColor" value="#3b82f6">
+                    </div>
+                    <input id="newCatName" type="text" class="modern-input" style="padding: 10px; border:none; background:transparent;" placeholder="Nombre categoría...">
+                    <button onclick="confirmNewCategory()" class="creator-btn-ok">OK</button>
+                    <button onclick="toggleCatCreator(false)" style="padding:10px; opacity:0.5;">✕</button>
+                </div>
+            </div>
+            <div id="subcatSection" class="input-group hidden">
+                <div class="input-label">
+                    <span>Subcategoría (Opcional)</span>
+                    <button onclick="toggleSubcatCreator(true)" id="btnNewSub" class="mini-btn">+ NUEVA</button>
+                </div>
+                <div id="subcatChips" class="chips-scroll-area"></div>
+                <div id="subcatCreator" class="creator-box hidden">
+                    <input id="newSubName" type="text" class="modern-input" style="padding: 10px; border:none; background:transparent;" placeholder="Nombre subcategoría...">
+                    <button onclick="confirmNewSubcat()" class="creator-btn-ok">OK</button>
+                    <button onclick="toggleSubcatCreator(false)" style="padding:10px; opacity:0.5;">✕</button>
+                </div>
+            </div>
+            <button onclick="createHabit()" class="primary-btn" style="margin-top: 8px; font-size: 1rem; padding: 16px;">Crear Hábito</button>
         </div>
     </div>
 
@@ -348,8 +412,11 @@
 
     <script>
         const DEFAULT_CATEGORIES = [{ id: 'gen', name: 'General', color: '#9ca3af', subcategories: [] }];
-        let state = { habits: [], categories: JSON.parse(JSON.stringify(DEFAULT_CATEGORIES)), settings: { darkMode: true, collapsedCats: {}, collapsedSubCats: {}, clockSound: false, dailyNote: "" }, viewDate: new Date() };
+        let state = { habits: [], categories: JSON.parse(JSON.stringify(DEFAULT_CATEGORIES)), settings: { darkMode: true, collapsedCats: {}, collapsedSubCats: {}, clockSound: false, dailyNote: "", iconStyle: 'minimal' }, viewDate: new Date() };
         let selectedCategory = null; let selectedSubcat = ""; let confirmCallback = null; let clockInterval = null; let draggedHabitId = null;
+        
+        let selectionAnchor = null; // ANCLA MEJORADA
+
         const tickAudio = document.getElementById('tick-audio');
 
         function init() {
@@ -360,6 +427,7 @@
                     state = loaded; state.viewDate = new Date(state.viewDate || new Date());
                     if(state.categories) state.categories.forEach(c => { if(!c.subcategories) c.subcategories = []; });
                     if(!state.settings.collapsedSubCats) state.settings.collapsedSubCats = {};
+                    if(!state.settings.iconStyle) state.settings.iconStyle = 'minimal'; 
                 }
             } catch (e) {}
             applyTheme(); updateSwitches(); renderCalendar(); renderQuote();
@@ -370,8 +438,14 @@
 
         function saveData() { localStorage.setItem('habitTrackerV5', JSON.stringify(state)); }
         function applyTheme() { if (state.settings.darkMode) document.documentElement.classList.add('dark'); else document.documentElement.classList.remove('dark'); }
-        function updateSwitches() { const d = document.getElementById('toggleDark'), s = document.getElementById('toggleSound'); if(state.settings.darkMode) d.classList.add('active'); else d.classList.remove('active'); if(state.settings.clockSound) s.classList.add('active'); else s.classList.remove('active'); }
+        function updateSwitches() { 
+            const d = document.getElementById('toggleDark'), s = document.getElementById('toggleSound'), i = document.getElementById('toggleIconStyle'); 
+            if(state.settings.darkMode) d.classList.add('active'); else d.classList.remove('active'); 
+            if(state.settings.clockSound) s.classList.add('active'); else s.classList.remove('active'); 
+            if(state.settings.iconStyle === 'solid') i.classList.add('active'); else i.classList.remove('active');
+        }
         function toggleClockSound() { state.settings.clockSound = !state.settings.clockSound; saveData(); updateSwitches(); playClockAudio(state.settings.clockSound); }
+        function toggleIconStyle() { state.settings.iconStyle = (state.settings.iconStyle === 'solid') ? 'minimal' : 'solid'; saveData(); updateSwitches(); renderCalendar(); }
         function playClockAudio(play) { if(play) { tickAudio.currentTime=0; tickAudio.volume=0.3; tickAudio.play().catch(()=>{}); if(clockInterval) clearInterval(clockInterval); clockInterval = setInterval(()=>{ tickAudio.currentTime=0; tickAudio.play().catch(()=>{}); }, 1000); } else { if(clockInterval) clearInterval(clockInterval); clockInterval=null; tickAudio.pause(); } }
 
         /* --- DRAG DROP --- */
@@ -393,6 +467,7 @@
             const year = state.viewDate.getFullYear(), month = state.viewDate.getMonth();
             const daysInMonth = new Date(year, month + 1, 0).getDate();
             const n = new Date(); const todayISO = `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`;
+            const isSolid = state.settings.iconStyle === 'solid';
 
             let headerHTML = `<div class="row-structure"><div class="sticky-col-left grid-header-cell">Hábito</div><div class="days-container">`;
             for (let i = 1; i <= daysInMonth; i++) {
@@ -415,7 +490,7 @@
 
                 let dotColor = null;
                 if (catHabits.length > 0) {
-                    const allDone = catHabits.every(h => { const s = h.history[todayISO]; return s === 'done' || s === 'skip'; });
+                    const allDone = catHabits.every(h => { const s = h.history[todayISO]; return s === 'done' || s === 'skip' || s === 'fail'; });
                     dotColor = allDone ? 'var(--success)' : 'var(--danger)';
                 }
                 const isCollapsed = state.settings.collapsedCats[cat.id];
@@ -438,7 +513,7 @@
                         let subDotColor = null;
                         const subHabits = grouped[subKey] || [];
                         if (subHabits.length > 0) {
-                            const subAllDone = subHabits.every(h => { const s = h.history[todayISO]; return s === 'done' || s === 'skip'; });
+                            const subAllDone = subHabits.every(h => { const s = h.history[todayISO]; return s === 'done' || s === 'skip' || s === 'fail'; });
                             subDotColor = subAllDone ? 'var(--success)' : 'var(--danger)';
                         }
                         const subDotHTML = subDotColor ? `<div class="cat-status-dot" style="background:${subDotColor}; margin-right:auto; margin-left:8px;"></div>` : '';
@@ -448,6 +523,7 @@
                         const subArrow = isSubCollapsed ? '►' : '▼';
                         const subRow = document.createElement('div'); subRow.className = 'subcategory-row';
                         subRow.ondragover = (e) => allowDrop(e); subRow.ondragleave = (e) => handleDragLeave(e); subRow.ondrop = (e) => dropOnSubcat(e, cat.id, subKey);
+                        
                         subRow.innerHTML = `<div class="subcat-label" style="border-left:4px solid ${cat.color};"><div class="subcat-click-area" onclick="toggleSubCat('${cat.id}', '${subKey}')"><span style="font-size:0.6rem;">${subArrow}</span><span>${subKey}</span>${subDotHTML}</div><button class="menu-btn-shared" onclick="openSubcatMenu('${cat.id}', '${subKey}')">⋮</button></div><div class="subcat-line"></div>`;
                         grid.appendChild(subRow);
                         if(isSubCollapsed) return;
@@ -471,10 +547,21 @@
                             const dObj = new Date(year, month, i);
                             let cls = 'cell-btn ' + (dObj.getDay()===0?'week-separator ':'') + (isToday?'today-border':'');
                             let style = '', txt = '';
-                            if(stat==='done') { style=`color:${cat.color}; font-weight:bold;`; txt='✓'; if(state.settings.cellStyle==='solid') { style=`background:${cat.color}; color:#fff;`; } }
-                            else if(stat==='fail') { style='color:var(--danger);'; txt='✗'; }
-                            else if(stat==='skip') { cls+='state-skip'; txt='−'; }
-                            cells += `<div onclick="toggleDay(${h.id}, '${loopIso}')" class="${cls}" style="${style}">${txt}</div>`;
+
+                            if(stat==='done') { 
+                                if(isSolid) { style=`background-color:${cat.color}; color:#fff;`; txt='✓'; }
+                                else { style=`color:${cat.color}; font-weight:bold;`; txt='✓'; }
+                            }
+                            else if(stat==='fail') { 
+                                if(isSolid) { style='background-color:var(--danger); color:#fff;'; txt='✗'; }
+                                else { style='color:var(--danger);'; txt='✗'; }
+                            }
+                            else if(stat==='skip') { 
+                                cls+=' state-skip'; txt='−'; 
+                                if(isSolid) { style="background-color:#333; color:#fff;"; }
+                            } 
+                            
+                            cells += `<div onclick="toggleDay(${h.id}, '${loopIso}', event)" class="${cls}" style="${style}">${txt}</div>`;
                         }
                         cells += `</div><div class="sticky-col-right grid-header-cell">${Math.round((checks/daysInMonth)*100)}%</div>`;
                         row.innerHTML = cells;
@@ -498,58 +585,89 @@
         /* --- LOGIC --- */
         function toggleCategory(id) { state.settings.collapsedCats[id] = !state.settings.collapsedCats[id]; saveData(); renderCalendar(); }
         function toggleSubCat(catId, subName) { const key = `${catId}_${subName}`; state.settings.collapsedSubCats[key] = !state.settings.collapsedSubCats[key]; saveData(); renderCalendar(); }
-        function toggleDay(id, iso) {
-            const h = state.habits.find(x => x.id === id); if(!h) return;
-            const curr = h.history[iso];
-            if(!curr) { h.history[iso] = 'done'; playSound(); triggerConfetti(); } else if(curr==='done') h.history[iso] = 'fail'; else if(curr==='fail') h.history[iso] = 'skip'; else delete h.history[iso];
-            saveData(); renderCalendar();
+        
+        function toggleDay(id, iso, event) {
+    const h = state.habits.find(x => x.id === id); if(!h) return;
+
+    // --- Auxiliar para ciclo de estados ---
+    const getNext = (s) => {
+        if(!s) return 'done';
+        if(s==='done') return 'fail';
+        if(s==='fail') return 'skip';
+        return null;
+    };
+
+    // --- LÓGICA DE SHIFT CLICK ---
+    if(event && event.shiftKey && selectionAnchor && selectionAnchor.id === id) {
+        
+        // 1. Restaurar snapshot (borrar selección previa arrastrada)
+        h.history = { ...selectionAnchor.snapshot }; 
+
+        // 2. Ciclo de estado: si clickeas la misma casilla final, cambia el estado
+        if(selectionAnchor.lastTarget === iso) {
+           selectionAnchor.activeState = getNext(selectionAnchor.activeState);
+        } else {
+           selectionAnchor.lastTarget = iso;
         }
+
+        const stateToApply = selectionAnchor.activeState;
+        
+        // 3. Definir Rango (CORREGIDO con T12:00:00 para evitar error "casilla antes")
+        const startIso = (selectionAnchor.date < iso) ? selectionAnchor.date : iso;
+        const endIso = (selectionAnchor.date < iso) ? iso : selectionAnchor.date;
+
+        // IMPORTANTE: Ponemos las fechas a las 12:00 del mediodía.
+        // Esto evita problemas de redondeo o cambio de horario que cortan el bucle antes de tiempo.
+        let current = new Date(startIso + "T12:00:00");
+        const end = new Date(endIso + "T12:00:00");
+        
+        let safety = 0;
+        // El bucle ahora compara mediodía con mediodía, mucho más seguro
+        while(current <= end && safety < 365) {
+            // Construimos la fecha local manualmente para evitar desfases
+            const loopIso = `${current.getFullYear()}-${String(current.getMonth()+1).padStart(2,'0')}-${String(current.getDate()).padStart(2,'0')}`;
+            
+            if(stateToApply) h.history[loopIso] = stateToApply; 
+            else delete h.history[loopIso];
+            
+            current.setDate(current.getDate() + 1);
+            safety++;
+        }
+        
+        if(stateToApply === 'done') { playSound(); triggerConfetti(); }
+
+    } else {
+        // --- CLICK NORMAL ---
+        const curr = h.history[iso];
+        const nextState = getNext(curr);
+
+        if(nextState) h.history[iso] = nextState; else delete h.history[iso];
+        if(nextState === 'done') { playSound(); triggerConfetti(); }
+
+        // Guardar ancla inicial
+        selectionAnchor = { 
+            id: id, 
+            date: iso, 
+            activeState: nextState, 
+            lastTarget: iso,        
+            snapshot: { ...h.history } 
+        };
+    }
+
+    saveData(); 
+    renderCalendar();
+}
+
         function changeMonth(d) { state.viewDate.setMonth(state.viewDate.getMonth()+d); renderCalendar(); }
 
-        /* --- MENUS & RENAMING --- */
+        /* --- MENUS --- */
         function openSubcatMenu(catId, subName) {
             closeGenericModal();
             setTimeout(() => {
-                const html = `
-                    <div class="text-sm text-muted mb-4">Subcategoría: <b>${subName}</b></div>
-                    <button onclick="renameSubcat('${catId}', '${subName}')" class="option-btn">✏️ Renombrar</button>
-                    <button onclick="startMoveSubcat('${catId}', '${subName}')" class="option-btn">📂 Mover a otra categoría</button>
-                    <button onclick="deleteSubcatDirect('${catId}', '${subName}')" class="option-btn" style="color:var(--danger)">🗑️ Eliminar Subcategoría</button>
-                `;
+                const html = `<div class="text-sm text-muted mb-4">Subcategoría: <b>${subName}</b></div><button onclick="startMoveSubcat('${catId}', '${subName}')" class="option-btn">📂 Mover a otra categoría</button><button onclick="deleteSubcatDirect('${catId}', '${subName}')" class="option-btn" style="color:var(--danger)">🗑️ Eliminar Subcategoría</button>`;
                 openGenericModal('Opciones', html);
             }, 300);
         }
-        
-        /* RENOMBRAR SUBCATEGORÍA */
-        function renameSubcat(catId, oldName) {
-            closeGenericModal();
-            setTimeout(() => {
-                const html = `
-                    <input id="renameSubInput" class="clean-input" value="${oldName}" placeholder="Nuevo nombre...">
-                    <button onclick="processRenameSubcat('${catId}', '${oldName}')" class="primary-btn">Guardar</button>
-                `;
-                openGenericModal('Renombrar Subcategoría', html);
-            }, 300);
-        }
-        function processRenameSubcat(catId, oldName) {
-            const newName = document.getElementById('renameSubInput').value.trim();
-            if(!newName || newName === oldName) { closeGenericModal(); return; }
-            const cat = state.categories.find(c => c.id == catId);
-            if(cat) {
-                // Actualizar lista de subcategorías
-                const idx = cat.subcategories.indexOf(oldName);
-                if(idx !== -1) cat.subcategories[idx] = newName;
-                // Actualizar hábitos
-                state.habits.forEach(h => {
-                    if(h.category.id == catId && h.subcategory === oldName) {
-                        h.subcategory = newName;
-                    }
-                });
-                saveData(); renderCalendar(); closeGenericModal(); showToast('Renombrado');
-            }
-        }
-
-        /* BORRAR SUBCATEGORÍA */
         function deleteSubcatDirect(catId, subName) {
             closeGenericModal();
             showConfirm('¿Eliminar etiqueta? Los hábitos no se borrarán.', () => {
@@ -583,57 +701,9 @@
                 saveData(); renderCalendar(); closeGenericModal(); showToast(`Movida a ${newCat.name}`);
             }
         }
-
-        /* MENU CATEGORIA */
         function openCategoryMenu(id) {
             const cat = state.categories.find(c => c.id == id);
-            openGenericModal(cat.name, `
-                <button onclick="renameCategory('${id}')" class="option-btn">✏️ Renombrar Categoría</button>
-                <button onclick="promptSub('${id}')" class="option-btn">➕ Nueva Subcategoría</button>
-                <button onclick="manageSubcats('${id}')" class="option-btn">📂 Gestionar Subcategorías</button>
-                <div style="height:1px; background:var(--border-color); margin:8px 0;"></div>
-                <button onclick="deleteCat('${id}')" class="option-btn" style="color:var(--danger)">🗑️ Eliminar Categoría</button>
-            `);
-        }
-        
-        /* RENOMBRAR CATEGORÍA */
-        function renameCategory(id) {
-            closeGenericModal();
-            const cat = state.categories.find(c => c.id == id);
-            setTimeout(() => {
-                openGenericModal('Renombrar Categoría', `
-                    <input id="renameCatInput" class="clean-input" value="${cat.name}">
-                    <button onclick="saveRenamedCategory('${id}')" class="primary-btn">Guardar</button>
-                `);
-            }, 300);
-        }
-        function saveRenamedCategory(id) {
-            const val = document.getElementById('renameCatInput').value.trim();
-            if(val) {
-                const cat = state.categories.find(c => c.id == id);
-                cat.name = val;
-                // Actualizar referencias en hábitos
-                state.habits.forEach(h => { if(h.category.id == id) h.category.name = val; });
-                saveData(); renderCalendar(); closeGenericModal();
-            }
-        }
-
-        function promptSub(id) {
-            closeGenericModal(); setTimeout(()=>{
-                openGenericModal('Nueva Subcategoría', `<input id="subIn" class="clean-input" placeholder="Nombre..." onkeyup="if(event.key==='Enter') saveSub('${id}')"><button onclick="saveSub('${id}')" class="primary-btn">Guardar</button>`);
-                setTimeout(()=>document.getElementById('subIn').focus(),300);
-            },300);
-        }
-        function saveSub(id) {
-            const n = document.getElementById('subIn').value.trim();
-            if(n) { 
-                const cat = state.categories.find(c => c.id == id);
-                if(cat) {
-                    if(!cat.subcategories) cat.subcategories = [];
-                    if(!cat.subcategories.includes(n)) { cat.subcategories.push(n); saveData(); showToast('Añadida'); } else { showToast('Ya existe'); }
-                    closeGenericModal(); renderCalendar(); setTimeout(() => manageSubcats(id), 350);
-                }
-            }
+            openGenericModal(cat.name, `<button onclick="manageSubcats('${id}')" class="option-btn">📂 Gestionar Subcategorías</button><div style="height:1px; background:var(--border-color); margin:8px 0;"></div><button onclick="deleteCat('${id}')" class="option-btn" style="color:var(--danger)">🗑️ Eliminar Categoría</button>`);
         }
         function deleteCat(id) {
             closeGenericModal();
@@ -648,19 +718,34 @@
             setTimeout(() => {
                 const cat = state.categories.find(c => c.id == catId);
                 if(!cat || !cat.subcategories) return;
-                let html = '<div style="display:flex; flex-direction:column; gap:8px;">';
+                
+                let html = `<div style="display:flex; gap:8px; margin-bottom:16px;"><input id="subInManaged" class="clean-input" placeholder="Nueva subcategoría..." style="margin:0; font-size:0.9rem;" onkeyup="if(event.key==='Enter') saveSubManaged('${catId}')"><button onclick="saveSubManaged('${catId}')" class="primary-btn" style="width:auto; padding:0 16px;">+</button></div>`;
+                html += '<div style="display:flex; flex-direction:column; gap:8px; max-height:250px; overflow-y:auto;">';
                 if(cat.subcategories.length === 0) { html += '<p class="text-sm text-muted">No hay subcategorías.</p>'; } 
-                else { cat.subcategories.forEach(sub => { html += `<div style="display:flex; justify-content:space-between; padding:12px; background:var(--bg-surface); border-radius:8px;"><span class="text-sm">${sub}</span><button onclick="deleteSub('${catId}', '${sub}')" style="color:var(--danger); font-weight:bold;">✕</button></div>`; }); }
+                else { cat.subcategories.forEach(sub => { html += `<div style="display:flex; justify-content:space-between; align-items:center; padding:12px; background:var(--bg-surface); border-radius:8px;"><span class="text-sm">${sub}</span><button onclick="deleteSub('${catId}', '${sub}')" style="color:var(--danger); font-weight:bold; padding:4px;">✕</button></div>`; }); }
                 html += '</div><div style="margin-top:16px; border-top:1px solid var(--border-color); padding-top:12px;"><button onclick="closeGenericModal()" class="secondary-btn" style="width:100%">Cerrar</button></div>';
                 openGenericModal('Subcategorías: ' + cat.name, html);
+                setTimeout(()=> { try { document.getElementById('subInManaged').focus(); } catch(e){} }, 200);
             }, 300);
+        }
+        function saveSubManaged(id) {
+            const input = document.getElementById('subInManaged');
+            const n = input.value.trim();
+            if(n) { 
+                const cat = state.categories.find(c => c.id == id);
+                if(cat) {
+                    if(!cat.subcategories) cat.subcategories = [];
+                    if(!cat.subcategories.includes(n)) { cat.subcategories.push(n); saveData(); showToast('Añadida'); } else { showToast('Ya existe'); }
+                    manageSubcats(id);
+                }
+            }
         }
         function deleteSub(catId, subName) {
             const cat = state.categories.find(c => c.id == catId);
             if(cat) {
                 cat.subcategories = cat.subcategories.filter(s => s !== subName);
                 state.habits.forEach(h => { if(h.category.id == catId && h.subcategory === subName) { h.subcategory = ""; } });
-                saveData(); closeGenericModal(); setTimeout(() => manageSubcats(catId), 300); renderCalendar();
+                saveData(); manageSubcats(catId); renderCalendar();
             }
         }
 
@@ -674,59 +759,113 @@
                 html += `</div><div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border-color);"><label class="text-xs font-bold uppercase tracking-widest" style="color: var(--text-muted); display: block; margin-bottom: 8px;">Nueva Categoría</label><div class="flex gap-2 items-center relative"><div class="color-picker-wrapper"><input type="color" id="newCatColorInput" value="#10b981"></div><input id="newCatInput" placeholder="Ej: Deportes..." style="flex:1; background: var(--bg-surface); padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); outline: none;"><button onclick="addCategory()" class="primary-btn" style="padding: 0 12px; height: 38px;">+</button></div></div>`;
                 openGenericModal('Gestionar Categorías', html);
             } 
-            else if (type === 'archive') { /* ... */ } 
             else if (type === 'backup') { openGenericModal('Backup', `<button onclick="downloadData()" class="primary-btn" style="margin-bottom:12px;">Descargar Backup</button><input type="file" onchange="uploadData(this)" style="display:block; width:100%; font-size:0.8rem; color:var(--text-muted);">`); }
         }
         function addCategory() { const i = document.getElementById('newCatInput'), cIn = document.getElementById('newCatColorInput'); if(i.value.trim()){ state.categories.push({id:Date.now(), name:i.value.trim(), color: cIn.value, subcategories:[]}); saveData(); openSubMenu('categories'); } }
         function removeCategory(i) { closeGenericModal(); const cat = state.categories[i]; showConfirm('¿Eliminar esta categoría?', () => { state.categories.splice(i,1); if(cat) state.habits = state.habits.filter(h => h.category.id != cat.id); saveData(); showToast('Categoría eliminada'); openSubMenu('categories'); renderCalendar(); }); }
         
-        window.toggleNewHabit = function(show) { const el = document.getElementById('newHabitModal'); if(show) { selectedCategory = state.categories[0]; selectedSubcat = ""; if(state.categories.length === 0) toggleInlineCreator(true); else { toggleInlineCreator(false); renderCategoryChips(); } document.getElementById('habitNameInput').value = ""; document.getElementById('manualSubcatInput').value = ""; el.classList.remove('hidden'); setTimeout(()=>el.classList.add('active'),10); setTimeout(() => document.getElementById('habitNameInput').focus(), 100); } else { el.classList.remove('active'); setTimeout(()=>el.classList.add('hidden'),200); } }
-        function renderCategoryChips() { const c = document.getElementById('categoryChips'); c.innerHTML=''; state.categories.forEach(cat => { const d = document.createElement('div'); d.className = `chip ${selectedCategory.id===cat.id?'selected':''}`; d.innerText = cat.name; d.onclick = () => { selectedCategory = cat; selectedSubcat = ""; renderCategoryChips(); }; c.appendChild(d); }); renderSubcatChips(); }
-        function renderSubcatChips() { const s = document.getElementById('subcatSection'), c = document.getElementById('subcatChips'); c.innerHTML=''; s.classList.remove('hidden'); if(selectedCategory.subcategories && selectedCategory.subcategories.length > 0) { selectedCategory.subcategories.forEach(sub => { const d = document.createElement('div'); d.className = `chip ${selectedSubcat===sub?'selected':''}`; d.innerText = sub; d.onclick = () => { selectedSubcat = (selectedSubcat===sub)?"":sub; renderSubcatChips(); }; c.appendChild(d); }); } else { c.innerHTML = '<span class="text-xs text-muted">Sin subcategorías guardadas.</span>'; } }
-        function createHabit() { const n = document.getElementById('habitNameInput').value.trim(); const m = document.getElementById('manualSubcatInput').value.trim(); let finalSub = selectedSubcat || m; if(!n) return showToast('Falta el nombre'); if(!selectedCategory) return showToast('Elige categoría'); if(finalSub && !selectedCategory.subcategories.includes(finalSub)) { selectedCategory.subcategories.push(finalSub); } state.habits.push({ id:Date.now(), name:n, category:selectedCategory, subcategory:finalSub, history:{}, archived:false, created:new Date().toISOString() }); saveData(); window.toggleNewHabit(false); renderCalendar(); showToast('Hábito creado'); }
-        function toggleInlineCreator(show) { const chipC = document.getElementById('categoryChips'), creator = document.getElementById('inlineCategoryCreator'); if(show) { chipC.classList.add('hidden'); creator.classList.remove('hidden'); creator.classList.add('flex'); } else { chipC.classList.remove('hidden'); creator.classList.add('hidden'); creator.classList.remove('flex'); } }
-        function createInlineCategory() { const i = document.getElementById('inlineCatInput'), c = document.getElementById('inlineCatColor'); if(i.value.trim()){ const nc={id:Date.now(), name:i.value.trim(), color:c.value, subcategories:[]}; state.categories.push(nc); selectedCategory=nc; saveData(); renderCategoryChips(); toggleInlineCreator(false); } }
+        window.toggleNewHabit = function(show) { 
+            const el = document.getElementById('newHabitModal'); 
+            if(show) { 
+                if(state.categories.length > 0) { selectedCategory = state.categories[0]; } else { selectedCategory = null; }
+                selectedSubcat = ""; 
+                document.getElementById('habitNameInput').value = ""; 
+                toggleCatCreator(false); toggleSubcatCreator(false);
+                if(!selectedCategory) { toggleCatCreator(true); } else { renderCategoryChips(); }
+                el.classList.remove('hidden'); setTimeout(()=>el.classList.add('active'), 10); 
+                setTimeout(() => document.getElementById('habitNameInput').focus(), 100); 
+            } else { 
+                el.classList.remove('active'); setTimeout(()=>el.classList.add('hidden'), 200); 
+            } 
+        }
+
+        function renderCategoryChips() { 
+            const c = document.getElementById('categoryChips'); c.innerHTML = ''; 
+            if(state.categories.length === 0) return;
+            state.categories.forEach(cat => { 
+                const isSelected = selectedCategory && selectedCategory.id === cat.id;
+                const d = document.createElement('div'); d.className = `chip-modern ${isSelected ? 'active' : ''}`; 
+                let dotHtml = isSelected ? '' : `<div class="chip-dot" style="background-color: ${cat.color}"></div>`;
+                d.innerHTML = `${dotHtml}${cat.name}`; 
+                d.onclick = () => { selectedCategory = cat; selectedSubcat = ""; toggleCatCreator(false); renderCategoryChips(); }; 
+                c.appendChild(d); 
+            }); 
+            renderSubcatChips(); 
+        }
+
+        function renderSubcatChips() { 
+            const section = document.getElementById('subcatSection');
+            const container = document.getElementById('subcatChips'); container.innerHTML = ''; 
+            if(!selectedCategory) { section.classList.add('hidden'); return; }
+            section.classList.remove('hidden');
+            if(selectedCategory.subcategories && selectedCategory.subcategories.length > 0) { 
+                selectedCategory.subcategories.forEach(sub => { 
+                    const isSelected = selectedSubcat === sub;
+                    const d = document.createElement('div'); d.className = `chip-modern ${isSelected ? 'active' : ''}`; d.innerText = sub; 
+                    d.onclick = () => { selectedSubcat = (selectedSubcat === sub) ? "" : sub; toggleSubcatCreator(false); renderSubcatChips(); }; 
+                    container.appendChild(d); 
+                }); 
+            } else { container.innerHTML = '<span class="text-xs text-muted" style="padding:8px 0;">Sin subcategorías.</span>'; } 
+        }
+
+        function toggleCatCreator(show) {
+            const chips = document.getElementById('categoryChips'); const creator = document.getElementById('catCreator'); const btn = document.getElementById('btnNewCat');
+            if(show) { chips.classList.add('hidden'); btn.classList.add('hidden'); creator.classList.remove('hidden'); creator.classList.add('flex'); document.getElementById('newCatName').value = ""; document.getElementById('newCatName').focus(); } 
+            else { chips.classList.remove('hidden'); btn.classList.remove('hidden'); creator.classList.add('hidden'); creator.classList.remove('flex'); }
+        }
+        function confirmNewCategory() {
+            const nameInput = document.getElementById('newCatName'); const colorInput = document.getElementById('newCatColor'); const name = nameInput.value.trim();
+            if(name) {
+                const newCat = { id: Date.now(), name: name, color: colorInput.value, subcategories: [] };
+                state.categories.push(newCat); selectedCategory = newCat; selectedSubcat = "";
+                saveData(); toggleCatCreator(false); renderCategoryChips();
+            } else { showToast('Escribe un nombre'); nameInput.focus(); }
+        }
+
+        function toggleSubcatCreator(show) {
+            const chips = document.getElementById('subcatChips'); const creator = document.getElementById('subcatCreator'); const btn = document.getElementById('btnNewSub');
+            if(show) { chips.classList.add('hidden'); btn.classList.add('hidden'); creator.classList.remove('hidden'); creator.classList.add('flex'); document.getElementById('newSubName').value = ""; document.getElementById('newSubName').focus(); } 
+            else { chips.classList.remove('hidden'); btn.classList.remove('hidden'); creator.classList.add('hidden'); creator.classList.remove('flex'); }
+        }
+        function confirmNewSubcat() {
+            const nameInput = document.getElementById('newSubName'); const name = nameInput.value.trim();
+            if(name && selectedCategory) {
+                if(!selectedCategory.subcategories) selectedCategory.subcategories = [];
+                if(!selectedCategory.subcategories.includes(name)) { selectedCategory.subcategories.push(name); saveData(); }
+                selectedSubcat = name; toggleSubcatCreator(false); renderSubcatChips();
+            } else { showToast('Escribe un nombre'); }
+        }
+
+        function createHabit() { 
+            const n = document.getElementById('habitNameInput').value.trim(); 
+            if(!n) return showToast('Falta el nombre'); if(!selectedCategory) return showToast('Elige categoría'); 
+            state.habits.push({ id: Date.now(), name: n, category: selectedCategory, subcategory: selectedSubcat, history: {}, archived: false, created: new Date().toISOString() }); 
+            saveData(); window.toggleNewHabit(false); renderCalendar(); showToast('Hábito creado'); 
+        }
 
         function openGenericModal(t, c) { document.getElementById('gModalTitle').innerText=t; document.getElementById('gModalBody').innerHTML=c; const el=document.getElementById('genericModal'); el.classList.remove('hidden'); setTimeout(()=>el.classList.add('active'),10); }
         function closeGenericModal() { const el=document.getElementById('genericModal'); el.classList.remove('active'); setTimeout(()=>el.classList.add('hidden'),200); }
-        function showConfirm(m, cb) { document.getElementById('confirmMessage').innerText=m; confirmCallback=cb; const el=document.getElementById('confirmModal'); el.classList.remove('hidden'); setTimeout(()=>el.classList.add('active'),10); }
+        function showConfirm(m, cb) { document.getElementById('confirmModal').querySelector('h3').innerText=m; confirmCallback=cb; const el=document.getElementById('confirmModal'); el.classList.remove('hidden'); setTimeout(()=>el.classList.add('active'),10); }
         function closeConfirm() { const el=document.getElementById('confirmModal'); el.classList.remove('active'); setTimeout(()=>el.classList.add('hidden'),200); confirmCallback=null; }
         function showToast(m) { const t=document.createElement('div'); t.className='toast'; t.innerText=m; document.getElementById('toast-container').appendChild(t); setTimeout(()=>t.remove(),3000); }
         function editQuote() { openGenericModal('Frase', `<textarea id="qIn" class="clean-input">${state.settings.dailyNote||""}</textarea><button onclick="saveQ()" class="primary-btn">Guardar</button>`); }
         function saveQ() { state.settings.dailyNote = document.getElementById('qIn').value; saveData(); renderQuote(); closeGenericModal(); }
         function renderQuote() { document.getElementById('quoteDisplay').innerText = state.settings.dailyNote || "Haz clic para escribir una frase..."; }
         
-        /* HABIT OPTIONS & RENAMING */
         function openHabitOptions(id) { 
             const h = state.habits.find(x => x.id === id); 
-            openGenericModal(h.name, `
-                <button onclick="renameHabit(${id})" class="option-btn">✏️ Renombrar</button>
-                <button onclick="deleteHabit(${id})" class="option-btn" style="color:var(--danger)">🗑️ Eliminar</button>
-            `); 
+            const html = `<div class="input-group" style="margin-bottom:16px;"><label class="input-label" style="margin-bottom:8px;">Renombrar</label><input id="renameInput_${id}" type="text" value="${h.name}" class="modern-input"></div><button onclick="renameHabit(${id})" class="primary-btn" style="margin-bottom:12px;">Guardar Nombre</button><div style="height:1px; background:var(--border-color); margin:8px 0;"></div><button onclick="deleteHabit(${id})" class="option-btn" style="color:var(--danger)">🗑️ Eliminar</button>`;
+            openGenericModal('Editar Hábito', html); 
         }
         function renameHabit(id) {
-            closeGenericModal();
+            const val = document.getElementById(`renameInput_${id}`).value.trim();
+            if(!val) return showToast('Nombre vacío');
             const h = state.habits.find(x => x.id === id);
-            setTimeout(() => {
-                openGenericModal('Renombrar Hábito', `
-                    <input id="renameHabitInput" class="clean-input" value="${h.name}">
-                    <button onclick="saveRenamedHabit(${id})" class="primary-btn">Guardar</button>
-                `);
-            }, 300);
+            if(h) { h.name = val; saveData(); renderCalendar(); closeGenericModal(); showToast('Renombrado'); }
         }
-        function saveRenamedHabit(id) {
-            const val = document.getElementById('renameHabitInput').value.trim();
-            if(val) {
-                const h = state.habits.find(x => x.id === id);
-                h.name = val;
-                saveData(); renderCalendar(); closeGenericModal();
-            }
-        }
-
         function deleteHabit(id) { closeGenericModal(); state.habits=state.habits.filter(h=>h.id!==id); saveData(); renderCalendar(); showToast('Eliminado'); }
         function resetData() { localStorage.clear(); location.reload(); }
         function toggleDarkMode() { state.settings.darkMode=!state.settings.darkMode; applyTheme(); updateSwitches(); saveData(); }
-        function unarchive(id) { state.habits.find(h=>h.id===id).archived=false; saveData(); renderCalendar(); closeGenericModal(); showToast('Recuperado'); }
         function downloadData() { const a=document.createElement('a'); a.href="data:text/json;charset=utf-8,"+encodeURIComponent(JSON.stringify(state)); a.download="habit_tracker_backup.json"; a.click(); }
         function uploadData(i) { const r=new FileReader(); r.onload=e=>{ try{state=JSON.parse(e.target.result);saveData();location.reload();}catch(x){showToast('Error archivo');}}; r.readAsText(i.files[0]); }
         function playSound() { try { const c=new(window.AudioContext||window.webkitAudioContext); const o=c.createOscillator();const g=c.createGain(); o.connect(g);g.connect(c.destination); o.frequency.value=800; g.gain.setValueAtTime(0.05,c.currentTime); g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+0.05); o.start();o.stop(c.currentTime+0.05); } catch(e){} }
