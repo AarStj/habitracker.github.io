@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Habit Tracker</title>
+    <title>Habit Tracker v8.3 - Tooltips Corregidos</title>
     <style>
         /* --- VARIABLES --- */
         :root {
@@ -13,7 +13,7 @@
             --text-main: #111827;
             --text-muted: #9ca3af;
             --border-color: #e5e7eb;
-            --divider-strong: #9ca3af; /* Color más visible por defecto para la línea */
+            --divider-strong: #9ca3af;
             --primary: #000000;
             --on-primary: #ffffff;
             --danger: #ef4444;
@@ -32,7 +32,7 @@
             --text-main: #e0e0e0;
             --text-muted: #6b7280;
             --border-color: #222222;
-            --divider-strong: #4b5563; /* Color más visible en dark mode */
+            --divider-strong: #4b5563;
             --primary: #ffffff;
             --on-primary: #000000;
             --danger: #ef4444;
@@ -171,7 +171,6 @@
             border-bottom-left-radius: 6px; border-bottom-right-radius: 6px;
         }
         
-        /* --- VISUAL DIVIDER EVERY 7 DAYS --- */
         .week-separator { 
             border-right: 4px solid var(--divider-strong) !important; 
             position: relative; 
@@ -191,6 +190,23 @@
         
         .state-skip { background-color: var(--bg-surface); color: var(--text-muted); font-weight: bold; }
         html.dark .state-skip { background-color: #1a1a1a; color: #888888; } 
+
+        /* --- NOTES & TOOLTIPS --- */
+        .note-indicator {
+            position: absolute; top: 0; right: 0;
+            width: 0; height: 0;
+            border-style: solid; border-width: 0 8px 8px 0;
+            border-color: transparent var(--text-main) transparent transparent;
+            opacity: 0.6; pointer-events: none;
+        }
+        #customTooltip {
+            position: fixed; background: var(--bg-surface); color: var(--text-main);
+            padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border-color);
+            font-size: 0.85rem; font-weight: 500; box-shadow: 0 4px 25px rgba(0,0,0,0.4);
+            pointer-events: none; z-index: 999; opacity: 0; transition: opacity 0.2s;
+            max-width: 250px; white-space: pre-wrap; transform: translate(15px, 15px);
+            backdrop-filter: blur(10px);
+        }
 
         /* --- CATEGORY & ROWS --- */
         .category-group-header {
@@ -268,18 +284,24 @@
         .switch-toggle::after { content: ''; position: absolute; left: 2px; top: 2px; width: 16px; height: 16px; background-color: var(--text-muted); border-radius: 50%; transition: transform 0.3s, background-color 0.3s; box-shadow: 0 1px 2px rgba(0,0,0,0.2); }
         .switch-toggle.active::after { transform: translateX(18px); background-color: var(--bg-body); }
 
-        #genericModal, #newHabitModal, #confirmModal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 60; background-color: rgba(0,0,0,0.6); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; padding: 16px; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
-        #genericModal.active, #newHabitModal.active, #confirmModal.active { opacity: 1; pointer-events: auto; }
+        #genericModal, #newHabitModal, #confirmModal, #noteModal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 60; background-color: rgba(0,0,0,0.6); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; padding: 16px; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+        #genericModal.active, #newHabitModal.active, #confirmModal.active, #noteModal.active { opacity: 1; pointer-events: auto; }
+        
         .modal-card { background-color: var(--bg-body); width: 100%; max-width: 400px; border-radius: 20px; padding: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.4); border: 1px solid var(--border-color); position: relative; animation: scaleIn 0.2s ease-out; margin: 0; max-height: 85vh; overflow-y: auto; display: flex; flex-direction: column; }
+        
         input.clean-input, textarea.clean-input { width: 100%; font-size: 1.25rem; background: transparent; border: none; border-bottom: 2px solid var(--border-color); padding: 8px 0; margin-bottom: 24px; outline: none; resize: none; }
         input.clean-input:focus, textarea.clean-input:focus { border-color: var(--text-main); }
+        
         .primary-btn { width: 100%; padding: 14px; background-color: var(--primary); color: var(--on-primary); border-radius: 12px; font-weight: bold; font-size: 0.875rem; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
         .secondary-btn { width: 100%; padding: 14px; background-color: var(--bg-surface); color: var(--text-main); border-radius: 12px; font-weight: bold; font-size: 0.875rem; text-align: center; }
         .option-btn { width: 100%; padding: 14px; text-align: left; border-radius: 12px; margin-bottom: 8px; font-size: 0.9rem; font-weight: 500; display: flex; align-items: center; gap: 12px; background-color: var(--bg-surface); color: var(--text-main); border: 1px solid transparent; }
+        
         #toast-container { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%); z-index: 100; pointer-events: none; }
         .toast { background-color: var(--toast-bg); color: var(--toast-text); padding: 10px 24px; border-radius: 99px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); font-size: 0.85rem; font-weight: 600; margin-top: 8px; animation: slideUp 0.3s forwards; }
+        
         @keyframes slideUp { 0% { transform: translateY(20px); opacity: 0; } 100% { transform: translateY(0); opacity: 1; } }
         @keyframes scaleIn { 0% { transform: scale(0.95); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        
         .color-picker-wrapper { width: 30px; height: 30px; border-radius: 50%; overflow: hidden; border: 2px solid var(--border-color); flex-shrink: 0; cursor: pointer; }
         input[type="color"] { width: 200%; height: 200%; transform: translate(-25%, -25%); border: none; cursor: pointer; padding: 0; }
         #confettiCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 150; }
@@ -396,6 +418,20 @@
     <div id="genericModal" onclick="closeGenericModal()" class="hidden"><div id="gModalContent" onclick="event.stopPropagation()" class="modal-card"><button onclick="closeGenericModal()" class="absolute" style="top:16px; right:16px; color:var(--text-muted);">✕</button><h3 id="gModalTitle" class="font-bold text-lg mb-4">Título</h3><div id="gModalBody"></div></div></div>
     <div id="confirmModal" onclick="closeConfirm()" class="hidden"><div class="modal-card" onclick="event.stopPropagation()"><h3 class="font-bold text-lg mb-2">¿Estás seguro?</h3><div class="flex gap-2"><button onclick="closeConfirm()" class="secondary-btn">Cancelar</button><button id="btnConfirmAction" class="primary-btn" style="background-color:var(--danger);">Confirmar</button></div></div></div>
     
+    <div id="noteModal" onclick="closeNoteModal()" class="hidden">
+        <div onclick="event.stopPropagation()" class="modal-card">
+            <h3 class="font-bold text-lg mb-2">Nota</h3>
+            <p id="noteModalLabel" class="text-xs text-muted mb-4 uppercase tracking-widest">...</p>
+            <textarea id="noteInput" class="clean-input" placeholder="Ej: 3 min de plancha..." style="min-height: 80px; font-size:1rem;"></textarea>
+            <div class="flex gap-2">
+                <button onclick="saveNote(true)" class="secondary-btn" style="color:var(--danger)">Borrar</button>
+                <button onclick="saveNote(false)" class="primary-btn">Guardar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="customTooltip"></div>
+
     <div id="newHabitModal" onclick="window.toggleNewHabit(false)" class="hidden">
         <div onclick="event.stopPropagation()" class="modern-modal-content">
             <div class="modal-header">
@@ -444,7 +480,7 @@
         let selectedCategory = null; let selectedSubcat = ""; let confirmCallback = null; let clockInterval = null; let draggedHabitId = null;
         let selectionAnchor = null; 
         let currentManageCatId = null; 
-        let tickTockState = false; // Para alternar sonido
+        let tickTockState = false; 
 
         // ICONS
         const ICON_PENCIL = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>`;
@@ -459,7 +495,12 @@
                     state.viewDate = new Date(); 
                     if(state.categories) state.categories.forEach(c => { if(!c.subcategories) c.subcategories = []; });
                     if(!state.settings.collapsedSubCats) state.settings.collapsedSubCats = {};
-                    if(!state.settings.iconStyle) state.settings.iconStyle = 'minimal'; 
+                    if(!state.settings.iconStyle) state.settings.iconStyle = 'minimal';
+                    // Asegurar objetos base
+                    state.habits.forEach(h => { 
+                        if (!h.notes) h.notes = {}; 
+                        if (h.description === undefined) h.description = "";
+                    });
                 }
             } catch (e) {}
             applyTheme(); updateSwitches(); renderCalendar(); renderQuote();
@@ -476,7 +517,6 @@
             if(state.settings.darkMode) d.classList.add('active'); else d.classList.remove('active'); 
             if(state.settings.clockSound) s.classList.add('active'); else s.classList.remove('active'); 
             if(state.settings.iconStyle === 'solid') i.classList.add('active'); else i.classList.remove('active');
-            
             const divInput = document.getElementById('dividerColorInput');
             if(state.settings.dividerColor) divInput.value = state.settings.dividerColor;
         }
@@ -488,31 +528,19 @@
              saveData(); 
         }
 
-        // --- NEW ANALOG CLOCK SYNTHESIS (Tick-Tock) ---
         function playAnalogTick() {
             try {
                 const ctx = new (window.AudioContext || window.webkitAudioContext)();
                 const osc = ctx.createOscillator();
                 const gain = ctx.createGain();
-                
-                osc.connect(gain);
-                gain.connect(ctx.destination);
-                
-                // Alternar tono para efecto "Tic-Tac"
-                // Tic (Agudo) / Tac (Grave)
-                const freq = tickTockState ? 2000 : 1500; 
-                tickTockState = !tickTockState;
-
+                osc.connect(gain); gain.connect(ctx.destination);
+                const freq = tickTockState ? 2000 : 1500; tickTockState = !tickTockState;
                 osc.frequency.setValueAtTime(freq, ctx.currentTime);
-                osc.type = 'sine'; // Onda suave pero corta
-                
-                // Envolvente muy corta y percusiva (golpe de reloj)
+                osc.type = 'sine';
                 gain.gain.setValueAtTime(0.0, ctx.currentTime);
-                gain.gain.linearRampToValueAtTime(0.3, ctx.currentTime + 0.005); // Attack
-                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05); // Decay
-                
-                osc.start(ctx.currentTime);
-                osc.stop(ctx.currentTime + 0.06);
+                gain.gain.linearRampToValueAtTime(0.3, ctx.currentTime + 0.005);
+                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05);
+                osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.06);
             } catch (e) {}
         }
 
@@ -550,11 +578,8 @@
             for (let i = 1; i <= daysInMonth; i++) {
                 const d = new Date(year, month, i);
                 const iso = `${year}-${String(month+1).padStart(2,'0')}-${String(i).padStart(2,'0')}`;
-                
-                // DIVISOR CADA 7 DÍAS EXACTOS (7, 14, 21, 28)
                 const isWeekEnd = (i % 7 === 0);
                 const sep = isWeekEnd ? 'week-separator' : '';
-                
                 headerHTML += `<div class="day-header ${iso===todayISO?'today':''} ${sep}"><span>${d.toLocaleDateString('es-ES',{weekday:'narrow'})}</span><span>${i}</span></div>`;
             }
             headerHTML += `</div><div class="sticky-col-right grid-header-cell">%</div></div>`;
@@ -564,6 +589,12 @@
             if (activeHabits.length === 0) { container.innerHTML = `<div style="padding:40px; text-align:center; color:var(--text-muted);">No hay hábitos.</div>`; return; }
 
             const grid = document.createElement('div'); grid.className = 'flex flex-col min-w-max';
+            
+            // Función auxiliar para limpiar textos (previene errores en HTML)
+            const cleanText = (txt) => {
+                if(!txt) return "";
+                return txt.replace(/'/g, "\\'").replace(/"/g, "&quot;").replace(/\n/g, "<br>");
+            };
 
             state.categories.forEach(cat => {
                 const catHabits = activeHabits.filter(h => h.category.id == cat.id);
@@ -617,17 +648,20 @@
                         let streak = 0; const dNow = new Date();
                         for(let k=0;k<365;k++){ const iso = dNow.toISOString().split('T')[0]; if(h.history[iso]==='done') streak++; else if(k>0) break; dNow.setDate(dNow.getDate()-1); }
 
-                        let cells = `<div class="sticky-col-left habit-name-cell" onclick="openHabitOptions(${h.id})"><div class="flex items-center gap-2 overflow-hidden" style="flex:1"><div class="drag-handle">::</div><div style="width:6px; height:6px; border-radius:50%; background:${cat.color}"></div><span class="text-sm font-medium truncate">${h.name}</span></div>${(h.showStreak!==false && streak>0) ? `<div class="streak-badge active">🔥 ${streak}</div>` : ''}</div><div class="days-container">`;
+                        // ARREGLO PARA TOOLTIP EN NOMBRE
+                        let cells = `<div class="sticky-col-left habit-name-cell" onclick="openHabitOptions(${h.id})" onmousemove="moveTooltip(event)" onmouseenter="showTooltip(event, '${cleanText(h.description)}', 'Información')" onmouseleave="hideTooltip()"><div class="flex items-center gap-2 overflow-hidden" style="flex:1"><div class="drag-handle">::</div><div style="width:6px; height:6px; border-radius:50%; background:${cat.color}"></div><span class="text-sm font-medium truncate">${h.name}</span></div>${(h.showStreak!==false && streak>0) ? `<div class="streak-badge active">🔥 ${streak}</div>` : ''}</div><div class="days-container">`;
 
                         let checks=0;
                         for(let i=1; i<=daysInMonth; i++) {
                             const loopIso = `${year}-${String(month+1).padStart(2,'0')}-${String(i).padStart(2,'0')}`;
                             const isToday = loopIso === todayISO;
                             const stat = h.history[loopIso];
-                            if(stat==='done' || stat==='skip') checks++;
-                            const dObj = new Date(year, month, i);
                             
-                            // DIVISOR SEMANAL (Matemático: 7, 14, 21...)
+                            const note = (h.notes && h.notes[loopIso]) ? h.notes[loopIso] : '';
+                            const indicator = note ? `<div class="note-indicator"></div>` : '';
+
+                            if(stat==='done' || stat==='skip') checks++;
+                            
                             const isWeekEnd = (i % 7 === 0);
                             let cls = 'cell-btn ' + (isWeekEnd ? 'week-separator ' : '') + (isToday?'today-border':'');
                             let style = '', txt = '';
@@ -645,7 +679,14 @@
                                 if(isSolid) { style="background-color:#333; color:#fff;"; }
                             } 
                             
-                            cells += `<div onclick="toggleDay(${h.id}, '${loopIso}', event)" class="${cls}" style="${style}">${txt}</div>`;
+                            // ARREGLO PARA TOOLTIP EN CASILLAS
+                            cells += `<div 
+                                onclick="toggleDay(${h.id}, '${loopIso}', event)"
+                                oncontextmenu="openNoteModal(${h.id}, '${loopIso}', event)"
+                                onmousemove="moveTooltip(event)"
+                                onmouseenter="showTooltip(event, '${cleanText(note)}', '${cleanText(h.name)}')"
+                                onmouseleave="hideTooltip()"
+                                class="${cls}" style="${style}">${txt} ${indicator}</div>`;
                         }
                         cells += `</div><div class="sticky-col-right grid-header-cell">${Math.round((checks/daysInMonth)*100)}%</div>`;
                         row.innerHTML = cells;
@@ -713,11 +754,9 @@
             if(initialTab === 'subcategories') renderSubTab(); else renderCatTab();
         }
 
-        // --- TAB 1: CATEGORIES ---
         function renderCatTab() {
             document.getElementById('tabBtnCats').classList.add('active');
             document.getElementById('tabBtnSubs').classList.remove('active');
-            
             let html = '<div style="display:flex; flex-direction:column; gap:8px;">';
             state.categories.forEach((c, i) => { 
                 html += `<div class="cat-list-item">
@@ -749,7 +788,6 @@
         function openRenameCategory(id) {
             const cat = state.categories.find(c => c.id == id);
             if(!cat) return;
-            // Simple rename modal
             const html = `
                 <div class="input-group">
                     <label class="input-label">Nuevo Nombre</label>
@@ -772,7 +810,6 @@
             }
         }
 
-        // --- TAB 2: SUBCATEGORIES ---
         function renderSubTab() {
             document.getElementById('tabBtnCats').classList.remove('active');
             document.getElementById('tabBtnSubs').classList.add('active');
@@ -961,7 +998,7 @@
         function createHabit() { 
             const n = document.getElementById('habitNameInput').value.trim(); 
             if(!n) return showToast('Falta el nombre'); if(!selectedCategory) return showToast('Elige categoría'); 
-            state.habits.push({ id: Date.now(), name: n, category: selectedCategory, subcategory: selectedSubcat, history: {}, archived: false, created: new Date().toISOString() }); 
+            state.habits.push({ id: Date.now(), name: n, category: selectedCategory, subcategory: selectedSubcat, history: {}, notes: {}, description: "", archived: false, created: new Date().toISOString() }); 
             saveData(); window.toggleNewHabit(false); renderCalendar(); showToast('Hábito creado'); 
         }
 
@@ -974,16 +1011,36 @@
         function saveQ() { state.settings.dailyNote = document.getElementById('qIn').value; saveData(); renderQuote(); closeGenericModal(); showToast('Frase guardada'); }
         function renderQuote() { document.getElementById('quoteDisplay').innerText = state.settings.dailyNote || "Haz clic para escribir una frase..."; }
         
+        /* --- GESTIÓN HÁBITO --- */
         function openHabitOptions(id) { 
             const h = state.habits.find(x => x.id === id); 
-            const html = `<div class="input-group" style="margin-bottom:16px;"><label class="input-label" style="margin-bottom:8px;">Renombrar</label><input id="renameInput_${id}" type="text" value="${h.name}" class="modern-input"></div><button onclick="renameHabit(${id})" class="primary-btn" style="margin-bottom:12px;">Guardar Nombre</button><div style="height:1px; background:var(--border-color); margin:8px 0;"></div><button onclick="deleteHabit(${id})" class="option-btn" style="color:var(--danger)">🗑️ Eliminar</button>`;
+            const html = `
+                <div class="input-group" style="margin-bottom:16px;">
+                    <label class="input-label" style="margin-bottom:4px;">Nombre</label>
+                    <input id="renameInput_${id}" type="text" value="${h.name}" class="modern-input">
+                </div>
+                <div class="input-group" style="margin-bottom:16px;">
+                    <label class="input-label" style="margin-bottom:4px;">Descripción / Beneficios</label>
+                    <textarea id="descInput_${id}" class="modern-input" style="min-height:80px; font-size:0.9rem;">${h.description || ""}</textarea>
+                </div>
+                <button onclick="saveHabitEdits(${id})" class="primary-btn" style="margin-bottom:12px;">Guardar Cambios</button>
+                <div style="height:1px; background:var(--border-color); margin:8px 0;"></div>
+                <button onclick="deleteHabit(${id})" class="option-btn" style="color:var(--danger)">🗑️ Eliminar Hábito</button>`;
             openGenericModal('Editar Hábito', html); 
         }
-        function renameHabit(id) {
-            const val = document.getElementById(`renameInput_${id}`).value.trim();
-            if(!val) return showToast('Nombre vacío');
+        function saveHabitEdits(id) {
+            const newName = document.getElementById(`renameInput_${id}`).value.trim();
+            const newDesc = document.getElementById(`descInput_${id}`).value.trim();
+            if(!newName) return showToast('Falta el nombre');
             const h = state.habits.find(x => x.id === id);
-            if(h) { h.name = val; saveData(); renderCalendar(); closeGenericModal(); showToast('Renombrado'); }
+            if(h) { 
+                h.name = newName; 
+                h.description = newDesc;
+                saveData(); 
+                renderCalendar(); 
+                closeGenericModal(); 
+                showToast('Hábito actualizado'); 
+            }
         }
         function deleteHabit(id) { closeGenericModal(); state.habits=state.habits.filter(h=>h.id!==id); saveData(); renderCalendar(); showToast('Eliminado'); }
         function resetData() { localStorage.clear(); location.reload(); }
@@ -993,8 +1050,79 @@
         function playSound() { try { const c=new(window.AudioContext||window.webkitAudioContext); const o=c.createOscillator();const g=c.createGain(); o.connect(g);g.connect(c.destination); o.frequency.value=800; g.gain.setValueAtTime(0.05,c.currentTime); g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+0.05); o.start();o.stop(c.currentTime+0.05); } catch(e){} }
         function triggerConfetti() { const c=document.getElementById('confettiCanvas'); const x=c.getContext('2d'); c.width=window.innerWidth; c.height=window.innerHeight; const p=[]; for(let i=0;i<40;i++) p.push({x:Math.random()*c.width, y:-20, vx:(Math.random()-0.5)*5, vy:Math.random()*5+2, c:'#fbbf24', l:100}); function a(){x.clearRect(0,0,c.width,c.height); p.forEach(e=>{if(e.l>0){e.x+=e.vx;e.y+=e.vy;e.l--;x.fillStyle=e.c;x.fillRect(e.x,e.y,6,6);}}); requestAnimationFrame(a);} a(); }
 
+        /* --- NOTAS & TOOLTIP LOGIC --- */
+        let activeNoteHabit = null, activeNoteDate = null;
+        let tooltipTimer = null;
+
+        function openNoteModal(id, iso, e) {
+            e.preventDefault(); 
+            activeNoteHabit = id; activeNoteDate = iso;
+            const h = state.habits.find(x => x.id === id);
+            if(!h.notes) h.notes = {}; 
+            
+            document.getElementById('noteModalLabel').innerText = iso;
+            document.getElementById('noteInput').value = h.notes[iso] || "";
+            
+            const el = document.getElementById('noteModal');
+            el.classList.remove('hidden');
+            setTimeout(() => {
+                el.classList.add('active'); 
+                document.getElementById('noteInput').focus();
+            }, 10);
+            return false;
+        }
+
+        function closeNoteModal() {
+            const el = document.getElementById('noteModal');
+            el.classList.remove('active'); 
+            setTimeout(() => el.classList.add('hidden'), 200);
+        }
+
+        function saveNote(isDelete) {
+            const val = document.getElementById('noteInput').value.trim();
+            const h = state.habits.find(x => x.id === activeNoteHabit);
+            if(h) {
+                if(!h.notes) h.notes = {};
+                if(isDelete || val === "") delete h.notes[activeNoteDate];
+                else h.notes[activeNoteDate] = val;
+                saveData(); renderCalendar();
+            }
+            closeNoteModal();
+        }
+
+        const tooltip = document.getElementById('customTooltip');
+        
+        function showTooltip(e, text, title) {
+            if(!text || text === "undefined") return;
+            
+            if(tooltipTimer) clearTimeout(tooltipTimer);
+            
+            tooltip.innerHTML = `<div style="font-size:0.7rem; opacity:0.7; margin-bottom:4px; text-transform:uppercase; letter-spacing:0.05em;">${title}</div><div style="line-height:1.4;">${text}</div>`;
+            
+            moveTooltip(e); // Posicionar inmediatamente (aunque invisible)
+
+            // Esperar 800ms antes de mostrar (OPACIDAD 1)
+            tooltipTimer = setTimeout(() => {
+                tooltip.style.opacity = 1;
+            }, 800);
+        }
+
+        function hideTooltip() { 
+            if(tooltipTimer) clearTimeout(tooltipTimer);
+            tooltip.style.opacity = 0; 
+        }
+
+        function moveTooltip(e) {
+            let x = e.clientX + 15, y = e.clientY + 15;
+            // Ajustes para que no se salga de la pantalla
+            if(x + 240 > window.innerWidth) x -= 250; 
+            if(y + 100 > window.innerHeight) y -= 100;
+            
+            tooltip.style.left = x + 'px'; 
+            tooltip.style.top = y + 'px';
+        }
+
         init();
     </script>
 </body>
 </html>
-
