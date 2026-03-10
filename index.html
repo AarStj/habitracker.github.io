@@ -3,57 +3,75 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Habit Tracker v8.3 - Tooltips Corregidos</title>
+    <title>Habit Tracker v2.0</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            corePlugins: { preflight: false },
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        darkbg: '#000000',
+                        darkcard: '#1c1c1e',
+                        darkinput: '#2c2c2e'
+                    }
+                }
+            }
+        }
+    </script>
+    
     <style>
-        /* --- VARIABLES --- */
+        /* --- VARIABLES ESTILO APPLE (iOS/macOS) --- */
         :root {
-            --bg-body: #ffffff;
-            --bg-surface: #f9fafb;
-            --bg-surface-hover: #f3f4f6;
-            --text-main: #111827;
-            --text-muted: #9ca3af;
-            --border-color: #e5e7eb;
-            --divider-strong: #9ca3af;
-            --primary: #000000;
+            --bg-body: #f2f2f7;
+            --bg-surface: #ffffff;
+            --bg-surface-hover: #e5e5ea;
+            --text-main: #000000;
+            --text-muted: #8e8e93;
+            --border-color: #c6c6c8;
+            --divider-strong: #8e8e93;
+            --primary: #007aff;
             --on-primary: #ffffff;
-            --danger: #ef4444;
-            --success: #22c55e;
-            --toast-bg: #111111;
+            --danger: #ff3b30;
+            --success: #34c759;
+            --toast-bg: #1c1c1e;
             --toast-text: #ffffff;
-            --scrollbar-thumb: #9ca3af;
-            --scrollbar-bg: #e5e7eb;
-            --menu-bg: #ffffff;
+            --scrollbar-thumb: #aeaeb2;
+            --scrollbar-bg: transparent;
+            --menu-bg: #f2f2f7;
         }
 
         html.dark {
-            --bg-body: #050505;
-            --bg-surface: #111111;
-            --bg-surface-hover: #1f1f1f;
-            --text-main: #e0e0e0;
-            --text-muted: #6b7280;
-            --border-color: #222222;
-            --divider-strong: #4b5563;
-            --primary: #ffffff;
-            --on-primary: #000000;
-            --danger: #ef4444;
-            --success: #22c55e;
+            --bg-body: #000000;
+            --bg-surface: #1c1c1e;
+            --bg-surface-hover: #2c2c2e;
+            --text-main: #ffffff;
+            --text-muted: #98989d;
+            --border-color: #38383a;
+            --divider-strong: #48484a;
+            --primary: #0a84ff;
+            --on-primary: #ffffff;
+            --danger: #ff453a;
+            --success: #32d74b;
             --toast-bg: #ffffff;
             --toast-text: #000000;
-            --scrollbar-thumb: #333333;
-            --scrollbar-bg: #000000;
-            --menu-bg: #0a0a0a;
+            --scrollbar-thumb: #48484a;
+            --scrollbar-bg: transparent;
+            --menu-bg: #000000;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
         
         body { 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background-color: var(--bg-body);
             color: var(--text-main);
             position: fixed; inset: 0; width: 100%; height: 100%;
             display: flex; flex-direction: column; overflow: hidden;
             transition: background-color 0.3s, color 0.3s;
-            zoom: 0.85; 
+            zoom: 0.80; /* Zoom al 80% como pediste */
         }
 
         button { background: none; border: none; cursor: pointer; color: inherit; font-family: inherit; outline: none; }
@@ -71,42 +89,43 @@
         .absolute { position: absolute; }
         .text-sm { font-size: 0.875rem; }
         .text-xs { font-size: 0.75rem; }
-        .font-bold { font-weight: 700; }
+        .font-bold { font-weight: 600; }
         .uppercase { text-transform: uppercase; }
-        .tracking-widest { letter-spacing: 0.1em; }
+        .tracking-widest { letter-spacing: 0.05em; }
         .text-muted { color: var(--text-muted); }
         
         /* --- SCROLLBAR --- */
         * { scrollbar-width: auto; scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-bg); }
-        ::-webkit-scrollbar { width: 10px; height: 10px; }
-        ::-webkit-scrollbar-corner { background: var(--bg-body); }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-corner { background: transparent; }
         ::-webkit-scrollbar-track { background: var(--scrollbar-bg); }
-        ::-webkit-scrollbar-thumb { background-color: var(--scrollbar-thumb); border-radius: 4px; border: 2px solid var(--scrollbar-bg); }
+        ::-webkit-scrollbar-thumb { background-color: var(--scrollbar-thumb); border-radius: 10px; border: 2px solid var(--bg-body); }
 
         /* --- HEADER --- */
         header {
-            padding: 12px 16px; border-bottom: 1px solid var(--border-color);
-            background-color: var(--bg-body); z-index: 30; flex: none;
+            padding: 12px 16px; border-bottom: 0.5px solid var(--border-color);
+            background-color: var(--bg-surface); z-index: 30; flex: none;
             display: flex; justify-content: space-between; align-items: center;
         }
-        .btn-icon { padding: 8px; border-radius: 999px; display: flex; align-items: center; justify-content: center; }
+        .btn-icon { padding: 8px; border-radius: 999px; display: flex; align-items: center; justify-content: center; transition: background 0.2s;}
         .btn-icon:hover { background-color: var(--bg-surface-hover); }
 
         .btn-new {
             display: flex; align-items: center; gap: 4px;
-            padding: 6px 12px; border-radius: 999px;
+            padding: 6px 14px; border-radius: 999px;
             background-color: var(--primary); color: var(--on-primary);
             font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
         .btn-new:hover { opacity: 0.8; }
 
         .date-bar {
-            padding: 12px; background-color: var(--bg-surface); flex: none;
-            border-bottom: 1px solid var(--border-color);
+            padding: 12px; background-color: var(--bg-body); flex: none;
+            border-bottom: 0.5px solid var(--border-color);
             display: flex; justify-content: center; align-items: center; gap: 24px;
         }
         .date-bar button { color: var(--text-muted); font-size: 1.2rem; }
-        .date-bar button:hover { color: var(--text-main); }
+        .date-bar button:hover { color: var(--primary); }
         
         /* --- LAYOUT --- */
         #mainContent {
@@ -115,8 +134,8 @@
         }
         #calendarHeader { 
             flex: none; display: flex; 
-            border-bottom: 1px solid var(--border-color); 
-            background-color: var(--bg-body); overflow: hidden; 
+            border-bottom: 0.5px solid var(--border-color); 
+            background-color: var(--bg-surface); overflow: hidden; 
             box-sizing: border-box; 
         }
         #habitsContainer { 
@@ -127,33 +146,33 @@
         /* --- QUOTE --- */
         #quoteContainer {
             flex: none; height: 140px; 
-            border-top: 1px solid var(--border-color); background-color: var(--bg-surface);
+            border-top: 0.5px solid var(--border-color); background-color: var(--bg-surface);
             padding: 16px; display: flex; align-items: center; justify-content: center;
             text-align: center; cursor: pointer; transition: background-color 0.2s; position: relative;
         }
         #quoteContainer:hover { background-color: var(--bg-surface-hover); }
-        #quoteDisplay { width: 100%; white-space: pre-wrap; line-height: 1.3; font-weight: 500; color: var(--text-main); opacity: 0.9; }
+        #quoteDisplay { width: 100%; white-space: pre-wrap; line-height: 1.4; font-weight: 500; color: var(--text-main); opacity: 0.9; }
 
         /* --- GRID --- */
         .row-structure { display: flex; width: 100%; min-width: max-content; }
 
         .sticky-col-left {
             position: sticky; left: 0; z-index: 20;
-            background-color: var(--bg-body);
-            border-right: 1px solid var(--border-color);
+            background-color: var(--bg-surface);
+            border-right: 0.5px solid var(--border-color);
             width: 220px; flex-shrink: 0;
         }
         .sticky-col-right {
             position: sticky; right: 0; z-index: 20;
-            background-color: var(--bg-body);
-            border-left: 1px solid var(--border-color);
+            background-color: var(--bg-surface);
+            border-left: 0.5px solid var(--border-color);
             width: 50px; flex-shrink: 0;
             display: flex; align-items: center; justify-content: center;
         }
 
         .grid-header-cell {
             padding: 12px; height: 100%;
-            font-size: 0.75rem; font-weight: 700; color: var(--text-muted);
+            font-size: 0.75rem; font-weight: 600; color: var(--text-muted);
             text-transform: uppercase; letter-spacing: 0.05em;
             display: flex; align-items: center;
         }
@@ -163,62 +182,62 @@
         .day-header {
             flex: 1; min-width: 34px;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            padding: 8px 0; border-right: 1px solid var(--border-color);
+            padding: 8px 0; border-right: 0.5px solid var(--border-color);
             color: var(--text-muted); transition: all 0.5s;
         }
         .day-header.today {
-            background-color: var(--primary); color: var(--on-primary);
+            background-color: var(--primary); color: var(--on-primary); font-weight: bold;
             border-bottom-left-radius: 6px; border-bottom-right-radius: 6px;
         }
         
         .week-separator { 
-            border-right: 4px solid var(--divider-strong) !important; 
+            border-right: 2px solid var(--divider-strong) !important; 
             position: relative; 
             z-index: 5;
         }
         
         .cell-btn {
             flex: 1; min-width: 34px;
-            border-right: 1px solid var(--border-color);
+            border-right: 0.5px solid var(--border-color);
             display: flex; align-items: center; justify-content: center;
             cursor: pointer; user-select: none; font-size: 0.9rem;
             position: relative;
-            transition: background-color 0.1s;
+            background-color: var(--bg-surface);
+            transition: background-color 0.1s, transform 0.1s;
         }
         .cell-btn:active { transform: scale(0.95); }
-        .cell-btn.today-border { border-bottom: 2px solid var(--text-main); }
+        .cell-btn.today-border { border-bottom: 2px solid var(--primary); }
         
-        .state-skip { background-color: var(--bg-surface); color: var(--text-muted); font-weight: bold; }
-        html.dark .state-skip { background-color: #1a1a1a; color: #888888; } 
+        .state-skip { background-color: var(--bg-surface-hover); color: var(--text-muted); font-weight: bold; }
 
         /* --- NOTES & TOOLTIPS --- */
         .note-indicator {
             position: absolute; top: 0; right: 0;
             width: 0; height: 0;
             border-style: solid; border-width: 0 8px 8px 0;
-            border-color: transparent var(--text-main) transparent transparent;
-            opacity: 0.6; pointer-events: none;
+            border-color: transparent var(--text-muted) transparent transparent;
+            opacity: 0.8; pointer-events: none;
         }
         #customTooltip {
-            position: fixed; background: var(--bg-surface); color: var(--text-main);
-            padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border-color);
-            font-size: 0.85rem; font-weight: 500; box-shadow: 0 4px 25px rgba(0,0,0,0.4);
+            position: fixed; background: rgba(28, 28, 30, 0.95); color: #fff;
+            padding: 10px 14px; border-radius: 10px; border: 0.5px solid var(--border-color);
+            font-size: 0.85rem; font-weight: 500; box-shadow: 0 4px 20px rgba(0,0,0,0.3);
             pointer-events: none; z-index: 999; opacity: 0; transition: opacity 0.2s;
             max-width: 250px; white-space: pre-wrap; transform: translate(15px, 15px);
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
         }
 
         /* --- CATEGORY & ROWS --- */
         .category-group-header {
             display: flex; width: 100%; min-width: max-content;
-            background-color: var(--bg-surface); border-bottom: 1px solid var(--border-color);
+            background-color: var(--bg-body); border-bottom: 0.5px solid var(--border-color);
             position: sticky; left: 0;
         }
         .cat-header-sticky {
             width: 220px; flex-shrink: 0; padding: 6px 12px;
-            font-size: 0.7rem; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase;
+            font-size: 0.7rem; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase;
             color: var(--text-muted); display: flex; align-items: center; justify-content: space-between;
-            background-color: var(--bg-surface); border-right: 1px solid var(--border-color);
+            background-color: var(--bg-body); border-right: 0.5px solid var(--border-color);
             position: sticky; left: 0; z-index: 25;
         }
         .cat-info { display: flex; align-items: center; gap: 8px; cursor: pointer; flex: 1; }
@@ -226,23 +245,23 @@
         .menu-btn-shared { opacity: 0; padding: 2px 6px; border-radius: 4px; transition: all 0.2s; font-size: 1.1em; cursor: pointer; color: var(--text-muted); }
         .menu-btn-shared:hover { background-color: var(--bg-surface-hover); color: var(--text-main); }
         .cat-header-sticky:hover .menu-btn-shared { opacity: 1; }
-        .cat-header-fill { flex: 1; background-color: var(--bg-surface); }
+        .cat-header-fill { flex: 1; background-color: var(--bg-body); }
         
-        .cat-status-dot { width: 8px; height: 8px; border-radius: 50%; margin-left: 8px; flex-shrink: 0; transition: background-color 0.3s, box-shadow 0.3s; }
+        .cat-status-dot { width: 8px; height: 8px; border-radius: 50%; margin-left: 8px; flex-shrink: 0; transition: background-color 0.3s; }
 
         /* --- SUBCATEGORY --- */
         .subcategory-row {
             display: flex; width: 100%; min-width: max-content;
-            background-color: var(--bg-surface); border-bottom: 1px solid var(--border-color);
+            background-color: var(--bg-body); border-bottom: 0.5px solid var(--border-color);
             transition: background-color 0.2s;
         }
         .subcategory-row.drag-over { background-color: var(--bg-surface-hover); }
         
         .subcat-label {
             width: 220px; position: sticky; left: 0; z-index: 22; padding: 4px 12px;
-            font-size: 0.65rem; font-weight: 700; text-transform: uppercase;
+            font-size: 0.65rem; font-weight: 600; text-transform: uppercase;
             color: var(--text-muted); opacity: 0.9; letter-spacing: 0.05em;
-            background-color: var(--bg-surface); border-right: 1px solid var(--border-color);
+            background-color: var(--bg-body); border-right: 0.5px solid var(--border-color);
             display: flex; align-items: center; justify-content: space-between;
         }
         .subcat-click-area { display: flex; align-items: center; gap: 6px; cursor: pointer; flex: 1; height: 100%; }
@@ -251,8 +270,8 @@
 
         /* --- HABIT ROW --- */
         .habit-row {
-            min-height: 56px; border-bottom: 1px solid var(--border-color);
-            background-color: var(--bg-body); transition: background-color 0.2s;
+            min-height: 56px; border-bottom: 0.5px solid var(--border-color);
+            background-color: var(--bg-surface); transition: background-color 0.2s;
         }
         .habit-row:hover { background-color: var(--bg-surface-hover); }
         .habit-row.dragging { opacity: 0.4; }
@@ -263,103 +282,72 @@
         .drag-handle { cursor: grab; margin-right: 6px; color: var(--text-muted); opacity: 0.3; font-size: 1.2em; display: flex; align-items: center; }
         .habit-row:hover .drag-handle { opacity: 1; }
         .streak-badge { display: flex; align-items: center; gap: 2px; font-size: 0.7rem; font-weight: bold; color: var(--text-muted); margin-left: auto; margin-right: 6px; }
-        .streak-badge.active { color: #f97316; }
+        .streak-badge.active { color: #ff9500; } /* Naranja Apple */
 
         /* --- MENUS --- */
-        #menuOverlay { background-color: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 50; transition: opacity 0.3s; }
-        #menuContent { position: fixed; top: 0; left: 0; height: 100%; width: 300px; background-color: var(--menu-bg); border-right: 1px solid var(--border-color); z-index: 51; transform: translateX(-100%); transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); box-shadow: 10px 0 40px rgba(0,0,0,0.2); display: flex; flex-direction: column; }
+        #menuOverlay { background-color: rgba(0,0,0,0.4); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); z-index: 50; transition: opacity 0.3s; }
+        
+        #menuContent { position: fixed; top: 0; left: 0; height: 100%; width: 320px; background-color: var(--menu-bg); border-right: 0.5px solid var(--border-color); z-index: 51; transform: translateX(-100%); transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1); box-shadow: 5px 0 30px rgba(0,0,0,0.15); display: flex; flex-direction: column; }
         #menuContent.open { transform: translateX(0); }
-        .menu-header { padding: 32px 24px 24px 24px; display: flex; justify-content: space-between; align-items: center; }
-        .menu-scroll-area { flex: 1; overflow-y: auto; padding: 0 24px 32px 24px; }
-        .menu-section { margin-bottom: 32px; }
-        .menu-section-label { font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); opacity: 0.7; margin-bottom: 12px; display: block; margin-left: 4px; }
-        .menu-row { width: 100%; text-align: left; padding: 14px 4px; display: flex; justify-content: space-between; align-items: center; font-size: 0.95rem; font-weight: 500; color: var(--text-main); border-bottom: 1px solid var(--bg-surface-hover); cursor: pointer; }
         
-        .cat-list-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid var(--bg-surface-hover); }
-        .color-dot-container { position: relative; width: 16px; height: 16px; border-radius: 50%; overflow: hidden; border: 1px solid var(--border-color); margin-right: 10px; flex-shrink: 0; }
-        .color-dot-input { position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; cursor: pointer; border: none; padding: 0; margin: 0; }
+        .menu-header { padding: 48px 20px 16px 20px; display: flex; justify-content: space-between; align-items: center; }
+        .menu-header h3 { font-size: 2.1rem; font-weight: 700; letter-spacing: -0.02em; }
+        .menu-scroll-area { flex: 1; overflow-y: auto; padding: 0 20px 40px 20px; }
         
-        .switch-toggle { width: 40px; height: 22px; background-color: var(--bg-surface-hover); border-radius: 99px; position: relative; border: 1px solid var(--border-color); transition: background 0.3s, border-color 0.3s; cursor: pointer; }
-        .switch-toggle.active { background-color: var(--text-main); border-color: var(--text-main); }
-        .switch-toggle::after { content: ''; position: absolute; left: 2px; top: 2px; width: 16px; height: 16px; background-color: var(--text-muted); border-radius: 50%; transition: transform 0.3s, background-color 0.3s; box-shadow: 0 1px 2px rgba(0,0,0,0.2); }
-        .switch-toggle.active::after { transform: translateX(18px); background-color: var(--bg-body); }
-
-        #genericModal, #newHabitModal, #confirmModal, #noteModal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 60; background-color: rgba(0,0,0,0.6); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; padding: 16px; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+        .menu-section { margin-bottom: 24px; }
+        .menu-section-label { font-size: 0.8rem; font-weight: 500; text-transform: uppercase; color: var(--text-muted); margin-bottom: 6px; margin-left: 12px; display: block; letter-spacing: 0.05em; }
+        
+        .menu-card { background-color: var(--bg-surface); border-radius: 12px; overflow: hidden; border: 0.5px solid var(--border-color); }
+        
+        .menu-row { width: 100%; text-align: left; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; font-size: 1rem; font-weight: 500; color: var(--text-main); border-bottom: 0.5px solid var(--border-color); cursor: pointer; transition: background-color 0.15s; }
+        .menu-row:last-child { border-bottom: none; }
+        .menu-row:active { background-color: var(--bg-surface-hover); }
+        .menu-row span:last-child { color: var(--text-muted); font-size: 1.2rem; }
+        
+        /* Modales genéricos base */
+        #genericModal, #newHabitModal, #confirmModal, #noteModal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 60; background-color: rgba(0,0,0,0.4); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; padding: 16px; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
         #genericModal.active, #newHabitModal.active, #confirmModal.active, #noteModal.active { opacity: 1; pointer-events: auto; }
         
-        .modal-card { background-color: var(--bg-body); width: 100%; max-width: 400px; border-radius: 20px; padding: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.4); border: 1px solid var(--border-color); position: relative; animation: scaleIn 0.2s ease-out; margin: 0; max-height: 85vh; overflow-y: auto; display: flex; flex-direction: column; }
+        .modal-card { background-color: var(--bg-surface); width: 100%; max-width: 420px; border-radius: 20px; padding: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.3); border: 0.5px solid var(--border-color); position: relative; animation: scaleIn 0.2s cubic-bezier(0.16, 1, 0.3, 1); margin: 0; max-height: 85vh; overflow-y: auto; display: flex; flex-direction: column; }
         
-        input.clean-input, textarea.clean-input { width: 100%; font-size: 1.25rem; background: transparent; border: none; border-bottom: 2px solid var(--border-color); padding: 8px 0; margin-bottom: 24px; outline: none; resize: none; }
-        input.clean-input:focus, textarea.clean-input:focus { border-color: var(--text-main); }
-        
-        .primary-btn { width: 100%; padding: 14px; background-color: var(--primary); color: var(--on-primary); border-radius: 12px; font-weight: bold; font-size: 0.875rem; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-        .secondary-btn { width: 100%; padding: 14px; background-color: var(--bg-surface); color: var(--text-main); border-radius: 12px; font-weight: bold; font-size: 0.875rem; text-align: center; }
-        .option-btn { width: 100%; padding: 14px; text-align: left; border-radius: 12px; margin-bottom: 8px; font-size: 0.9rem; font-weight: 500; display: flex; align-items: center; gap: 12px; background-color: var(--bg-surface); color: var(--text-main); border: 1px solid transparent; }
+        .primary-btn { width: 100%; padding: 14px; background-color: var(--primary); color: #ffffff; border-radius: 12px; font-weight: 600; font-size: 0.95rem; text-align: center; box-shadow: 0 2px 8px rgba(0, 122, 255, 0.2); transition: transform 0.1s; }
+        .primary-btn:active { transform: scale(0.97); }
+        .secondary-btn { width: 100%; padding: 14px; background-color: var(--bg-surface-hover); color: var(--text-main); border-radius: 12px; font-weight: 600; font-size: 0.95rem; text-align: center; transition: transform 0.1s; }
+        .secondary-btn:active { transform: scale(0.97); }
+        .option-btn { width: 100%; padding: 14px; text-align: left; border-radius: 12px; margin-bottom: 8px; font-size: 0.95rem; font-weight: 500; display: flex; align-items: center; gap: 12px; background-color: var(--bg-surface-hover); color: var(--text-main); }
         
         #toast-container { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%); z-index: 100; pointer-events: none; }
-        .toast { background-color: var(--toast-bg); color: var(--toast-text); padding: 10px 24px; border-radius: 99px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); font-size: 0.85rem; font-weight: 600; margin-top: 8px; animation: slideUp 0.3s forwards; }
+        .toast { background-color: var(--toast-bg); color: var(--toast-text); padding: 12px 24px; border-radius: 99px; box-shadow: 0 8px 30px rgba(0,0,0,0.2); font-size: 0.9rem; font-weight: 500; margin-top: 8px; animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         
-        @keyframes slideUp { 0% { transform: translateY(20px); opacity: 0; } 100% { transform: translateY(0); opacity: 1; } }
-        @keyframes scaleIn { 0% { transform: scale(0.95); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        @keyframes slideUp { 0% { transform: translateY(30px); opacity: 0; } 100% { transform: translateY(0); opacity: 1; } }
+        @keyframes scaleIn { 0% { transform: scale(0.9); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
         
-        .color-picker-wrapper { width: 30px; height: 30px; border-radius: 50%; overflow: hidden; border: 2px solid var(--border-color); flex-shrink: 0; cursor: pointer; }
-        input[type="color"] { width: 200%; height: 200%; transform: translate(-25%, -25%); border: none; cursor: pointer; padding: 0; }
+        .switch-toggle { width: 50px; height: 30px; background-color: var(--bg-surface-hover); border-radius: 99px; position: relative; border: 2px solid transparent; transition: background 0.3s; cursor: pointer; }
+        .switch-toggle.active { background-color: var(--success); }
+        .switch-toggle::after { content: ''; position: absolute; left: 2px; top: 2px; width: 22px; height: 22px; background-color: #ffffff; border-radius: 50%; transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        .switch-toggle.active::after { transform: translateX(20px); }
+
         #confettiCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 150; }
 
-        /* --- MODAL TABS --- */
-        .tabs-header { display: flex; border-bottom: 1px solid var(--border-color); margin-bottom: 16px; gap: 16px; }
-        .tab-btn { padding: 8px 0; font-size: 0.85rem; font-weight: 700; color: var(--text-muted); border-bottom: 2px solid transparent; transition: all 0.2s; flex: 1; text-align: center; text-transform: uppercase; letter-spacing: 0.05em; }
-        .tab-btn:hover { color: var(--text-main); }
-        .tab-btn.active { color: var(--text-main); border-bottom-color: var(--primary); }
-        
-        .cat-select-dropdown { width: 100%; padding: 10px; background: var(--bg-surface); color: var(--text-main); border: 1px solid var(--border-color); border-radius: 10px; font-size: 0.9rem; outline: none; margin-bottom: 16px; }
-
-        /* --- ICON BUTTONS --- */
-        .action-icon-btn { padding: 8px; border-radius: 8px; color: var(--text-muted); display:flex; align-items:center; justify-content:center; transition: all 0.2s; }
-        .action-icon-btn:hover { background: var(--bg-surface-hover); color: var(--text-main); }
-        .action-icon-btn.danger:hover { background: #fee2e2; color: var(--danger); }
-        html.dark .action-icon-btn.danger:hover { background: #3f1212; }
-
-        /* --- MODAL (v7.5) --- */
-        .modern-modal-content {
-            background: var(--bg-body);
-            border: 1px solid var(--border-color);
-            border-radius: 24px;
-            padding: 32px;
-            width: 100%;
-            max-width: 420px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-            display: flex;
-            flex-direction: column;
-            gap: 24px;
-            animation: scaleIn 0.2s ease-out;
-            position: relative;
-        }
-
-        .modal-header { margin-bottom: 8px; }
-        .modal-title { font-size: 1.5rem; font-weight: 800; letter-spacing: -0.02em; color: var(--text-main); margin-bottom: 4px; }
-        .modal-subtitle { font-size: 0.85rem; color: var(--text-muted); }
-
+        /* --- INPUTS MODERNOS --- */
         .input-group { position: relative; display: flex; flex-direction: column; gap: 8px; }
-        .input-label { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); display: flex; justify-content: space-between; align-items: center; }
-        .modern-input { background-color: var(--bg-surface); border: 2px solid transparent; border-radius: 12px; padding: 14px 16px; font-size: 1rem; color: var(--text-main); width: 100%; outline: none; transition: all 0.2s; }
-        .modern-input:focus { background-color: var(--bg-body); border-color: var(--primary); box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.1); }
+        .input-label { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); display: flex; justify-content: space-between; align-items: center; }
+        .modern-input { background-color: var(--bg-body); border: 1px solid var(--border-color); border-radius: 12px; padding: 14px 16px; font-size: 1rem; color: var(--text-main); width: 100%; outline: none; transition: all 0.2s; font-family: inherit; }
+        .modern-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1); }
 
         .chips-scroll-area { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
-
-        .chip-modern { padding: 8px 16px; border-radius: 12px; font-size: 0.8rem; font-weight: 600; background-color: var(--bg-surface); border: 1px solid var(--border-color); color: var(--text-muted); cursor: pointer; transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1); display: flex; align-items: center; gap: 6px; user-select: none; }
-        .chip-modern:hover { background-color: var(--bg-surface-hover); color: var(--text-main); transform: translateY(-1px); }
-        .chip-modern.active { background-color: var(--primary); color: var(--on-primary); border-color: var(--primary); box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+        .chip-modern { padding: 8px 16px; border-radius: 99px; font-size: 0.85rem; font-weight: 500; background-color: var(--bg-body); border: 1px solid var(--border-color); color: var(--text-main); cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 6px; user-select: none; }
+        .chip-modern:active { transform: scale(0.95); }
+        .chip-modern.active { background-color: var(--primary); color: #ffffff; border-color: var(--primary); }
         .chip-dot { width: 8px; height: 8px; border-radius: 50%; background-color: currentColor; opacity: 0.7; }
+        
+        .color-picker-wrapper { width: 30px; height: 30px; border-radius: 50%; overflow: hidden; border: 1px solid var(--border-color); flex-shrink: 0; cursor: pointer; }
+        .color-dot-container { position: relative; width: 20px; height: 20px; border-radius: 50%; overflow: hidden; border: 1px solid var(--border-color); margin-right: 10px; flex-shrink: 0; }
+        .color-dot-input { position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; cursor: pointer; border: none; padding: 0; margin: 0; }
+        input[type="color"] { width: 200%; height: 200%; transform: translate(-25%, -25%); border: none; cursor: pointer; padding: 0; }
 
-        .creator-box { display: flex; gap: 8px; align-items: center; background: var(--bg-surface-hover); padding: 6px; border-radius: 14px; animation: fadeIn 0.2s ease-out; }
-        .creator-btn-ok { background: var(--primary); color: var(--on-primary); border-radius: 10px; padding: 0 16px; height: 42px; font-weight: bold; font-size: 0.8rem; display: flex; align-items: center; transition: transform 0.1s; }
-        .creator-btn-ok:active { transform: scale(0.95); }
-
-        .mini-btn { font-size: 0.7rem; font-weight: 700; padding: 4px 8px; background: var(--bg-surface-hover); border-radius: 6px; color: var(--primary); cursor: pointer; }
-        .mini-btn:hover { background: var(--border-color); }
-
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        .mini-btn { font-size: 0.75rem; font-weight: 600; padding: 4px 8px; background: var(--bg-surface-hover); border-radius: 6px; color: var(--primary); cursor: pointer; }
+        
     </style>
 </head>
 <body>
@@ -369,7 +357,7 @@
         <button onclick="window.toggleMenu(true)" class="btn-icon">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
         </button>
-        <h1 class="font-bold text-sm tracking-widest uppercase">Habit Tracker</h1>
+        <h1 id="appYearTitle" class="font-bold text-sm tracking-widest uppercase"></h1>
         <button onclick="window.toggleNewHabit(true)" class="btn-new"><span>+</span> <span>Nuevo</span></button>
     </header>
 
@@ -389,41 +377,79 @@
 
     <div id="menuOverlay" onclick="window.toggleMenu(false)" class="hidden opacity-0 fixed inset-0"></div>
     <div id="menuContent">
-        <div class="menu-header"><h3 class="font-bold text-2xl">Ajustes</h3><button onclick="window.toggleMenu(false)" class="btn-icon">✕</button></div>
+        <div class="menu-header">
+            <h3>Ajustes</h3>
+            <button onclick="window.toggleMenu(false)" class="btn-icon" style="background: var(--bg-surface-hover); border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">✕</button>
+        </div>
         <div class="menu-scroll-area">
+            
+            <div class="menu-section">
+                <label class="menu-section-label">Secciones</label>
+                <div class="menu-card">
+                    <div class="menu-row" onclick="openSection('metas')"><span>🎯 Metas</span><span>›</span></div>
+                    <div class="menu-row" onclick="openSection('pagos')"><span>💳 Pagos</span><span>›</span></div>
+                </div>
+            </div>
+            
             <div class="menu-section">
                 <label class="menu-section-label">General</label>
-                <div class="menu-row" onclick="toggleClockSound()"><span>🕑 Sonido Reloj</span><div id="toggleSound" class="switch-toggle"></div></div>
-                <div class="menu-row" onclick="toggleDarkMode()"><span>🌗 Modo Oscuro</span><div id="toggleDark" class="switch-toggle"></div></div>
+                <div class="menu-card">
+                    <div class="menu-row" onclick="toggleClockSound()"><span>🕑 Sonido Reloj</span><div id="toggleSound" class="switch-toggle"></div></div>
+                    <div class="menu-row" onclick="toggleDarkMode()"><span>🌗 Modo Oscuro</span><div id="toggleDark" class="switch-toggle"></div></div>
+                </div>
             </div>
+            
             <div class="menu-section">
                 <label class="menu-section-label">Visual</label>
-                <div class="menu-row" onclick="toggleIconStyle()"><span>🔳 Estilo Casillas</span><div id="toggleIconStyle" class="switch-toggle"></div></div>
-                <div class="menu-row">
-                    <span>📏 Línea Semanal</span>
-                    <div class="color-dot-container" style="width:24px; height:24px; border:none; box-shadow:0 0 0 1px var(--border-color);">
-                        <input type="color" id="dividerColorInput" class="color-dot-input" onchange="updateDividerColor(this.value)">
+                <div class="menu-card">
+                    <div class="menu-row" onclick="toggleIconStyle()"><span>🔳 Estilo Casillas</span><div id="toggleIconStyle" class="switch-toggle"></div></div>
+                    <div class="menu-row">
+                        <span>📏 Línea Semanal</span>
+                        <div class="color-dot-container" style="width:24px; height:24px; border:none; box-shadow:0 0 0 1px var(--border-color);">
+                            <input type="color" id="dividerColorInput" class="color-dot-input" onchange="updateDividerColor(this.value)">
+                        </div>
                     </div>
                 </div>
             </div>
+            
             <div class="menu-section">
                 <label class="menu-section-label">Gestión</label>
-                <div class="menu-row" onclick="openCategoryManager('categories')"><span>Categorías</span><span>›</span></div>
-                <div class="menu-row" onclick="openSubMenu('backup')"><span>Backup</span><span>›</span></div>
+                <div class="menu-card">
+                    <div class="menu-row" onclick="openCategoryManager('categories')"><span>Categorías</span><span>›</span></div>
+                    <div class="menu-row" onclick="openSubMenu('backup')"><span>Backup</span><span>›</span></div>
+                </div>
             </div>
-            <div class="danger-zone"><button onclick="resetData()" class="delete-btn" style="color:var(--danger); text-align:left; width:100%; padding:14px 4px; font-weight:bold;">🗑️ Eliminar todo</button></div>
+            
+            <div class="menu-section" style="margin-top: 32px;">
+                <div class="menu-card">
+                    <button onclick="resetData()" class="menu-row" style="color:var(--danger); justify-content: center; font-weight: 600;">Eliminar todo</button>
+                </div>
+            </div>
+            
         </div>
     </div>
 
-    <div id="genericModal" onclick="closeGenericModal()" class="hidden"><div id="gModalContent" onclick="event.stopPropagation()" class="modal-card"><button onclick="closeGenericModal()" class="absolute" style="top:16px; right:16px; color:var(--text-muted);">✕</button><h3 id="gModalTitle" class="font-bold text-lg mb-4">Título</h3><div id="gModalBody"></div></div></div>
-    <div id="confirmModal" onclick="closeConfirm()" class="hidden"><div class="modal-card" onclick="event.stopPropagation()"><h3 class="font-bold text-lg mb-2">¿Estás seguro?</h3><div class="flex gap-2"><button onclick="closeConfirm()" class="secondary-btn">Cancelar</button><button id="btnConfirmAction" class="primary-btn" style="background-color:var(--danger);">Confirmar</button></div></div></div>
+    <div id="customSectionOverlay" class="hidden" style="position:fixed; top:0; left:0; width:100%; height:100%; z-index:45; background-color:var(--bg-body); display:flex; flex-direction:column;">
+        <header style="background: var(--bg-surface);">
+            <button onclick="closeSection()" class="btn-icon" style="color:var(--text-main);">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            </button>
+            <h1 id="customSectionTitle" class="font-bold text-sm tracking-widest uppercase">...</h1>
+            <div style="width:40px;"></div>
+        </header>
+        <div id="customSectionBody" style="flex:1; overflow-y:auto; position: relative; padding: 0;"></div>
+    </div>
+
+    <div id="genericModal" onclick="closeGenericModal()" class="hidden"><div id="gModalContent" onclick="event.stopPropagation()" class="modal-card"><button onclick="closeGenericModal()" class="absolute" style="top:16px; right:16px; color:var(--text-muted); padding: 4px;">✕</button><h3 id="gModalTitle" class="font-bold text-xl mb-4" style="letter-spacing:-0.02em;">Título</h3><div id="gModalBody"></div></div></div>
+    
+    <div id="confirmModal" onclick="closeConfirm()" class="hidden"><div class="modal-card" onclick="event.stopPropagation()"><h3 class="font-bold text-xl mb-2">¿Estás seguro?</h3><div class="flex gap-3 mt-4"><button onclick="closeConfirm()" class="secondary-btn">Cancelar</button><button id="btnConfirmAction" class="primary-btn" style="background-color:var(--danger); box-shadow: 0 4px 12px rgba(255,59,48,0.2);">Confirmar</button></div></div></div>
     
     <div id="noteModal" onclick="closeNoteModal()" class="hidden">
         <div onclick="event.stopPropagation()" class="modal-card">
-            <h3 class="font-bold text-lg mb-2">Nota</h3>
+            <h3 class="font-bold text-xl mb-2">Nota</h3>
             <p id="noteModalLabel" class="text-xs text-muted mb-4 uppercase tracking-widest">...</p>
-            <textarea id="noteInput" class="clean-input" placeholder="Ej: 3 min de plancha..." style="min-height: 80px; font-size:1rem;"></textarea>
-            <div class="flex gap-2">
+            <textarea id="noteInput" class="modern-input" placeholder="Ej: 3 min de plancha..." style="min-height: 100px; margin-bottom: 24px;"></textarea>
+            <div class="flex gap-3">
                 <button onclick="saveNote(true)" class="secondary-btn" style="color:var(--danger)">Borrar</button>
                 <button onclick="saveNote(false)" class="primary-btn">Guardar</button>
             </div>
@@ -433,58 +459,65 @@
     <div id="customTooltip"></div>
 
     <div id="newHabitModal" onclick="window.toggleNewHabit(false)" class="hidden">
-        <div onclick="event.stopPropagation()" class="modern-modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title">Nuevo Hábito</h3>
-                <p class="modal-subtitle">Define tu próximo objetivo diario</p>
+        <div onclick="event.stopPropagation()" class="modal-card">
+            <div style="margin-bottom: 20px;">
+                <h3 style="font-size: 1.5rem; font-weight: 700; letter-spacing: -0.02em;">Nuevo Hábito</h3>
             </div>
-            <div class="input-group">
+            <div class="input-group" style="margin-bottom: 16px;">
                 <input type="text" id="habitNameInput" placeholder="Ej: Leer 15 minutos..." class="modern-input" autocomplete="off">
             </div>
-            <div class="input-group">
+            <div class="input-group" style="margin-bottom: 16px;">
                 <div class="input-label">
                     <span>Categoría</span>
                     <button onclick="toggleCatCreator(true)" id="btnNewCat" class="mini-btn">+ NUEVA</button>
                 </div>
                 <div id="categoryChips" class="chips-scroll-area"></div>
-                <div id="catCreator" class="creator-box hidden">
-                    <div class="color-picker-wrapper" style="width:42px; height:42px; border-width:0;">
-                        <input type="color" id="newCatColor" value="#3b82f6">
-                    </div>
-                    <input id="newCatName" type="text" class="modern-input" style="padding: 10px; border:none; background:transparent;" placeholder="Nombre categoría...">
-                    <button onclick="confirmNewCategory()" class="creator-btn-ok">OK</button>
-                    <button onclick="toggleCatCreator(false)" style="padding:10px; opacity:0.5;">✕</button>
+                <div id="catCreator" class="hidden" style="display: none; gap: 8px; align-items: center; background: var(--bg-body); padding: 8px; border-radius: 14px; border: 1px solid var(--border-color);">
+                    <div class="color-picker-wrapper"><input type="color" id="newCatColor" value="#007aff"></div>
+                    <input id="newCatName" type="text" style="flex:1; border:none; background:transparent; outline:none; color:var(--text-main);" placeholder="Nombre...">
+                    <button onclick="confirmNewCategory()" style="background:var(--primary); color:white; padding:6px 12px; border-radius:8px; font-weight:600;">OK</button>
+                    <button onclick="toggleCatCreator(false)" style="color:var(--text-muted); padding:6px;">✕</button>
                 </div>
             </div>
-            <div id="subcatSection" class="input-group hidden">
+            <div id="subcatSection" class="input-group hidden" style="margin-bottom: 24px;">
                 <div class="input-label">
                     <span>Subcategoría (Opcional)</span>
                     <button onclick="toggleSubcatCreator(true)" id="btnNewSub" class="mini-btn">+ NUEVA</button>
                 </div>
                 <div id="subcatChips" class="chips-scroll-area"></div>
-                <div id="subcatCreator" class="creator-box hidden">
-                    <input id="newSubName" type="text" class="modern-input" style="padding: 10px; border:none; background:transparent;" placeholder="Nombre subcategoría...">
-                    <button onclick="confirmNewSubcat()" class="creator-btn-ok">OK</button>
-                    <button onclick="toggleSubcatCreator(false)" style="padding:10px; opacity:0.5;">✕</button>
+                <div id="subcatCreator" class="hidden" style="display: none; gap: 8px; align-items: center; background: var(--bg-body); padding: 8px; border-radius: 14px; border: 1px solid var(--border-color);">
+                    <input id="newSubName" type="text" style="flex:1; border:none; background:transparent; outline:none; color:var(--text-main);" placeholder="Nombre...">
+                    <button onclick="confirmNewSubcat()" style="background:var(--primary); color:white; padding:6px 12px; border-radius:8px; font-weight:600;">OK</button>
+                    <button onclick="toggleSubcatCreator(false)" style="color:var(--text-muted); padding:6px;">✕</button>
                 </div>
             </div>
-            <button onclick="createHabit()" class="primary-btn" style="margin-top: 8px; font-size: 1rem; padding: 16px;">Crear Hábito</button>
+            <button onclick="createHabit()" class="primary-btn">Crear Hábito</button>
         </div>
     </div>
 
     <div id="toast-container"></div>
 
     <script>
-        const DEFAULT_CATEGORIES = [{ id: 'gen', name: 'General', color: '#9ca3af', subcategories: [] }];
-        let state = { habits: [], categories: JSON.parse(JSON.stringify(DEFAULT_CATEGORIES)), settings: { darkMode: true, collapsedCats: {}, collapsedSubCats: {}, clockSound: false, dailyNote: "", iconStyle: 'minimal', dividerColor: null }, viewDate: new Date() };
+        const DEFAULT_CATEGORIES = [{ id: 'gen', name: 'General', color: '#8e8e93', subcategories: [] }];
+        let state = { 
+            habits: [], 
+            categories: JSON.parse(JSON.stringify(DEFAULT_CATEGORIES)), 
+            settings: { darkMode: true, collapsedCats: {}, collapsedSubCats: {}, clockSound: false, dailyNote: "", iconStyle: 'minimal', dividerColor: null }, 
+            viewDate: new Date(),
+            pagosServices: [],
+            pagosMonthly: {},
+            metas: [] 
+        };
         let selectedCategory = null; let selectedSubcat = ""; let confirmCallback = null; let clockInterval = null; let draggedHabitId = null;
         let selectionAnchor = null; 
         let currentManageCatId = null; 
         let tickTockState = false; 
+        let pagosViewDate = new Date();
+        let metasViewYear = new Date().getFullYear();
 
         // ICONS
-        const ICON_PENCIL = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>`;
-        const ICON_TRASH = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>`;
+        const ICON_PENCIL = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>`;
+        const ICON_TRASH = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>`;
 
         function init() {
             try {
@@ -496,18 +529,37 @@
                     if(state.categories) state.categories.forEach(c => { if(!c.subcategories) c.subcategories = []; });
                     if(!state.settings.collapsedSubCats) state.settings.collapsedSubCats = {};
                     if(!state.settings.iconStyle) state.settings.iconStyle = 'minimal';
-                    // Asegurar objetos base
                     state.habits.forEach(h => { 
                         if (!h.notes) h.notes = {}; 
                         if (h.description === undefined) h.description = "";
                     });
                 }
+                
+                if (!state.pagosServices) {
+                    state.pagosServices = JSON.parse(localStorage.getItem('masterServices_v4')) || [];
+                    state.pagosMonthly = JSON.parse(localStorage.getItem('monthlyData_v4')) || {};
+                }
+                
+                if (!state.metas) state.metas = [];
+                
+                // MIGRACIÓN METAS: Asegurar que tengan año
+                state.metas.forEach(m => {
+                    if(!m.type) m.type = 'numeric';
+                    if(!m.year) m.year = new Date().getFullYear();
+                });
+                
+                saveData();
             } catch (e) {}
+            
+            document.getElementById('appYearTitle').innerText = new Date().getFullYear();
+
             applyTheme(); updateSwitches(); renderCalendar(); renderQuote();
             if(state.settings.dividerColor) document.documentElement.style.setProperty('--divider-strong', state.settings.dividerColor);
             if(state.settings.clockSound) playClockAudio(true);
             window.addEventListener('resize', syncHeaderWidth);
             document.getElementById('btnConfirmAction').onclick = () => { if(confirmCallback) confirmCallback(); closeConfirm(); };
+            
+            pagosViewDate.setDate(1); 
         }
 
         function saveData() { localStorage.setItem('habitTrackerV5', JSON.stringify(state)); }
@@ -522,11 +574,7 @@
         }
         function toggleClockSound() { state.settings.clockSound = !state.settings.clockSound; saveData(); updateSwitches(); playClockAudio(state.settings.clockSound); showToast('Ajuste guardado'); }
         function toggleIconStyle() { state.settings.iconStyle = (state.settings.iconStyle === 'solid') ? 'minimal' : 'solid'; saveData(); updateSwitches(); renderCalendar(); showToast('Estilo cambiado'); }
-        function updateDividerColor(val) {
-             state.settings.dividerColor = val; 
-             document.documentElement.style.setProperty('--divider-strong', val);
-             saveData(); 
-        }
+        function updateDividerColor(val) { state.settings.dividerColor = val; document.documentElement.style.setProperty('--divider-strong', val); saveData(); }
 
         function playAnalogTick() {
             try {
@@ -543,15 +591,7 @@
                 osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.06);
             } catch (e) {}
         }
-
-        function playClockAudio(play) { 
-            if(clockInterval) clearInterval(clockInterval); 
-            clockInterval = null;
-            if(play) { 
-                playAnalogTick(); 
-                clockInterval = setInterval(()=> playAnalogTick(), 1000); 
-            } 
-        }
+        function playClockAudio(play) { if(clockInterval) clearInterval(clockInterval); clockInterval = null; if(play) { playAnalogTick(); clockInterval = setInterval(()=> playAnalogTick(), 1000); } }
 
         /* --- DRAG DROP --- */
         function handleDragStart(e, id) { draggedHabitId = id; e.dataTransfer.effectAllowed='move'; e.target.classList.add('dragging'); }
@@ -561,7 +601,7 @@
         function dropOnSubcat(e, catId, subName) { e.preventDefault(); e.currentTarget.classList.remove('drag-over'); const h = state.habits.find(x => x.id == draggedHabitId); if(h) { const tCat = state.categories.find(c => c.id == catId); if(tCat && h.category.id != catId) h.category = tCat; h.subcategory = subName; saveData(); renderCalendar(); showToast('Hábito movido'); } }
         function dropOnHabit(e, targetId) { e.preventDefault(); const tH = state.habits.find(h=>h.id==targetId), dH = state.habits.find(h=>h.id==draggedHabitId); if(tH && dH && targetId!=draggedHabitId) { if(dH.category.id!=tH.category.id) dH.category=tH.category; dH.subcategory=tH.subcategory; saveData(); renderCalendar(); } }
 
-        /* --- RENDER --- */
+        /* --- RENDER CALENDAR --- */
         function renderCalendar() {
             const container = document.getElementById('habitsContainer');
             const headerContainer = document.getElementById('calendarHeader');
@@ -580,7 +620,7 @@
                 const iso = `${year}-${String(month+1).padStart(2,'0')}-${String(i).padStart(2,'0')}`;
                 const isWeekEnd = (i % 7 === 0);
                 const sep = isWeekEnd ? 'week-separator' : '';
-                headerHTML += `<div class="day-header ${iso===todayISO?'today':''} ${sep}"><span>${d.toLocaleDateString('es-ES',{weekday:'narrow'})}</span><span>${i}</span></div>`;
+                headerHTML += `<div class="day-header ${iso===todayISO?'today':''} ${sep}"><span>${d.toLocaleDateString('es-ES',{weekday:'narrow'})}</span><span style="font-weight:700;">${i}</span></div>`;
             }
             headerHTML += `</div><div class="sticky-col-right grid-header-cell">%</div></div>`;
             headerContainer.innerHTML = headerHTML;
@@ -589,12 +629,7 @@
             if (activeHabits.length === 0) { container.innerHTML = `<div style="padding:40px; text-align:center; color:var(--text-muted);">No hay hábitos.</div>`; return; }
 
             const grid = document.createElement('div'); grid.className = 'flex flex-col min-w-max';
-            
-            // Función auxiliar para limpiar textos (previene errores en HTML)
-            const cleanText = (txt) => {
-                if(!txt) return "";
-                return txt.replace(/'/g, "\\'").replace(/"/g, "&quot;").replace(/\n/g, "<br>");
-            };
+            const cleanText = (txt) => { if(!txt) return ""; return txt.replace(/'/g, "\\'").replace(/"/g, "&quot;").replace(/\n/g, "<br>"); };
 
             state.categories.forEach(cat => {
                 const catHabits = activeHabits.filter(h => h.category.id == cat.id);
@@ -648,8 +683,7 @@
                         let streak = 0; const dNow = new Date();
                         for(let k=0;k<365;k++){ const iso = dNow.toISOString().split('T')[0]; if(h.history[iso]==='done') streak++; else if(k>0) break; dNow.setDate(dNow.getDate()-1); }
 
-                        // ARREGLO PARA TOOLTIP EN NOMBRE
-                        let cells = `<div class="sticky-col-left habit-name-cell" onclick="openHabitOptions(${h.id})" onmousemove="moveTooltip(event)" onmouseenter="showTooltip(event, '${cleanText(h.description)}', 'Información')" onmouseleave="hideTooltip()"><div class="flex items-center gap-2 overflow-hidden" style="flex:1"><div class="drag-handle">::</div><div style="width:6px; height:6px; border-radius:50%; background:${cat.color}"></div><span class="text-sm font-medium truncate">${h.name}</span></div>${(h.showStreak!==false && streak>0) ? `<div class="streak-badge active">🔥 ${streak}</div>` : ''}</div><div class="days-container">`;
+                        let cells = `<div class="sticky-col-left habit-name-cell" onclick="openHabitOptions(${h.id})" onmousemove="moveTooltip(event)" onmouseenter="showTooltip(event, '${cleanText(h.description)}', 'Información')" onmouseleave="hideTooltip()"><div class="flex items-center gap-2 overflow-hidden" style="flex:1"><div class="drag-handle">::</div><div style="width:8px; height:8px; border-radius:50%; background:${cat.color}"></div><span class="text-sm font-bold truncate">${h.name}</span></div>${(h.showStreak!==false && streak>0) ? `<div class="streak-badge active">🔥 ${streak}</div>` : ''}</div><div class="days-container">`;
 
                         let checks=0;
                         for(let i=1; i<=daysInMonth; i++) {
@@ -667,19 +701,18 @@
                             let style = '', txt = '';
 
                             if(stat==='done') { 
-                                if(isSolid) { style=`background-color:${cat.color}; color:#fff;`; txt='✓'; }
-                                else { style=`color:${cat.color}; font-weight:bold;`; txt='✓'; }
+                                if(isSolid) { style=`background-color:var(--success); color:#fff; border-color:var(--success);`; txt='✓'; }
+                                else { style=`color:var(--success); font-weight:bold;`; txt='✓'; }
                             }
                             else if(stat==='fail') { 
-                                if(isSolid) { style='background-color:var(--danger); color:#fff;'; txt='✗'; }
-                                else { style='color:var(--danger);'; txt='✗'; }
+                                if(isSolid) { style='background-color:var(--danger); color:#fff; border-color:var(--danger);'; txt='✗'; }
+                                else { style='color:var(--danger); font-weight:bold;'; txt='✗'; }
                             }
                             else if(stat==='skip') { 
                                 cls+=' state-skip'; txt='−'; 
-                                if(isSolid) { style="background-color:#333; color:#fff;"; }
+                                if(isSolid) { style="background-color:var(--border-color); color:var(--text-main); border-color:var(--border-color);"; }
                             } 
                             
-                            // ARREGLO PARA TOOLTIP EN CASILLAS
                             cells += `<div 
                                 onclick="toggleDay(${h.id}, '${loopIso}', event)"
                                 oncontextmenu="openNoteModal(${h.id}, '${loopIso}', event)"
@@ -707,7 +740,6 @@
             header.style.paddingRight = `${scrollbarWidth}px`;
         }
 
-        /* --- LOGIC --- */
         function toggleCategory(id) { state.settings.collapsedCats[id] = !state.settings.collapsedCats[id]; saveData(); renderCalendar(); }
         function toggleSubCat(catId, subName) { const key = `${catId}_${subName}`; state.settings.collapsedSubCats[key] = !state.settings.collapsedSubCats[key]; saveData(); renderCalendar(); }
         
@@ -759,12 +791,12 @@
             document.getElementById('tabBtnSubs').classList.remove('active');
             let html = '<div style="display:flex; flex-direction:column; gap:8px;">';
             state.categories.forEach((c, i) => { 
-                html += `<div class="cat-list-item">
+                html += `<div class="cat-list-item" style="background: var(--bg-body); border-radius: 12px; padding: 12px; border:0.5px solid var(--border-color); margin-bottom: 4px;">
                     <div class="flex items-center">
                         <div class="color-dot-container" title="Cambiar color">
                              <input type="color" class="color-dot-input" value="${c.color}" onchange="updateCatColor('${c.id}', this.value)">
                         </div>
-                        <span class="font-medium text-sm">${c.name}</span>
+                        <span class="font-bold text-sm">${c.name}</span>
                     </div>
                     <div class="flex gap-2">
                         <button onclick="openRenameCategory('${c.id}')" class="action-icon-btn" title="Renombrar">${ICON_PENCIL}</button>
@@ -772,7 +804,7 @@
                     </div>
                 </div>`; 
             });
-            html += `</div><div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border-color);"><label class="text-xs font-bold uppercase tracking-widest" style="color: var(--text-muted); display: block; margin-bottom: 8px;">Nueva Categoría</label><div class="flex gap-2 items-center relative"><div class="color-picker-wrapper"><input type="color" id="newCatColorInput" value="#10b981"></div><input id="newCatInput" placeholder="Ej: Deportes..." style="flex:1; background: var(--bg-surface); padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); outline: none;"><button onclick="addCategory()" class="primary-btn" style="padding: 0 12px; height: 38px;">+</button></div></div>`;
+            html += `</div><div style="margin-top: 24px;"><label class="text-xs font-bold uppercase tracking-widest" style="color: var(--text-muted); display: block; margin-bottom: 8px;">Nueva Categoría</label><div class="flex gap-2 items-center relative"><div class="color-picker-wrapper"><input type="color" id="newCatColorInput" value="#007aff"></div><input id="newCatInput" placeholder="Ej: Deportes..." class="modern-input" style="flex:1;"><button onclick="addCategory()" class="primary-btn" style="width: auto; padding: 0 16px;">+</button></div></div>`;
             document.getElementById('managerContent').innerHTML = html;
         }
 
@@ -818,10 +850,11 @@
             state.categories.forEach(c => { catOptions += `<option value="${c.id}" ${c.id == currentManageCatId ? 'selected' : ''}>${c.name}</option>`; });
             const html = `
                 <label class="text-xs font-bold uppercase tracking-widest text-muted mb-2 block">Categoría Padre</label>
-                <select id="parentCatSelect" class="cat-select-dropdown" onchange="updateSubcatView(this.value)">${catOptions}</select>
+                <select id="parentCatSelect" class="cat-select-dropdown">${catOptions}</select>
                 <div id="subcatListArea"></div>
             `;
             document.getElementById('managerContent').innerHTML = html;
+            document.getElementById('parentCatSelect').addEventListener('change', (e) => updateSubcatView(e.target.value));
             updateSubcatView(currentManageCatId);
         }
 
@@ -836,8 +869,8 @@
                 html += '<p class="text-sm text-muted">No hay subcategorías.</p>';
             } else {
                 cat.subcategories.forEach(sub => {
-                    html += `<div style="display:flex; justify-content:space-between; align-items:center; padding:10px; background:var(--bg-surface); border-radius:8px;">
-                        <span class="text-sm">${sub}</span>
+                    html += `<div style="display:flex; justify-content:space-between; align-items:center; padding:12px; background:var(--bg-body); border-radius:12px; border:0.5px solid var(--border-color);">
+                        <span class="text-sm font-bold">${sub}</span>
                         <div class="flex gap-2">
                             <button onclick="openRenameSubcat('${cat.id}', '${sub}')" class="action-icon-btn" title="Editar">${ICON_PENCIL}</button>
                             <button onclick="deleteSubGlobal('${cat.id}', '${sub}')" class="action-icon-btn danger" title="Eliminar">${ICON_TRASH}</button>
@@ -846,7 +879,7 @@
                 });
             }
             html += '</div>';
-            html += `<div style="border-top:1px solid var(--border-color); padding-top:12px;"><div style="display:flex; gap:8px;"><input id="newSubInputGlobal" class="clean-input" placeholder="Nueva subcategoría..." style="margin:0; font-size:0.9rem;" onkeyup="if(event.key==='Enter') addSubcatGlobal()"><button onclick="addSubcatGlobal()" class="primary-btn" style="width:auto; padding:0 16px;">+</button></div></div>`;
+            html += `<div style="border-top:0.5px solid var(--border-color); padding-top:16px;"><div style="display:flex; gap:8px;"><input id="newSubInputGlobal" class="modern-input" placeholder="Nueva subcategoría..." onkeyup="if(event.key==='Enter') addSubcatGlobal()"><button onclick="addSubcatGlobal()" class="primary-btn" style="width:auto; padding:0 16px;">+</button></div></div>`;
             listArea.innerHTML = html;
             setTimeout(()=> { try { document.getElementById('newSubInputGlobal').focus(); } catch(e){} }, 100);
         }
@@ -918,9 +951,39 @@
 
         /* --- OTHERS --- */
         window.toggleMenu = function(show) { const o = document.getElementById('menuOverlay'), c = document.getElementById('menuContent'); if(show){ o.classList.remove('hidden'); setTimeout(() => { o.classList.remove('opacity-0'); c.classList.add('open'); }, 10); } else { o.classList.add('opacity-0'); c.classList.remove('open'); setTimeout(() => o.classList.add('hidden'), 300); } }
+        
         function openSubMenu(type) {
             window.toggleMenu(false);
-            if (type === 'backup') { openGenericModal('Backup', `<button onclick="downloadData()" class="primary-btn" style="margin-bottom:12px;">Descargar Backup</button><input type="file" onchange="uploadData(this)" style="display:block; width:100%; font-size:0.8rem; color:var(--text-muted);">`); }
+            if (type === 'backup') {
+                const html = `
+                    <p class="text-sm text-muted mb-4" style="line-height: 1.5;">Mantén tus datos seguros exportando una copia o restaura tu progreso desde un archivo anterior.</p>
+                    
+                    <div style="display: flex; flex-direction: column; gap: 16px;">
+                        <div style="background: var(--bg-body); border: 0.5px solid var(--border-color); border-radius: 16px; padding: 20px; display: flex; flex-direction: column; align-items: center; text-align: center;">
+                            <div style="background: var(--bg-surface); width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 12px; border: 0.5px solid var(--border-color); color: var(--text-main);">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                            </div>
+                            <h4 style="font-weight: 700; font-size: 1.1rem; margin-bottom: 4px; color: var(--text-main);">Exportar Datos</h4>
+                            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px;">Descarga un archivo con todos tus hábitos, metas y pagos.</p>
+                            <button onclick="downloadData()" class="primary-btn" style="border-radius: 99px; padding: 12px 24px; width: 100%;">Guardar Backup</button>
+                        </div>
+
+                        <div style="background: var(--bg-body); border: 0.5px solid var(--border-color); border-radius: 16px; padding: 20px; display: flex; flex-direction: column; align-items: center; text-align: center;">
+                            <div style="background: var(--bg-surface); width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 12px; border: 0.5px solid var(--border-color); color: var(--text-main);">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                            </div>
+                            <h4 style="font-weight: 700; font-size: 1.1rem; margin-bottom: 4px; color: var(--text-main);">Importar Datos</h4>
+                            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px;">Restaura tu progreso. <span style="color: var(--danger); font-weight: 600;">Reemplazará los datos actuales.</span></p>
+                            
+                            <div style="position: relative; width: 100%;">
+                                <input type="file" onchange="uploadData(this)" accept=".json" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; z-index: 10;">
+                                <button class="secondary-btn" style="border-radius: 99px; padding: 12px 24px; width: 100%; border: 0.5px solid var(--border-color); box-shadow: 0 2px 4px rgba(0,0,0,0.02);">Seleccionar Archivo</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                openGenericModal('Copia de Seguridad', html);
+            }
         }
         
         window.toggleNewHabit = function(show) { 
@@ -969,8 +1032,8 @@
 
         function toggleCatCreator(show) {
             const chips = document.getElementById('categoryChips'); const creator = document.getElementById('catCreator'); const btn = document.getElementById('btnNewCat');
-            if(show) { chips.classList.add('hidden'); btn.classList.add('hidden'); creator.classList.remove('hidden'); creator.classList.add('flex'); document.getElementById('newCatName').value = ""; document.getElementById('newCatName').focus(); } 
-            else { chips.classList.remove('hidden'); btn.classList.remove('hidden'); creator.classList.add('hidden'); creator.classList.remove('flex'); }
+            if(show) { chips.classList.add('hidden'); btn.classList.add('hidden'); creator.classList.remove('hidden'); creator.style.display = 'flex'; document.getElementById('newCatName').value = ""; document.getElementById('newCatName').focus(); } 
+            else { chips.classList.remove('hidden'); btn.classList.remove('hidden'); creator.classList.add('hidden'); creator.style.display = 'none'; }
         }
         function confirmNewCategory() {
             const nameInput = document.getElementById('newCatName'); const colorInput = document.getElementById('newCatColor'); const name = nameInput.value.trim();
@@ -983,8 +1046,8 @@
 
         function toggleSubcatCreator(show) {
             const chips = document.getElementById('subcatChips'); const creator = document.getElementById('subcatCreator'); const btn = document.getElementById('btnNewSub');
-            if(show) { chips.classList.add('hidden'); btn.classList.add('hidden'); creator.classList.remove('hidden'); creator.classList.add('flex'); document.getElementById('newSubName').value = ""; document.getElementById('newSubName').focus(); } 
-            else { chips.classList.remove('hidden'); btn.classList.remove('hidden'); creator.classList.add('hidden'); creator.classList.remove('flex'); }
+            if(show) { chips.classList.add('hidden'); btn.classList.add('hidden'); creator.classList.remove('hidden'); creator.style.display = 'flex'; document.getElementById('newSubName').value = ""; document.getElementById('newSubName').focus(); } 
+            else { chips.classList.remove('hidden'); btn.classList.remove('hidden'); creator.classList.add('hidden'); creator.style.display = 'none'; }
         }
         function confirmNewSubcat() {
             const nameInput = document.getElementById('newSubName'); const name = nameInput.value.trim();
@@ -1007,13 +1070,15 @@
         function showConfirm(m, cb) { document.getElementById('confirmModal').querySelector('h3').innerText=m; confirmCallback=cb; const el=document.getElementById('confirmModal'); el.classList.remove('hidden'); setTimeout(()=>el.classList.add('active'),10); }
         function closeConfirm() { const el=document.getElementById('confirmModal'); el.classList.remove('active'); setTimeout(()=>el.classList.add('hidden'),200); confirmCallback=null; }
         function showToast(m) { const t=document.createElement('div'); t.className='toast'; t.innerText=m; document.getElementById('toast-container').appendChild(t); setTimeout(()=>t.remove(),3000); }
-        function editQuote() { openGenericModal('Frase', `<textarea id="qIn" class="clean-input">${state.settings.dailyNote||""}</textarea><button onclick="saveQ()" class="primary-btn">Guardar</button>`); }
+        function editQuote() { openGenericModal('Frase', `<textarea id="qIn" class="modern-input" style="min-height:100px; margin-bottom:16px;">${state.settings.dailyNote||""}</textarea><button onclick="saveQ()" class="primary-btn">Guardar</button>`); }
         function saveQ() { state.settings.dailyNote = document.getElementById('qIn').value; saveData(); renderQuote(); closeGenericModal(); showToast('Frase guardada'); }
         function renderQuote() { document.getElementById('quoteDisplay').innerText = state.settings.dailyNote || "Haz clic para escribir una frase..."; }
         
         /* --- GESTIÓN HÁBITO --- */
         function openHabitOptions(id) { 
             const h = state.habits.find(x => x.id === id); 
+            const isStreakEnabled = h.showStreak !== false;
+            
             const html = `
                 <div class="input-group" style="margin-bottom:16px;">
                     <label class="input-label" style="margin-bottom:4px;">Nombre</label>
@@ -1021,34 +1086,40 @@
                 </div>
                 <div class="input-group" style="margin-bottom:16px;">
                     <label class="input-label" style="margin-bottom:4px;">Descripción / Beneficios</label>
-                    <textarea id="descInput_${id}" class="modern-input" style="min-height:80px; font-size:0.9rem;">${h.description || ""}</textarea>
+                    <textarea id="descInput_${id}" class="modern-input" style="min-height:80px; font-size:0.95rem;">${h.description || ""}</textarea>
+                </div>
+                <div class="input-group" style="margin-bottom:24px; flex-direction:row; align-items:center; justify-content:space-between; background: var(--bg-body); border: 0.5px solid var(--border-color); padding: 12px 16px; border-radius: 12px;">
+                    <label class="input-label" style="margin-bottom:0; color: var(--text-main);">Mostrar Racha (🔥)</label>
+                    <div id="streakToggle_${id}" class="switch-toggle ${isStreakEnabled ? 'active' : ''}" onclick="this.classList.toggle('active')"></div>
                 </div>
                 <button onclick="saveHabitEdits(${id})" class="primary-btn" style="margin-bottom:12px;">Guardar Cambios</button>
                 <div style="height:1px; background:var(--border-color); margin:8px 0;"></div>
-                <button onclick="deleteHabit(${id})" class="option-btn" style="color:var(--danger)">🗑️ Eliminar Hábito</button>`;
+                <button onclick="deleteHabit(${id})" class="option-btn" style="color:var(--danger); justify-content: center;">Eliminar Hábito</button>`;
             openGenericModal('Editar Hábito', html); 
         }
+
         function saveHabitEdits(id) {
             const newName = document.getElementById(`renameInput_${id}`).value.trim();
             const newDesc = document.getElementById(`descInput_${id}`).value.trim();
+            const streakToggle = document.getElementById(`streakToggle_${id}`);
+            const showStreak = streakToggle ? streakToggle.classList.contains('active') : true;
+
             if(!newName) return showToast('Falta el nombre');
             const h = state.habits.find(x => x.id === id);
             if(h) { 
                 h.name = newName; 
                 h.description = newDesc;
-                saveData(); 
-                renderCalendar(); 
-                closeGenericModal(); 
-                showToast('Hábito actualizado'); 
+                h.showStreak = showStreak; 
+                saveData(); renderCalendar(); closeGenericModal(); showToast('Hábito actualizado'); 
             }
         }
         function deleteHabit(id) { closeGenericModal(); state.habits=state.habits.filter(h=>h.id!==id); saveData(); renderCalendar(); showToast('Eliminado'); }
-        function resetData() { localStorage.clear(); location.reload(); }
+        function resetData() { showConfirm("¿Eliminar todos los datos permanentemente?", () => { localStorage.clear(); location.reload(); }); }
         function toggleDarkMode() { state.settings.darkMode=!state.settings.darkMode; applyTheme(); updateSwitches(); saveData(); showToast('Modo cambiado'); }
-        function downloadData() { const a=document.createElement('a'); a.href="data:text/json;charset=utf-8,"+encodeURIComponent(JSON.stringify(state)); a.download="habit_tracker_backup.json"; a.click(); }
+        function downloadData() { const a=document.createElement('a'); a.href="data:text/json;charset=utf-8,"+encodeURIComponent(JSON.stringify(state)); a.download="habit_tracker_backup.json"; a.click(); closeGenericModal(); }
         function uploadData(i) { const r=new FileReader(); r.onload=e=>{ try{state=JSON.parse(e.target.result);saveData();location.reload();}catch(x){showToast('Error archivo');}}; r.readAsText(i.files[0]); }
         function playSound() { try { const c=new(window.AudioContext||window.webkitAudioContext); const o=c.createOscillator();const g=c.createGain(); o.connect(g);g.connect(c.destination); o.frequency.value=800; g.gain.setValueAtTime(0.05,c.currentTime); g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+0.05); o.start();o.stop(c.currentTime+0.05); } catch(e){} }
-        function triggerConfetti() { const c=document.getElementById('confettiCanvas'); const x=c.getContext('2d'); c.width=window.innerWidth; c.height=window.innerHeight; const p=[]; for(let i=0;i<40;i++) p.push({x:Math.random()*c.width, y:-20, vx:(Math.random()-0.5)*5, vy:Math.random()*5+2, c:'#fbbf24', l:100}); function a(){x.clearRect(0,0,c.width,c.height); p.forEach(e=>{if(e.l>0){e.x+=e.vx;e.y+=e.vy;e.l--;x.fillStyle=e.c;x.fillRect(e.x,e.y,6,6);}}); requestAnimationFrame(a);} a(); }
+        function triggerConfetti() { const c=document.getElementById('confettiCanvas'); const x=c.getContext('2d'); c.width=window.innerWidth; c.height=window.innerHeight; const p=[]; for(let i=0;i<50;i++) p.push({x:Math.random()*c.width, y:-20, vx:(Math.random()-0.5)*5, vy:Math.random()*5+3, c:'#34c759', l:100}); function a(){x.clearRect(0,0,c.width,c.height); p.forEach(e=>{if(e.l>0){e.x+=e.vx;e.y+=e.vy;e.l--;x.fillStyle=e.c;x.fillRect(e.x,e.y,8,8);}}); requestAnimationFrame(a);} a(); }
 
         /* --- NOTAS & TOOLTIP LOGIC --- */
         let activeNoteHabit = null, activeNoteDate = null;
@@ -1072,11 +1143,7 @@
             return false;
         }
 
-        function closeNoteModal() {
-            const el = document.getElementById('noteModal');
-            el.classList.remove('active'); 
-            setTimeout(() => el.classList.add('hidden'), 200);
-        }
+        function closeNoteModal() { const el = document.getElementById('noteModal'); el.classList.remove('active'); setTimeout(() => el.classList.add('hidden'), 200); }
 
         function saveNote(isDelete) {
             const val = document.getElementById('noteInput').value.trim();
@@ -1091,35 +1158,564 @@
         }
 
         const tooltip = document.getElementById('customTooltip');
-        
         function showTooltip(e, text, title) {
             if(!text || text === "undefined") return;
-            
             if(tooltipTimer) clearTimeout(tooltipTimer);
-            
-            tooltip.innerHTML = `<div style="font-size:0.7rem; opacity:0.7; margin-bottom:4px; text-transform:uppercase; letter-spacing:0.05em;">${title}</div><div style="line-height:1.4;">${text}</div>`;
-            
-            moveTooltip(e); // Posicionar inmediatamente (aunque invisible)
-
-            // Esperar 800ms antes de mostrar (OPACIDAD 1)
-            tooltipTimer = setTimeout(() => {
-                tooltip.style.opacity = 1;
-            }, 800);
+            tooltip.innerHTML = `<div style="font-size:0.75rem; opacity:0.6; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.05em; font-weight:700;">${title}</div><div style="line-height:1.4;">${text}</div>`;
+            moveTooltip(e); 
+            tooltipTimer = setTimeout(() => { tooltip.style.opacity = 1; }, 600);
         }
-
-        function hideTooltip() { 
-            if(tooltipTimer) clearTimeout(tooltipTimer);
-            tooltip.style.opacity = 0; 
-        }
-
+        function hideTooltip() { if(tooltipTimer) clearTimeout(tooltipTimer); tooltip.style.opacity = 0; }
         function moveTooltip(e) {
             let x = e.clientX + 15, y = e.clientY + 15;
-            // Ajustes para que no se salga de la pantalla
             if(x + 240 > window.innerWidth) x -= 250; 
             if(y + 100 > window.innerHeight) y -= 100;
+            tooltip.style.left = x + 'px'; tooltip.style.top = y + 'px';
+        }
+        
+        /* --- LÓGICA DE SECCIONES NUEVAS --- */
+        function openSection(type) {
+            window.toggleMenu(false);
+            const overlay = document.getElementById('customSectionOverlay');
+            const title = document.getElementById('customSectionTitle');
             
-            tooltip.style.left = x + 'px'; 
-            tooltip.style.top = y + 'px';
+            overlay.classList.remove('hidden');
+            
+            if (type === 'metas') {
+                title.innerText = 'Metas';
+                metasViewYear = new Date().getFullYear(); // Resetear al año actual al abrir
+                renderMetas();
+            } else if (type === 'pagos') {
+                title.innerText = 'Pagos';
+                pagosViewDate = new Date(); 
+                pagosViewDate.setDate(1); 
+                renderPagos();
+            }
+        }
+
+        function closeSection() {
+            document.getElementById('customSectionOverlay').classList.add('hidden');
+        }
+
+        // ==========================================
+        //         LÓGICA SECCIÓN: METAS
+        // ==========================================
+
+        function changeMetasYear(offset) {
+            metasViewYear += offset;
+            renderMetas();
+        }
+
+        function renderMetas() {
+            const container = document.getElementById('customSectionBody');
+            const filteredMetas = state.metas.filter(m => m.year === metasViewYear);
+            
+            let html = `
+                <div style="padding: 24px;">
+                    
+                    <div style="display: flex; justify-content: center; margin-bottom: 24px;">
+                        <div style="display: flex; gap: 12px; align-items: center; background: var(--bg-surface); padding: 8px 16px; border-radius: 99px; border: 0.5px solid var(--border-color); box-shadow: 0 2px 10px rgba(0,0,0,0.03);">
+                            <button onclick="changeMetasYear(-1)" style="color: var(--text-muted); padding: 4px; transition: color 0.2s;" onmouseover="this.style.color='var(--text-main)'" onmouseout="this.style.color='var(--text-muted)'">
+                                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                            </button>
+                            <span style="font-size: 1.2rem; font-weight: 800; min-width: 80px; text-align: center; color: var(--text-main); letter-spacing: 0.05em;">${metasViewYear}</span>
+                            <button onclick="changeMetasYear(1)" style="color: var(--text-muted); padding: 4px; transition: color 0.2s;" onmouseover="this.style.color='var(--text-main)'" onmouseout="this.style.color='var(--text-muted)'">
+                                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="font-bold" style="font-size: 2.2rem; letter-spacing: -0.02em;">Metas del ${metasViewYear}</h2>
+                        <button onclick="openNewMetaModal()" class="primary-btn" style="width:auto; padding:8px 16px; border-radius: 99px; box-shadow:none;">+ Nueva Meta</button>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; padding-bottom: 40px;">
+            `;
+
+            if (filteredMetas.length === 0) {
+                html += `
+                    <div style="grid-column: 1 / -1; text-align:center; padding:60px 20px;">
+                        <span style="font-size:3rem;">🎯</span>
+                        <p class="text-muted mt-4 font-medium">No tienes metas activas en ${metasViewYear}.<br>Crea una para medir tu progreso a futuro.</p>
+                    </div>
+                `;
+            } else {
+                filteredMetas.forEach(meta => {
+                    const hasItems = meta.items && meta.items.length > 0;
+                    let target = hasItems ? meta.items.length : (meta.target || 1);
+                    let progress = hasItems ? meta.items.filter(i => i.done).length : (meta.progress || 0);
+                    
+                    let pct = target > 0 ? Math.round((progress / target) * 100) : 0;
+                    let isDone = progress >= target && target > 0;
+
+                    html += `
+                        <div style="background: var(--bg-surface); border: 0.5px solid var(--border-color); border-radius: 20px; padding: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); position: relative; opacity: ${isDone ? '0.7' : '1'}; transition: opacity 0.2s; display: flex; flex-direction: column;">
+                            <div style="position: absolute; top: 16px; right: 16px; display: flex; gap: 12px; align-items: center;">
+                                <button onclick="editMetaName('${meta.id}')" style="color: var(--text-muted); cursor: pointer; transition: color 0.2s;" onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='var(--text-muted)'" title="Renombrar Meta">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
+                                </button>
+                                <button onclick="deleteMeta('${meta.id}')" style="color: var(--text-muted); font-size: 1.2rem; cursor: pointer; transition: color 0.2s;" onmouseover="this.style.color='var(--danger)'" onmouseout="this.style.color='var(--text-muted)'" title="Eliminar Meta">✕</button>
+                            </div>
+                            
+                            <h3 style="font-size: 1.3rem; font-weight: 700; margin-bottom: 8px; text-decoration: ${isDone ? 'line-through' : 'none'}; padding-right: 60px; color: var(--text-main); letter-spacing: -0.01em;">${meta.name}</h3>
+                            
+                            <div style="display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--text-muted); font-weight: 600; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.05em;">
+                                <span>Progreso: ${progress} / ${target}</span>
+                                <span>${pct}%</span>
+                            </div>
+                            
+                            <div style="width: 100%; height: 8px; background: var(--bg-body); border-radius: 99px; overflow: hidden; margin-bottom: 16px;">
+                                <div style="height: 100%; width: ${pct}%; background: var(--success); transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1);"></div>
+                            </div>
+                    `;
+
+                    if (hasItems) {
+                        html += `<div style="display:flex; flex-direction:column; gap:8px;">`;
+                        meta.items.forEach(item => {
+                            const checked = item.done;
+                            html += `
+                                <div style="display:flex; align-items:center; gap:12px; padding: 4px 0;">
+                                    <div onclick="toggleSubMetaItem('${meta.id}', '${item.id}')" style="width:22px; height:22px; border-radius:50%; border:1.5px solid ${checked ? 'var(--success)' : 'var(--text-muted)'}; background:${checked ? 'var(--success)' : 'transparent'}; opacity: ${checked ? '1' : '0.6'}; display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; transition: all 0.2s;">
+                                        ${checked ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>' : ''}
+                                    </div>
+                                    <span style="flex:1; font-size:1rem; font-weight:500; text-decoration:${checked?'line-through':'none'}; color:${checked?'var(--text-muted)':'var(--text-main)'}; cursor:pointer; transition: color 0.2s;" onclick="toggleSubMetaItem('${meta.id}', '${item.id}')">${item.text}</span>
+                                    
+                                    <div style="display:flex; align-items:center; gap:8px;">
+                                        <button onclick="editSubMetaItem('${meta.id}', '${item.id}')" style="color:var(--text-muted); opacity:0.5; padding:4px; transition: all 0.2s;" onmouseover="this.style.color='var(--primary)'; this.style.opacity='1';" onmouseout="this.style.color='var(--text-muted)'; this.style.opacity='0.5';" title="Editar">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
+                                        </button>
+                                        <button onclick="deleteSubMetaItem('${meta.id}', '${item.id}')" style="color:var(--text-muted); opacity:0.5; padding:4px; font-size: 1.1rem; transition: all 0.2s;" onmouseover="this.style.color='var(--danger)'; this.style.opacity='1';" onmouseout="this.style.color='var(--text-muted)'; this.style.opacity='0.5';" title="Eliminar">✕</button>
+                                    </div>
+                                </div>
+                                <div style="height: 0.5px; width: calc(100% - 34px); margin-left: 34px; background: var(--border-color);"></div>
+                            `;
+                        });
+                        html += `</div>`;
+                    } else {
+                        // Numérica (Cajas con mejor contraste)
+                        const boxSize = target > 30 ? '20px' : '28px';
+                        const svgSize = target > 30 ? '12' : '16';
+                        html += `<div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px;">`;
+                        for(let i = 1; i <= target; i++) {
+                            const checked = i <= progress;
+                            html += `
+                                <div onclick="toggleMetaProgressNumeric('${meta.id}', ${i})" style="width: ${boxSize}; height: ${boxSize}; border-radius: 8px; border: 1.5px solid ${checked ? 'var(--success)' : 'var(--text-muted)'}; background: ${checked ? 'var(--success)' : 'transparent'}; opacity: ${checked ? '1' : '0.5'}; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1); box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+                                    ${checked ? `<svg width="${svgSize}" height="${svgSize}" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>` : ''}
+                                </div>
+                            `;
+                        }
+                        html += `</div>`;
+                    }
+
+                    // INPUT PARA AÑADIR PASOS (CONVIERTE A LISTA AUTOMÁTICAMENTE)
+                    html += `
+                        <div style="display:flex; align-items:center; gap:12px; padding: 8px 0 0 0; margin-top: auto; border-top: ${hasItems ? '0px' : '0.5px'} solid var(--border-color); padding-top: ${hasItems ? '4px' : '16px'};">
+                            <div style="width:22px; height:22px; display:flex; align-items:center; justify-content:center; color: var(--primary);">
+                                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                            </div>
+                            <input type="text" id="quickAdd_${meta.id}" placeholder="Añadir paso..." style="flex:1; background:transparent; border:none; outline:none; font-size:1rem; color:var(--text-main); font-weight:500;" onkeyup="if(event.key==='Enter') addQuickSubMeta('${meta.id}')">
+                            <button onclick="addQuickSubMeta('${meta.id}')" style="color:var(--primary); font-weight:600; font-size:0.95rem;">Añadir</button>
+                        </div>
+                    </div>`; // Fin tarjeta
+                });
+            }
+
+            html += `</div></div>`;
+            container.innerHTML = html;
+        }
+
+        function openNewMetaModal() {
+            const html = `
+                <div class="input-group" style="margin-bottom: 16px;">
+                    <label class="input-label">Nombre de la Meta</label>
+                    <input type="text" id="newMetaName" placeholder="Ej: Arreglar Auto / Comprar SPY 500" class="modern-input">
+                </div>
+                <div class="input-group" style="margin-bottom: 24px;">
+                    <label class="input-label">Objetivo Numérico <span style="text-transform:none; font-weight:400;">(Déjalo en 1 si usarás pasos)</span></label>
+                    <input type="number" id="newMetaTarget" value="1" min="1" class="modern-input">
+                </div>
+                <button onclick="saveNewMeta()" class="primary-btn">Crear Meta para ${metasViewYear}</button>
+            `;
+            openGenericModal('Nueva Meta', html);
+            setTimeout(() => document.getElementById('newMetaName').focus(), 100);
+        }
+
+        function saveNewMeta() {
+            const name = document.getElementById('newMetaName').value.trim();
+            if (!name) return showToast('Ingresa un nombre para la meta');
+            
+            const target = parseInt(document.getElementById('newMetaTarget').value) || 1;
+            
+            state.metas.push({
+                id: Date.now().toString(),
+                name: name,
+                target: target,
+                progress: 0,
+                items: [],
+                year: metasViewYear // Guarda en el año actual visualizado
+            });
+            
+            saveData();
+            closeGenericModal();
+            renderMetas();
+            showToast('Meta creada en ' + metasViewYear);
+        }
+
+        function editMetaName(id) {
+            const meta = state.metas.find(m => m.id === id);
+            if(!meta) return;
+            const html = `
+                <div class="input-group">
+                    <label class="input-label">Nuevo Nombre</label>
+                    <input id="editMetaNameInput" value="${meta.name.replace(/"/g, '&quot;')}" class="modern-input">
+                </div>
+                <button onclick="saveEditMetaName('${id}')" class="primary-btn" style="margin-top:24px;">Guardar</button>
+            `;
+            openGenericModal('Renombrar Meta', html);
+            setTimeout(() => document.getElementById('editMetaNameInput').focus(), 100);
+        }
+
+        function saveEditMetaName(id) {
+            const val = document.getElementById('editMetaNameInput').value.trim();
+            if(!val) return showToast('Nombre vacío');
+            const meta = state.metas.find(m => m.id === id);
+            if(meta) { meta.name = val; saveData(); renderMetas(); closeGenericModal(); showToast('Meta renombrada'); }
+        }
+
+        function deleteMeta(id) {
+            showConfirm('¿Eliminar esta meta permanentemente?', () => {
+                state.metas = state.metas.filter(m => m.id !== id);
+                saveData();
+                renderMetas();
+            });
+        }
+
+        function toggleMetaProgressNumeric(id, targetIndex) {
+            const meta = state.metas.find(m => m.id === id);
+            if (!meta) return;
+            
+            if (meta.progress === targetIndex) {
+                meta.progress = targetIndex - 1; 
+            } else {
+                meta.progress = targetIndex; 
+                if (meta.progress === meta.target) {
+                    playSound(); triggerConfetti();
+                }
+            }
+            saveData(); renderMetas();
+        }
+
+        function toggleSubMetaItem(metaId, itemId) {
+            const meta = state.metas.find(m => m.id === metaId);
+            if (!meta || !meta.items) return;
+            
+            const item = meta.items.find(i => i.id === itemId);
+            if (item) {
+                item.done = !item.done;
+                saveData();
+                
+                const progress = meta.items.filter(i => i.done).length;
+                if (progress === meta.items.length && progress > 0 && item.done) {
+                    playSound(); triggerConfetti();
+                }
+                
+                renderMetas();
+            }
+        }
+
+        function addQuickSubMeta(metaId) {
+            const input = document.getElementById(`quickAdd_${metaId}`);
+            if (!input) return;
+            const text = input.value.trim();
+            if (!text) return;
+
+            const meta = state.metas.find(m => m.id === metaId);
+            if (meta) {
+                if (!meta.items) meta.items = [];
+                meta.items.push({ id: Date.now().toString(), text: text, done: false });
+                
+                meta.progress = 0; 
+                
+                saveData(); renderMetas();
+                
+                setTimeout(() => {
+                    const newIn = document.getElementById(`quickAdd_${metaId}`);
+                    if(newIn) newIn.focus();
+                }, 50);
+            }
+        }
+
+        function editSubMetaItem(metaId, itemId) {
+            const meta = state.metas.find(m => m.id === metaId);
+            if(!meta || !meta.items) return;
+            const item = meta.items.find(i => i.id === itemId);
+            if(!item) return;
+            
+            const html = `
+                <div class="input-group">
+                    <label class="input-label">Editar Paso</label>
+                    <input id="editSubMetaInput" value="${item.text.replace(/"/g, '&quot;')}" class="modern-input">
+                </div>
+                <button onclick="saveEditSubMeta('${metaId}', '${itemId}')" class="primary-btn" style="margin-top:24px;">Guardar</button>
+            `;
+            openGenericModal('Editar Paso', html);
+            setTimeout(() => document.getElementById('editSubMetaInput').focus(), 100);
+        }
+
+        function saveEditSubMeta(metaId, itemId) {
+            const val = document.getElementById('editSubMetaInput').value.trim();
+            if(!val) return showToast('Paso vacío');
+            const meta = state.metas.find(m => m.id === metaId);
+            if(meta && meta.items) {
+                const item = meta.items.find(i => i.id === itemId);
+                if(item) { item.text = val; saveData(); renderMetas(); closeGenericModal(); showToast('Paso actualizado'); }
+            }
+        }
+
+        function deleteSubMetaItem(metaId, itemId) {
+            const meta = state.metas.find(m => m.id === metaId);
+            if (meta && meta.items) {
+                meta.items = meta.items.filter(i => i.id !== itemId);
+                saveData(); renderMetas();
+            }
+        }
+
+        // ==========================================
+        //         LÓGICA SECCIÓN: PAGOS
+        // ==========================================
+        
+        function getPagosMonthKey(date) { return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`; }
+        function getPagosPrevMonthKey(date) { const prev = new Date(date); prev.setMonth(prev.getMonth() - 1); return getPagosMonthKey(prev); }
+
+        function changePagosMonth(offset) {
+            pagosViewDate.setMonth(pagosViewDate.getMonth() + offset);
+            renderPagos();
+        }
+
+        function addPagosGlobalService() {
+            const input = document.getElementById('newPagosServiceInput');
+            const freqInput = document.getElementById('newPagosServiceFreq');
+            const name = input.value.trim();
+            const freq = parseInt(freqInput.value) || 1;
+
+            if (!name) return;
+
+            const newId = Date.now().toString();
+            state.pagosServices.push({ id: newId, name: name, freq: freq });
+            
+            input.value = '';
+            freqInput.value = '1';
+            saveData();
+            renderPagos();
+        }
+
+        function deletePagosGlobalService(id) {
+            showConfirm("¿Eliminar servicio?", () => {
+                state.pagosServices = state.pagosServices.filter(s => s.id !== id);
+                saveData();
+                renderPagos();
+            });
+        }
+
+        function updatePagosCost(id, value) {
+            const key = getPagosMonthKey(pagosViewDate);
+            if (!state.pagosMonthly[key]) state.pagosMonthly[key] = {};
+            if (!state.pagosMonthly[key][id]) state.pagosMonthly[key][id] = { cost: 0, paidCount: 0 };
+
+            state.pagosMonthly[key][id].cost = parseFloat(value) || 0;
+            saveData();
+            renderPagos();
+        }
+
+        function togglePagosPaidIndex(id, targetIndex, maxFreq) {
+            const key = getPagosMonthKey(pagosViewDate);
+            if (!state.pagosMonthly[key]) state.pagosMonthly[key] = {};
+            if (!state.pagosMonthly[key][id]) state.pagosMonthly[key][id] = { cost: 0, paidCount: 0 };
+
+            const currentCount = state.pagosMonthly[key][id].paidCount || 0;
+            
+            if (targetIndex === currentCount) {
+                state.pagosMonthly[key][id].paidCount = targetIndex - 1;
+            } else {
+                state.pagosMonthly[key][id].paidCount = targetIndex;
+            }
+            
+            saveData();
+            renderPagos(); 
+        }
+
+        function getPagosComparisonHTML(serviceId, currentCost) {
+            const prevKey = getPagosPrevMonthKey(pagosViewDate);
+            const prevData = state.pagosMonthly[prevKey];
+            if (!prevData || !prevData[serviceId]) return '';
+
+            const prevCost = prevData[serviceId].cost || 0;
+            const diff = currentCost - prevCost;
+
+            if (currentCost === 0) return '';
+            if (diff === 0) return '<span class="text-[9px] text-gray-400 font-medium tracking-tight bg-gray-100 dark:bg-white/5 px-1 py-0.5 rounded">= Igual</span>';
+            
+            const isUp = diff > 0;
+            return `<span class="text-[9px] ${isUp ? 'text-rose-600 bg-rose-50 dark:bg-rose-900/20' : 'text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20'} font-bold tracking-tight flex items-center gap-1 px-1 py-0.5 rounded">${isUp ? '▲' : '▼'} $${Math.abs(diff)}</span>`;
+        }
+
+        function renderPagos() {
+            const container = document.getElementById('customSectionBody');
+            const currentKey = getPagosMonthKey(pagosViewDate);
+            const currentMonthRecords = state.pagosMonthly[currentKey] || {};
+            const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+
+            let total = 0;
+            let paid = 0;
+
+            state.pagosServices.forEach(s => {
+                if (currentMonthRecords[s.id]) {
+                    const cost = currentMonthRecords[s.id].cost || 0;
+                    const paidCount = currentMonthRecords[s.id].paidCount || 0;
+                    const freq = s.freq || 1;
+                    total += cost;
+                    if (cost > 0 && freq > 0) {
+                        paid += (cost / freq) * paidCount;
+                    }
+                }
+            });
+
+            let html = `
+                <div class="font-[Inter] text-gray-900 dark:text-gray-100 bg-[var(--bg-body)] dark:bg-[var(--bg-body)] w-full h-full flex flex-col relative">
+                    <div class="flex items-center justify-center gap-3 py-4 bg-[var(--bg-surface)] dark:bg-[var(--bg-surface)] border-b border-[var(--border-color)] shrink-0">
+                        <button onclick="changePagosMonth(-1)" class="text-gray-400 hover:text-[var(--text-main)] p-1 transition-colors">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"></path></svg>
+                        </button>
+                        <div class="flex items-baseline gap-2 mx-4">
+                            <h2 class="text-xl font-bold capitalize select-none leading-none tracking-tight">${monthNames[pagosViewDate.getMonth()]}</h2>
+                            <span class="text-sm font-medium text-gray-400">${pagosViewDate.getFullYear()}</span>
+                        </div>
+                        <button onclick="changePagosMonth(1)" class="text-gray-400 hover:text-[var(--text-main)] p-1 transition-colors">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path></svg>
+                        </button>
+                    </div>
+
+                    <main class="flex-1 p-6 overflow-x-auto overflow-y-auto no-scrollbar pb-28">
+                        <div class="flex flex-col flex-wrap content-start gap-4 h-full">
+            `;
+
+            if (state.pagosServices.length === 0) {
+                html += `<div class="w-full text-center mt-20 text-gray-400 text-sm">No hay servicios.<br>Añade uno abajo a la izquierda.</div>`;
+            } else {
+                state.pagosServices.forEach(service => {
+                    const data = currentMonthRecords[service.id] || { cost: 0, paidCount: 0 };
+                    const freq = service.freq || 1;
+                    const paidCount = data.paidCount || 0;
+                    const isFullyPaid = paidCount >= freq;
+                    const compHTML = getPagosComparisonHTML(service.id, data.cost);
+
+                    let checksHTML = '';
+                    if (freq === 1) {
+                        checksHTML = `
+                            <label class="flex items-center cursor-pointer relative z-10 p-1 flex-shrink-0">
+                                <input type="checkbox" class="hidden" ${paidCount === 1 ? 'checked' : ''} onchange="togglePagosPaidIndex('${service.id}', 1, 1)">
+                                <div style="width: 24px; height: 24px; border-radius: 6px; border: 2px solid ${paidCount === 1 ? 'var(--success)' : 'var(--text-muted)'}; background: ${paidCount === 1 ? 'var(--success)' : 'transparent'}; opacity: ${paidCount === 1 ? '1' : '0.5'}; display: flex; align-items: center; justify-content: center; transition: all 0.2s;">
+                                    <svg class="w-3.5 h-3.5 text-white ${paidCount === 1 ? 'block' : 'hidden'}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                                </div>
+                            </label>
+                        `;
+                    } else {
+                        checksHTML = '<div class="flex gap-1.5 ml-1 flex-wrap max-w-[120px] flex-shrink-0">';
+                        for(let i = 1; i <= freq; i++) {
+                            const isFilled = i <= paidCount;
+                            let bgStyle = isFilled ? 'background: var(--success); border-color: var(--success); opacity: 1;' : 'background: transparent; border-color: var(--text-muted); opacity: 0.5;';
+                            
+                            checksHTML += `
+                                <button onclick="togglePagosPaidIndex('${service.id}', ${i}, ${freq})" 
+                                    class="freq-box flex items-center justify-center text-[10px] text-white font-bold leading-none shadow-sm transition-all"
+                                    style="width: 22px; height: 22px; border-radius: 6px; border: 1.5px solid transparent; ${bgStyle}">
+                                    ${isFilled ? '✓' : ''}
+                                </button>
+                            `;
+                        }
+                        checksHTML += '</div>';
+                    }
+
+                    // MEJORA VISUAL EN LA TARJETA: Bordes 1.5px y Sombras
+                    html += `
+                        <div class="w-80 group relative flex items-center p-3 rounded-2xl transition-all duration-200 shrink-0
+                            ${isFullyPaid ? 'opacity-60 bg-[var(--bg-surface)] border border-[var(--border-color)] shadow-none' : 'bg-[var(--bg-surface)] border-[1.5px] border-gray-300 dark:border-gray-600 shadow-[0_4px_12px_rgba(0,0,0,0.05)] dark:shadow-[0_4px_12px_rgba(255,255,255,0.02)] hover:border-[var(--primary)] dark:hover:border-[var(--primary)]'}">
+                            
+                            ${checksHTML}
+                            
+                            <div class="ml-3 flex-1 overflow-hidden">
+                                <div class="flex justify-between items-center h-full gap-2">
+                                    <div class="flex flex-col min-w-0 flex-1">
+                                        <span class="font-bold text-[15px] tracking-tight truncate pr-1 ${isFullyPaid ? 'text-gray-400 dark:text-gray-600 line-through' : 'text-[var(--text-main)]'}">
+                                            ${service.name}
+                                        </span>
+                                        ${freq > 1 ? `<span class="text-[10px] text-gray-400 uppercase font-bold tracking-wider mt-0.5">${paidCount}/${freq}</span>` : ''}
+                                    </div>
+                                    <div class="flex flex-col items-end shrink-0 pl-1">
+                                        <div class="flex items-center bg-[var(--bg-body)] rounded-lg px-2 py-1 border border-transparent focus-within:border-[var(--primary)] transition-colors">
+                                            <span class="text-[11px] font-bold text-gray-400 mr-1">$</span>
+                                            <input type="number" 
+                                                value="${data.cost === 0 ? '' : data.cost}" 
+                                                placeholder="0"
+                                                oninput="updatePagosCost('${service.id}', this.value)"
+                                                class="w-20 text-right bg-transparent border-none outline-none text-[15px] font-bold ${isFullyPaid ? 'text-[var(--success)]' : 'text-[var(--text-main)]'} p-0">
+                                        </div>
+                                        <div class="h-3 flex items-center mt-1.5">
+                                            ${compHTML}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <button onclick="deletePagosGlobalService('${service.id}')" class="absolute -right-2 -top-2 bg-[var(--bg-surface)] border border-[var(--danger)] text-[var(--danger)] rounded-full p-1 opacity-0 group-hover:opacity-100 transition-all shadow-md z-20 hover:scale-110">
+                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
+                            </button>
+                        </div>
+                    `;
+                });
+            }
+
+            html += `
+                        </div>
+                    </main>
+
+                    <div class="absolute bottom-0 left-0 right-0 bg-[var(--bg-surface)]/95 backdrop-blur-md border-t border-[var(--border-color)] px-6 py-4 z-30 h-20 shadow-[0_-5px_20px_rgba(0,0,0,0.05)] flex items-center">
+                        <div class="w-full flex items-center justify-between gap-6">
+                            
+                            <div class="flex-1 flex gap-3 items-center max-w-2xl">
+                                <div class="relative w-16 flex-shrink-0">
+                                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-[10px] text-gray-400 font-bold">x</span>
+                                    <input type="number" id="newPagosServiceFreq" value="1" min="1" max="31"
+                                        class="w-full h-12 bg-[var(--bg-body)] border border-[var(--border-color)] focus:border-[var(--primary)] rounded-xl pl-6 pr-2 text-sm font-bold text-center outline-none text-[var(--text-main)] transition-all font-mono"
+                                        title="Veces por mes">
+                                </div>
+
+                                <input type="text" id="newPagosServiceInput" placeholder="Nuevo servicio o pago..." 
+                                    onkeydown="if(event.key === 'Enter') addPagosGlobalService()"
+                                    class="flex-1 h-12 bg-[var(--bg-body)] border border-[var(--border-color)] focus:border-[var(--primary)] rounded-xl px-4 text-sm font-medium outline-none text-[var(--text-main)] transition-all shadow-inner">
+                                
+                                <button onclick="addPagosGlobalService()" class="bg-[var(--primary)] text-white rounded-xl w-12 h-12 flex items-center justify-center hover:scale-105 active:scale-95 transition-transform shadow-lg shrink-0">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
+                                </button>
+                            </div>
+
+                            <div class="flex-shrink-0 flex gap-6 items-center bg-[var(--bg-body)] px-6 py-2 rounded-xl border border-[var(--border-color)] h-12">
+                                <div class="text-right">
+                                    <span class="text-[10px] text-gray-400 font-bold uppercase block leading-none mb-1 tracking-wider">Total</span>
+                                    <span class="text-[17px] font-bold text-[var(--text-main)] tracking-tight">$${Math.round(total).toLocaleString()}</span>
+                                </div>
+                                <div class="w-px h-7 bg-[var(--border-color)]"></div>
+                                <div>
+                                    <span class="text-[10px] text-gray-400 font-bold uppercase block leading-none mb-1 tracking-wider">Pagado</span>
+                                    <span class="text-[17px] font-bold text-[var(--success)] tracking-tight">$${Math.round(paid).toLocaleString()}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            container.innerHTML = html;
         }
 
         init();
