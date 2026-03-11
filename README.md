@@ -9,24 +9,29 @@ Un sistema simple para registrar hábitos diarios y ver tu progreso.
 ---
 
 ## Español
-- Registra hábitos.
-- Ve tus rachas y métricas básicas.
 
-- ✔️ Cumplí: realizaste el hábito correctamente.
-- ✖️ No cumplí: no realizaste el hábito.
-- ➖ Cuenta como cumplido: El hábito se considera realizado aunque no fue necesario hacerlo (Por ejemplo: Regar plantas pero llovió).
+* Registra hábitos y ve rachas/métricas.
+
+* ✔️ Cumplí: hiciste el hábito.
+
+* ✖️ No cumplí: no lo hiciste.
+
+* ➖ Cuenta como cumplido: se marca como hecho aunque no fue necesario (Por ejemplo: El hábito es regar las plantas pero no fue necesario ya que llovió).
 
 ---
 
 ## English
-- Track habits.
-- See streaks and basic metrics.
 
-- ✔️ Completed: you performed the habit successfully.
-- ✖️ Not completed: you did not perform the habit.
-- ➖ Counted as completed: The habit is marked as done even though it wasn’t needed (For example: Watering plants but it rained).
+* Track habits and view streaks/metrics.
 
-- ---
+* ✔️ Completed: you did the habit.
+
+* ✖️ Not completed: you didn’t do it.
+
+* ➖ Counted as completed: marked done even if it wasn’t needed (For example: The habit is watering the plants but it wasn’t necessary because it rained).
+
+
+------------------------------------------------------
 LINK:
 https://aarstj.github.io/habitracker.github.io/
-
+------------------------------------------------------
