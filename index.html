@@ -722,7 +722,11 @@
 
                         let cells = `<div class="sticky-col-left habit-name-cell" onclick="openHabitOptions(${h.id})" onmousemove="moveTooltip(event)" onmouseenter="showTooltip(event, '${cleanText(h.description)}', 'Información')" onmouseleave="hideTooltip()"><div class="flex items-center gap-2 overflow-hidden" style="flex:1"><div class="drag-handle">::</div><div style="width:8px; height:8px; border-radius:50%; background:${cat.color}"></div><span class="text-sm font-bold truncate">${h.name}</span></div>${(h.showStreak!==false && streak>0) ? `<div class="streak-badge active">🔥 ${streak}</div>` : ''}</div><div class="days-container">`;
 
-                        let checks=0;
+                        let validDaysInMonth = 0;
+                        let checks = 0;
+                        const habitCreatedDate = new Date(h.created || h.id);
+                        habitCreatedDate.setHours(0,0,0,0);
+
                         for(let i=1; i<=daysInMonth; i++) {
                             const loopIso = `${year}-${String(month+1).padStart(2,'0')}-${String(i).padStart(2,'0')}`;
                             const isToday = loopIso === todayISO;
@@ -731,10 +735,23 @@
                             const note = (h.notes && h.notes[loopIso]) ? h.notes[loopIso] : '';
                             const indicator = note ? `<div class="note-indicator"></div>` : '';
 
-                            if(stat==='done' || stat==='skip') checks++;
-                            
+                            const currentDate = new Date(year, month, i);
+                            const isBeforeCreation = currentDate < habitCreatedDate;
                             const isWeekEnd = (i % 7 === 0);
+
+                            // Solo sumamos a los días válidos si el hábito ya existía
+                            if (!isBeforeCreation) {
+                                validDaysInMonth++;
+                                if(stat==='done' || stat==='skip') checks++;
+                            }
+                            
                             let cls = 'cell-btn ' + (isWeekEnd ? 'week-separator ' : '') + (isToday?'today-border':'');
+
+                            // Renderizamos una celda muerta si es antes de la creación
+                            if (isBeforeCreation) {
+                                cells += `<div class="${cls}" style="background-color: var(--bg-body); opacity: 0.3; cursor: not-allowed;" title="Previo a creación"></div>`;
+                                continue;
+                            }
                             
                             let styleStr = '', txt = '';
                             let wrapClass = 'flex items-center justify-center transition-all w-full h-full';
@@ -767,7 +784,10 @@
                                 onmouseleave="hideTooltip()"
                                 class="${cls}"><div class="${wrapClass}" style="${styleStr}">${txt}</div>${indicator}</div>`;
                         }
-                        cells += `</div><div class="sticky-col-right grid-header-cell">${Math.round((checks/daysInMonth)*100)}%</div>`;
+                        
+                        // Calculamos el porcentaje solo sobre los días válidos
+                        const pct = validDaysInMonth === 0 ? 0 : Math.round((checks/validDaysInMonth)*100);
+                        cells += `</div><div class="sticky-col-right grid-header-cell">${pct}%</div>`;
                         row.innerHTML = cells;
                         grid.appendChild(row);
                     });
@@ -1462,20 +1482,10 @@
         function getHabitProgress(habit, year) {
             let done = 0;
             let total = 0;
-            const now = new Date();
-            const currentYear = now.getFullYear();
             
             let start = new Date(year, 0, 1);
-            let end;
+            let end = new Date(year, 11, 31); // SIEMPRE HASTA EL 31 DE DICIEMBRE
             
-            if (year < currentYear) {
-                end = new Date(year, 11, 31);
-            } else if (year === currentYear) {
-                end = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-            } else {
-                return 0;
-            }
-
             let habitCreated = new Date(habit.created || habit.id);
             habitCreated.setHours(0,0,0,0);
             
@@ -1495,7 +1505,7 @@
             }
             
             if (total === 0) return 0;
-            return Math.round((done / total) * 100);
+            return Number(((done / total) * 100).toFixed(2));
         }
 
         function renderProgreso() {
@@ -1550,7 +1560,6 @@
                         const pct = getHabitProgress(h, progresoViewYear);
                         const isArchived = h.archived === true;
                         
-                        // Diseño actualizado: Texto más grande para % y nombre
                         html += `
                             <div onclick="openHabitOptions(${h.id})" 
                                  onmousemove="moveTooltip(event)" 
@@ -1573,7 +1582,45 @@
                 });
             }
 
-            html += `</div></div>`;
+            html += `</div>`;
+
+            // --- SECCIÓN DE METAS DENTRO DEL PROGRESO ---
+            const metasOfYear = state.metas.filter(m => m.year === progresoViewYear);
+            if (metasOfYear.length > 0) {
+                html += `
+                    <div class="flex justify-between items-center mb-6 mt-12">
+                        <h2 class="font-bold" style="font-size: 2.2rem; letter-spacing: -0.02em;">Mis Metas (${progresoViewYear})</h2>
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; padding-bottom: 40px;">
+                `;
+
+                metasOfYear.forEach(meta => {
+                    const hasItems = meta.items && meta.items.length > 0;
+                    let target = hasItems ? meta.items.length : (meta.target || 1);
+                    let progress = hasItems ? meta.items.filter(i => i.done).length : (meta.progress || 0);
+                    let pct = target > 0 ? Number(((progress / target) * 100).toFixed(1)) : 0;
+                    let isDone = progress >= target && target > 0;
+
+                    html += `
+                        <div style="background: var(--bg-surface); border: 0.5px solid var(--border-color); border-radius: 20px; padding: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); display: flex; flex-direction: column; ${isDone ? 'border-color: var(--success);' : ''}">
+                            <h3 style="font-size: 1.3rem; font-weight: 700; margin-bottom: 12px; color: var(--text-main); letter-spacing: -0.01em;">${meta.name}</h3>
+                            
+                            <div style="display: flex; align-items: flex-end; gap: 12px; margin-bottom: 16px;">
+                                <span style="font-size: 2.5rem; font-weight: 800; color: ${isDone ? 'var(--success)' : 'var(--primary)'}; line-height: 1;">${pct}%</span>
+                                <span style="font-size: 0.9rem; font-weight: 600; color: var(--text-muted); margin-bottom: 4px;">(${progress} de ${target})</span>
+                            </div>
+
+                            <div style="width: 100%; height: 10px; background: var(--bg-body); border-radius: 99px; overflow: hidden;">
+                                <div style="height: 100%; width: ${pct}%; background: ${isDone ? 'var(--success)' : 'var(--primary)'}; transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1);"></div>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                html += `</div>`;
+            }
+
+            html += `</div>`;
             container.innerHTML = html;
         }
 
@@ -2033,15 +2080,26 @@
             renderPagos(); 
         }
 
-        function getPagosComparisonHTML(serviceId, currentCost) {
+        function getPagosComparisonHTML(serviceId, currentTotalValue) {
             const prevKey = getPagosPrevMonthKey(pagosViewDate);
             const prevData = state.pagosMonthly[prevKey];
             if (!prevData || !prevData[serviceId]) return '';
 
-            const prevCost = prevData[serviceId].cost || 0;
-            const diff = currentCost - prevCost;
+            const service = state.pagosServices.find(s => s.id === serviceId);
+            const freq = service ? (service.freq || 1) : 1;
+            
+            let prevCostPerUnit = prevData[serviceId].cost || 0;
+            
+            // Auto-corrección visual: Si el mes pasado costaba exactamente lo mismo que el total de este mes, 
+            // significa que era data vieja sin fraccionar.
+            if (freq > 1 && prevCostPerUnit === currentTotalValue && currentTotalValue > 0) {
+                prevCostPerUnit = prevCostPerUnit / freq;
+            }
 
-            if (currentCost === 0) return '';
+            const prevTotal = prevCostPerUnit * freq;
+            const diff = currentTotalValue - prevTotal;
+
+            if (currentTotalValue === 0) return '';
             if (diff === 0) return '<span class="text-sm text-gray-400 font-bold bg-[var(--bg-body)] border border-[var(--border-color)] px-2 py-1 rounded-md">= Igual</span>';
             
             const isUp = diff > 0;
@@ -2059,12 +2117,12 @@
 
             state.pagosServices.forEach(s => {
                 if (currentMonthRecords[s.id]) {
-                    const cost = currentMonthRecords[s.id].cost || 0;
+                    const unitCost = currentMonthRecords[s.id].cost || 0;
                     const paidCount = currentMonthRecords[s.id].paidCount || 0;
                     const freq = s.freq || 1;
-                    total += cost;
-                    if (cost > 0 && freq > 0) {
-                        paid += (cost / freq) * paidCount;
+                    total += (unitCost * freq);
+                    if (unitCost > 0 && freq > 0) {
+                        paid += (unitCost * paidCount);
                     }
                 }
             });
@@ -2096,7 +2154,12 @@
                     const freq = service.freq || 1;
                     const paidCount = data.paidCount || 0;
                     const isFullyPaid = paidCount >= freq;
-                    const compHTML = getPagosComparisonHTML(service.id, data.cost);
+                    
+                    const unitCost = data.cost || 0;
+                    const totalValue = unitCost * freq;
+                    const paidValue = unitCost * paidCount;
+                    
+                    const compHTML = getPagosComparisonHTML(service.id, totalValue);
 
                     let checksHTML = '';
                     if (freq === 1) {
@@ -2132,7 +2195,7 @@
                                 <span class="font-bold text-[17px] tracking-tight truncate pr-1 ${isFullyPaid ? 'text-gray-400 dark:text-gray-600 line-through' : 'text-[var(--text-main)]'}">
                                     ${service.name}
                                 </span>
-                                ${freq > 1 ? `<span class="text-xs text-gray-500 uppercase font-bold tracking-wider mt-0.5">${paidCount}/${freq} pagos</span>` : ''}
+                                ${freq > 1 ? `<span class="text-xs text-gray-500 uppercase font-bold tracking-wider mt-0.5">${paidCount}/${freq} pagos — Mes: $${Math.round(totalValue).toLocaleString()}</span>` : ''}
                             </div>
                             
                             <div class="flex items-center gap-3 shrink-0">
@@ -2143,12 +2206,15 @@
                                     <div class="flex items-center bg-[var(--bg-body)] rounded-lg px-2 py-1 border border-[var(--border-color)] focus-within:border-[var(--primary)] transition-colors">
                                         <span class="text-sm font-bold text-gray-400 mr-1">$</span>
                                         <input type="number" 
-                                            value="${data.cost === 0 ? '' : data.cost}" 
-                                            placeholder="0"
-                                            oninput="updatePagosCost('${service.id}', this.value)"
+                                            value="${unitCost === 0 ? '' : unitCost}" 
+                                            placeholder="Costo c/u"
+                                            onchange="updatePagosCost('${service.id}', this.value)"
                                             class="w-24 text-right bg-transparent border-none outline-none text-lg font-bold ${isFullyPaid ? 'text-[var(--success)]' : 'text-[var(--text-main)]'} p-0">
                                     </div>
-                                    <div class="h-6 flex items-center mt-1.5">
+                                    <div class="text-[10px] text-[var(--success)] font-bold uppercase tracking-wider text-right mt-1 opacity-80">
+                                        Pagado: $${Math.round(paidValue).toLocaleString()}
+                                    </div>
+                                    <div class="h-6 flex items-center mt-0.5">
                                         ${compHTML}
                                     </div>
                                 </div>
