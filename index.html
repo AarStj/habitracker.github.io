@@ -2045,6 +2045,50 @@
             renderPagos();
         }
 
+        function openEditPagosModal(id) {
+            const service = state.pagosServices.find(s => s.id === id);
+            if (!service) return;
+
+            const html = `
+                <div class="input-group" style="margin-bottom: 16px;">
+                    <label class="input-label">Nombre del Servicio/Pago</label>
+                    <input type="text" id="editPagosName" value="${service.name.replace(/"/g, '&quot;')}" class="modern-input">
+                </div>
+                <div class="input-group" style="margin-bottom: 24px;">
+                    <label class="input-label">Cantidad de pagos (frecuencia)</label>
+                    <input type="number" id="editPagosFreq" value="${service.freq || 1}" min="1" max="31" class="modern-input">
+                </div>
+                <button onclick="saveEditPagosService('${id}')" class="primary-btn">Guardar Cambios</button>
+            `;
+            openGenericModal('Editar Pago', html);
+            setTimeout(() => document.getElementById('editPagosName').focus(), 100);
+        }
+
+        function saveEditPagosService(id) {
+            const newName = document.getElementById('editPagosName').value.trim();
+            const newFreq = parseInt(document.getElementById('editPagosFreq').value) || 1;
+
+            if (!newName) return showToast('El nombre no puede estar vacío');
+
+            const service = state.pagosServices.find(s => s.id === id);
+            if (service) {
+                service.name = newName;
+                service.freq = newFreq;
+
+                const key = getPagosMonthKey(pagosViewDate);
+                if (state.pagosMonthly[key] && state.pagosMonthly[key][id]) {
+                    if (state.pagosMonthly[key][id].paidCount > newFreq) {
+                        state.pagosMonthly[key][id].paidCount = newFreq;
+                    }
+                }
+
+                saveData();
+                closeGenericModal();
+                renderPagos();
+                showToast('Pago actualizado');
+            }
+        }
+
         function deletePagosGlobalService(id) {
             showConfirm("¿Eliminar servicio?", () => {
                 state.pagosServices = state.pagosServices.filter(s => s.id !== id);
@@ -2219,9 +2263,15 @@
                                     </div>
                                 </div>
                             </div>
-                            <button onclick="deletePagosGlobalService('${service.id}')" class="absolute -right-2 -top-2 bg-[var(--bg-surface)] border border-[var(--danger)] text-[var(--danger)] rounded-full p-1 opacity-0 group-hover:opacity-100 transition-all shadow-md z-20 hover:scale-110">
-                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
-                            </button>
+                            
+                            <div class="absolute -right-2 -top-3 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-all z-20">
+                                <button onclick="openEditPagosModal('${service.id}')" class="bg-[var(--bg-surface)] border border-[var(--primary)] text-[var(--primary)] rounded-full p-1.5 shadow-md hover:scale-110 transition-transform" title="Editar">
+                                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
+                                </button>
+                                <button onclick="deletePagosGlobalService('${service.id}')" class="bg-[var(--bg-surface)] border border-[var(--danger)] text-[var(--danger)] rounded-full p-1.5 shadow-md hover:scale-110 transition-transform" title="Eliminar">
+                                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
+                                </button>
+                            </div>
                         </div>
                     `;
                 });
