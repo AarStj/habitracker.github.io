@@ -365,7 +365,7 @@
         #genericModal, #newHabitModal, #confirmModal, #noteModal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 60; background-color: rgba(0,0,0,0.4); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; padding: 16px; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
         #genericModal.active, #newHabitModal.active, #confirmModal.active, #noteModal.active { opacity: 1; pointer-events: auto; }
         
-        .modal-card { background-color: var(--bg-surface); width: 100%; max-width: 420px; border-radius: 20px; padding: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.3); border: 0.5px solid var(--border-color); position: relative; animation: scaleIn 0.2s cubic-bezier(0.16, 1, 0.3, 1); margin: 0; max-height: 85vh; overflow-y: auto; display: flex; flex-direction: column; }
+        .modal-card { background-color: var(--bg-surface); width: 100%; max-width: 480px; border-radius: 20px; padding: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.3); border: 0.5px solid var(--border-color); position: relative; animation: scaleIn 0.2s cubic-bezier(0.16, 1, 0.3, 1); margin: 0; max-height: 85vh; overflow-y: auto; display: flex; flex-direction: column; transition: max-width 0.3s, width 0.3s; }
         
         .primary-btn { width: 100%; padding: 14px; background-color: var(--primary); color: #ffffff; border-radius: 12px; font-weight: 600; font-size: 0.95rem; text-align: center; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); transition: transform 0.1s; }
         .primary-btn:active { transform: scale(0.97); }
@@ -405,6 +405,9 @@
 
         .mini-btn { font-size: 0.75rem; font-weight: 600; padding: 4px 8px; background: var(--bg-surface-hover); border-radius: 6px; color: var(--primary); cursor: pointer; }
         
+        /* Ajustes botones icono accion */
+        .action-icon-btn { opacity: 0.6; padding: 6px; border-radius: 8px; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
+        .action-icon-btn:hover { opacity: 1; background: var(--bg-surface-hover); }
     </style>
 </head>
 <body>
@@ -484,7 +487,7 @@
         <div id="customSectionBody" style="flex:1; overflow-y:auto; position: relative; padding: 0;"></div>
     </div>
 
-    <div id="genericModal" onclick="closeGenericModal()" class="hidden"><div id="gModalContent" onclick="event.stopPropagation()" class="modal-card"><button onclick="closeGenericModal()" class="absolute" style="top:16px; right:16px; color:var(--text-muted); padding: 4px;">✕</button><h3 id="gModalTitle" class="font-bold text-xl mb-4" style="letter-spacing:-0.02em;">Título</h3><div id="gModalBody"></div></div></div>
+    <div id="genericModal" onclick="closeGenericModal()" class="hidden"><div id="gModalContent" onclick="event.stopPropagation()" class="modal-card"><button onclick="closeGenericModal()" class="absolute" style="top:16px; right:16px; color:var(--text-muted); padding: 4px; z-index: 10;">✕</button><h3 id="gModalTitle" class="font-bold text-xl mb-4 flex items-center" style="letter-spacing:-0.02em;">Título</h3><div id="gModalBody"></div></div></div>
     
     <div id="confirmModal" onclick="closeConfirm()" class="hidden"><div class="modal-card" onclick="event.stopPropagation()"><h3 class="font-bold text-xl mb-2">¿Estás seguro?</h3><div class="flex gap-3 mt-4"><button onclick="closeConfirm()" class="secondary-btn">Cancelar</button><button id="btnConfirmAction" class="primary-btn" style="background-color:var(--danger); box-shadow: 0 4px 12px rgba(255,59,48,0.2);">Confirmar</button></div></div></div>
     
@@ -739,7 +742,6 @@
                             const isBeforeCreation = currentDate < habitCreatedDate;
                             const isWeekEnd = (i % 7 === 0);
 
-                            // Solo sumamos a los días válidos si el hábito ya existía
                             if (!isBeforeCreation) {
                                 validDaysInMonth++;
                                 if(stat==='done' || stat==='skip') checks++;
@@ -747,7 +749,6 @@
                             
                             let cls = 'cell-btn ' + (isWeekEnd ? 'week-separator ' : '') + (isToday?'today-border':'');
 
-                            // Renderizamos una celda muerta si es antes de la creación
                             if (isBeforeCreation) {
                                 cells += `<div class="${cls}" style="background-color: var(--bg-body); opacity: 0.3; cursor: not-allowed;" title="Previo a creación"></div>`;
                                 continue;
@@ -785,7 +786,6 @@
                                 class="${cls}"><div class="${wrapClass}" style="${styleStr}">${txt}</div>${indicator}</div>`;
                         }
                         
-                        // Calculamos el porcentaje solo sobre los días válidos
                         const pct = validDaysInMonth === 0 ? 0 : Math.round((checks/validDaysInMonth)*100);
                         cells += `</div><div class="sticky-col-right grid-header-cell">${pct}%</div>`;
                         row.innerHTML = cells;
@@ -838,40 +838,105 @@
 
         function changeMonth(d) { state.viewDate.setMonth(state.viewDate.getMonth()+d); renderCalendar(); }
 
-        /* --- CATEGORY MANAGER --- */
-        function openCategoryManager(initialTab = 'categories') {
+        /* --- NUEVO MANAGER DE CATEGORÍAS HORIZONTAL (CON SUB-CHIPS) --- */
+        function openCategoryManager() {
             window.toggleMenu(false);
-            const html = `
-                <div class="tabs-header">
-                    <button onclick="renderCatTab()" id="tabBtnCats" class="tab-btn">Categorías</button>
-                    <button onclick="renderSubTab()" id="tabBtnSubs" class="tab-btn">Subcategorías</button>
-                </div>
-                <div id="managerContent"></div>
+            const modalContent = document.getElementById('gModalContent');
+            modalContent.style.maxWidth = '950px'; 
+            modalContent.style.width = '95vw';
+
+            let html = `
+                <div style="display:flex; flex-direction:column; gap:24px; max-height: 75vh;">
+                    
+                    <div style="display:flex; flex-wrap:wrap; gap:16px; align-items:center; background: var(--bg-body); padding: 16px 24px; border-radius: 16px; border: 1px solid var(--border-color);">
+                        <div style="display:flex; align-items:center; gap: 12px; flex: 1; min-width: 300px;">
+                            <div class="color-picker-wrapper" style="width: 40px; height: 40px; border: 2px solid var(--border-color); flex-shrink:0;">
+                                <input type="color" id="newCatColorInput" value="#007aff">
+                            </div>
+                            <input id="newCatInput" placeholder="Nombre de nueva categoría..." class="modern-input" style="flex:1; font-weight: 600; font-size: 1.1rem; padding: 12px 16px; border: 2px solid var(--border-color);" onkeyup="if(event.key==='Enter') addCategory()">
+                        </div>
+                        <button onclick="addCategory()" class="primary-btn" style="width:auto; padding:0 32px; height: 48px; border-radius: 12px; font-size: 1rem;">Crear Categoría</button>
+                    </div>
+
+                    <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); gap: 20px; overflow-y:auto; padding-right: 8px; padding-bottom: 20px;">
             `;
-            openGenericModal('Gestión', html);
-            if(initialTab === 'subcategories') renderSubTab(); else renderCatTab();
+            
+            if (state.categories.length === 0) {
+                html += `<div style="grid-column: 1/-1; text-align:center; color:var(--text-muted); padding: 60px 0; font-weight: 600; font-size: 1.2rem;">No hay categorías creadas. Empieza añadiendo una arriba.</div>`;
+            }
+
+            state.categories.forEach((c, i) => {
+                html += `
+                <div style="background:var(--bg-surface); border:2px solid var(--border-color); border-radius:20px; display:flex; flex-direction:column; overflow:hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.03);">
+                    
+                    <div style="background:var(--bg-body); padding:16px 20px; display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid var(--border-color);">
+                        <div style="display:flex; align-items:center; gap:12px; flex:1; min-width:0;">
+                            <div class="color-picker-wrapper" style="width:28px; height:28px; border:2px solid var(--border-color); flex-shrink:0;">
+                                <input type="color" value="${c.color}" onchange="updateCatColor('${c.id}', this.value)">
+                            </div>
+                            <span style="font-weight:800; font-size:1.2rem; color:var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${c.name}</span>
+                        </div>
+                        <div style="display:flex; gap:6px; flex-shrink:0;">
+                            <button onclick="openRenameCategory('${c.id}')" class="action-icon-btn" style="color:var(--text-muted); background:var(--bg-surface); border: 1px solid var(--border-color);" title="Renombrar">${ICON_PENCIL}</button>
+                            <button onclick="removeCategory(${i})" class="action-icon-btn" style="color:var(--danger); background:var(--bg-surface); border: 1px solid var(--border-color);" title="Eliminar">${ICON_TRASH}</button>
+                        </div>
+                    </div>
+                    
+                    <div style="padding:20px; display:flex; flex-direction:column; gap:12px; flex:1;">
+                `;
+
+                if(c.subcategories && c.subcategories.length > 0) {
+                    html += `<div style="display:flex; flex-wrap:wrap; gap:8px;">`;
+                    c.subcategories.forEach(sub => {
+                        html += `
+                        <div onclick="openSubcatOptions('${c.id}', '${sub.replace(/'/g, "\\'")}')" 
+                             style="background:var(--bg-body); border:1px solid var(--border-color); border-radius:10px; padding:8px 14px; font-size:0.95rem; font-weight:600; color:var(--text-main); cursor:pointer; transition:all 0.2s; box-shadow:0 1px 3px rgba(0,0,0,0.02); display:flex; align-items:center; gap:6px;" 
+                             onmouseover="this.style.borderColor='var(--primary)'; this.style.transform='translateY(-1px)';" 
+                             onmouseout="this.style.borderColor='var(--border-color)'; this.style.transform='translateY(0)';">
+                            <span>${sub}</span>
+                        </div>`;
+                    });
+                    html += `</div>`;
+                } else {
+                    html += `<div style="flex:1; display:flex; align-items:center; justify-content:center;"><span style="font-size:0.95rem; color:var(--text-muted); font-weight: 600;">Sin subcategorías.</span></div>`;
+                }
+                
+                html += `
+                    </div>
+                    <div style="padding:16px 20px; border-top: 1px solid var(--border-color); background: var(--bg-surface);">
+                        <div style="display:flex; gap:12px;">
+                            <input id="newSub_${c.id}" class="modern-input" style="padding:12px 16px; font-weight:500; border: 2px solid var(--border-color);" placeholder="Añadir subcategoría..." onkeyup="if(event.key==='Enter') addSubcatGlobal('${c.id}')">
+                            <button onclick="addSubcatGlobal('${c.id}')" class="secondary-btn" style="width:auto; padding:0 20px; border: 2px solid var(--border-color); background: var(--bg-body);">Añadir</button>
+                        </div>
+                    </div>
+                </div>`;
+            });
+
+            html += `
+                    </div>
+                </div>
+            `;
+
+            openGenericModal('Gestión de Categorías', html);
         }
 
-        function renderCatTab() {
-            document.getElementById('tabBtnCats').classList.add('active');
-            document.getElementById('tabBtnSubs').classList.remove('active');
-            let html = '<div style="display:flex; flex-direction:column; gap:8px;">';
-            state.categories.forEach((c, i) => { 
-                html += `<div class="cat-list-item" style="background: var(--bg-body); border-radius: 12px; padding: 12px; border:0.5px solid var(--border-color); margin-bottom: 4px;">
-                    <div class="flex items-center">
-                        <div class="color-dot-container" title="Cambiar color">
-                             <input type="color" class="color-dot-input" value="${c.color}" onchange="updateCatColor('${c.id}', this.value)">
-                        </div>
-                        <span class="font-bold text-sm">${c.name}</span>
-                    </div>
-                    <div class="flex gap-2">
-                        <button onclick="openRenameCategory('${c.id}')" class="action-icon-btn" title="Renombrar">${ICON_PENCIL}</button>
-                        <button onclick="removeCategory(${i})" class="action-icon-btn danger" title="Eliminar">${ICON_TRASH}</button>
-                    </div>
-                </div>`; 
-            });
-            html += `</div><div style="margin-top: 24px;"><label class="text-xs font-bold uppercase tracking-widest" style="color: var(--text-muted); display: block; margin-bottom: 8px;">Nueva Categoría</label><div class="flex gap-2 items-center relative"><div class="color-picker-wrapper"><input type="color" id="newCatColorInput" value="#007aff"></div><input id="newCatInput" placeholder="Ej: Deportes..." class="modern-input" style="flex:1;"><button onclick="addCategory()" class="primary-btn" style="width: auto; padding: 0 16px;">+</button></div></div>`;
-            document.getElementById('managerContent').innerHTML = html;
+        // Opciones específicas para cuando haces clic en un Chip (Cuadradito)
+        function openSubcatOptions(catId, oldName) {
+            // Reajustamos el ancho para este modal más pequeño
+            const modalContent = document.getElementById('gModalContent');
+            modalContent.style.maxWidth = '420px';
+            modalContent.style.width = '100%';
+            
+            const html = `
+                <div class="input-group" style="margin-bottom: 24px;">
+                    <label class="input-label">Nombre de la Subcategoría</label>
+                    <input id="editSubName" value="${oldName}" class="modern-input">
+                </div>
+                <button onclick="saveSubcatEdit('${catId}', '${oldName}')" class="primary-btn" style="margin-bottom: 12px;">Guardar Cambios</button>
+                <button onclick="deleteSubGlobal('${catId}', '${oldName}')" class="secondary-btn" style="color: var(--danger); border: 1px solid var(--danger); background: transparent;">Eliminar Subcategoría</button>
+            `;
+            openGenericModal('Opciones: ' + oldName, html, 'openCategoryManager()');
+            setTimeout(() => document.getElementById('editSubName').focus(), 100);
         }
 
         function updateCatColor(id, newColor) {
@@ -886,14 +951,18 @@
         function openRenameCategory(id) {
             const cat = state.categories.find(c => c.id == id);
             if(!cat) return;
+            const modalContent = document.getElementById('gModalContent');
+            modalContent.style.maxWidth = '420px';
+            modalContent.style.width = '100%';
+            
             const html = `
                 <div class="input-group">
                     <label class="input-label">Nuevo Nombre</label>
                     <input id="editCatNameInput" value="${cat.name}" class="modern-input">
                 </div>
-                <button onclick="saveCategoryName('${id}')" class="primary-btn" style="margin-top:24px;">Guardar</button>
+                <button onclick="saveCategoryName('${id}')" class="primary-btn" style="margin-top:24px;">Guardar Cambios</button>
             `;
-            openGenericModal('Renombrar: ' + cat.name, html);
+            openGenericModal('Renombrar Categoría', html, 'openCategoryManager()');
             setTimeout(() => document.getElementById('editCatNameInput').focus(), 100);
         }
 
@@ -904,62 +973,8 @@
             if(cat) {
                 cat.name = newName;
                 state.habits.forEach(h => { if(h.category.id == id) { h.category.name = newName; } });
-                saveData(); renderCalendar(); openCategoryManager('categories'); showToast('Nombre actualizado');
+                saveData(); renderCalendar(); openCategoryManager(); showToast('Nombre actualizado');
             }
-        }
-
-        function renderSubTab() {
-            document.getElementById('tabBtnCats').classList.remove('active');
-            document.getElementById('tabBtnSubs').classList.add('active');
-            if(!currentManageCatId && state.categories.length > 0) currentManageCatId = state.categories[0].id;
-            let catOptions = '';
-            state.categories.forEach(c => { catOptions += `<option value="${c.id}" ${c.id == currentManageCatId ? 'selected' : ''}>${c.name}</option>`; });
-            const html = `
-                <label class="text-xs font-bold uppercase tracking-widest text-muted mb-2 block">Categoría Padre</label>
-                <select id="parentCatSelect" class="cat-select-dropdown">${catOptions}</select>
-                <div id="subcatListArea"></div>
-            `;
-            document.getElementById('managerContent').innerHTML = html;
-            document.getElementById('parentCatSelect').addEventListener('change', (e) => updateSubcatView(e.target.value));
-            updateSubcatView(currentManageCatId);
-        }
-
-        function updateSubcatView(catId) {
-            currentManageCatId = catId;
-            const cat = state.categories.find(c => c.id == catId);
-            const listArea = document.getElementById('subcatListArea');
-            if(!cat) return;
-
-            let html = '<div style="display:flex; flex-direction:column; gap:8px; max-height:200px; overflow-y:auto; margin-bottom:16px;">';
-            if(!cat.subcategories || cat.subcategories.length === 0) {
-                html += '<p class="text-sm text-muted">No hay subcategorías.</p>';
-            } else {
-                cat.subcategories.forEach(sub => {
-                    html += `<div style="display:flex; justify-content:space-between; align-items:center; padding:12px; background:var(--bg-body); border-radius:12px; border:0.5px solid var(--border-color);">
-                        <span class="text-sm font-bold">${sub}</span>
-                        <div class="flex gap-2">
-                            <button onclick="openRenameSubcat('${cat.id}', '${sub}')" class="action-icon-btn" title="Editar">${ICON_PENCIL}</button>
-                            <button onclick="deleteSubGlobal('${cat.id}', '${sub}')" class="action-icon-btn danger" title="Eliminar">${ICON_TRASH}</button>
-                        </div>
-                    </div>`;
-                });
-            }
-            html += '</div>';
-            html += `<div style="border-top:0.5px solid var(--border-color); padding-top:16px;"><div style="display:flex; gap:8px;"><input id="newSubInputGlobal" class="modern-input" placeholder="Nueva subcategoría..." onkeyup="if(event.key==='Enter') addSubcatGlobal()"><button onclick="addSubcatGlobal()" class="primary-btn" style="width:auto; padding:0 16px;">+</button></div></div>`;
-            listArea.innerHTML = html;
-            setTimeout(()=> { try { document.getElementById('newSubInputGlobal').focus(); } catch(e){} }, 100);
-        }
-
-        function openRenameSubcat(catId, oldName) {
-             const html = `
-                <div class="input-group">
-                    <label class="input-label">Nuevo Nombre</label>
-                    <input id="editSubName" value="${oldName}" class="modern-input">
-                </div>
-                <button onclick="saveSubcatEdit('${catId}', '${oldName}')" class="primary-btn" style="margin-top:24px;">Guardar</button>
-            `;
-            openGenericModal('Editar Subcategoría', html);
-            setTimeout(() => document.getElementById('editSubName').focus(), 100);
         }
 
         function saveSubcatEdit(catId, oldName) {
@@ -973,21 +988,21 @@
                 state.habits.forEach(h => {
                     if(h.category.id == catId && h.subcategory === oldName) { h.subcategory = newName; }
                 });
-                saveData(); renderCalendar(); openCategoryManager('subcategories'); showToast('Subcategoría renombrada');
+                saveData(); renderCalendar(); openCategoryManager(); showToast('Subcategoría renombrada');
             }
         }
 
-        function addSubcatGlobal() {
-            const input = document.getElementById('newSubInputGlobal');
+        function addSubcatGlobal(catId) {
+            const input = document.getElementById(`newSub_${catId}`);
+            if(!input) return;
             const n = input.value.trim();
-            if(n && currentManageCatId) {
-                const cat = state.categories.find(c => c.id == currentManageCatId);
+            if(n) {
+                const cat = state.categories.find(c => c.id == catId);
                 if(cat) {
                     if(!cat.subcategories) cat.subcategories = [];
                     if(!cat.subcategories.includes(n)) { 
-                        cat.subcategories.push(n); saveData(); showToast('Subcategoría añadida'); renderCalendar(); 
+                        cat.subcategories.push(n); saveData(); renderCalendar(); openCategoryManager(); showToast('Subcategoría añadida'); 
                     } else { showToast('Ya existe'); }
-                    updateSubcatView(currentManageCatId);
                 }
             }
         }
@@ -998,22 +1013,29 @@
                 showConfirm('¿Eliminar subcategoría?', () => {
                     cat.subcategories = cat.subcategories.filter(s => s !== subName);
                     state.habits.forEach(h => { if(h.category.id == catId && h.subcategory === subName) { h.subcategory = ""; } });
-                    saveData(); updateSubcatView(catId); renderCalendar(); showToast('Subcategoría eliminada');
+                    saveData(); renderCalendar(); openCategoryManager(); showToast('Subcategoría eliminada');
                 });
             }
         }
 
-        function addCategory() { const i = document.getElementById('newCatInput'), cIn = document.getElementById('newCatColorInput'); if(i.value.trim()){ state.categories.push({id:Date.now(), name:i.value.trim(), color: cIn.value, subcategories:[]}); saveData(); renderCatTab(); renderCalendar(); showToast('Categoría creada'); } }
+        function addCategory() { 
+            const i = document.getElementById('newCatInput'), cIn = document.getElementById('newCatColorInput'); 
+            if(i.value.trim()){ 
+                state.categories.push({id:Date.now(), name:i.value.trim(), color: cIn.value, subcategories:[]}); 
+                saveData(); renderCalendar(); openCategoryManager(); showToast('Categoría creada'); 
+            } 
+        }
+
         function removeCategory(i) { 
             const cat = state.categories[i]; 
             showConfirm('¿Eliminar categoría? Se borrarán sus hábitos.', () => {
                  state.categories.splice(i,1); if(cat) state.habits = state.habits.filter(h => h.category.id != cat.id); 
-                 saveData(); renderCatTab(); renderCalendar(); showToast('Categoría eliminada'); 
+                 saveData(); renderCalendar(); openCategoryManager(); showToast('Categoría eliminada'); 
             });
         }
         
-        function openSubcatMenu(catId, subName) { openRenameSubcat(catId, subName); }
-        function openCategoryMenu(id) { currentManageCatId = id; openCategoryManager('subcategories'); }
+        function openSubcatMenu(catId, subName) { openSubcatOptions(catId, subName); }
+        function openCategoryMenu(id) { openCategoryManager(); }
 
         /* --- OTHERS --- */
         window.toggleMenu = function(show) { const o = document.getElementById('menuOverlay'), c = document.getElementById('menuContent'); if(show){ o.classList.remove('hidden'); setTimeout(() => { o.classList.remove('opacity-0'); c.classList.add('open'); }, 10); } else { o.classList.add('opacity-0'); c.classList.remove('open'); setTimeout(() => o.classList.add('hidden'), 300); } }
@@ -1048,6 +1070,9 @@
                         </div>
                     </div>
                 `;
+                const modalContent = document.getElementById('gModalContent');
+                modalContent.style.maxWidth = '480px';
+                modalContent.style.width = '100%';
                 openGenericModal('Copia de Seguridad', html);
             }
         }
@@ -1131,8 +1156,28 @@
             saveData(); window.toggleNewHabit(false); renderCalendar(); showToast('Hábito creado'); 
         }
 
-        function openGenericModal(t, c) { document.getElementById('gModalTitle').innerText=t; document.getElementById('gModalBody').innerHTML=c; const el=document.getElementById('genericModal'); el.classList.remove('hidden'); setTimeout(()=>el.classList.add('active'),10); }
-        function closeGenericModal() { const el=document.getElementById('genericModal'); el.classList.remove('active'); setTimeout(()=>el.classList.add('hidden'),200); }
+        function openGenericModal(t, c, backFn = null) { 
+            let tHtml = t;
+            if(backFn) {
+                tHtml = `<button onclick="${backFn}" style="margin-right:8px; color:var(--primary); display:flex; align-items:center; justify-content:center; padding:4px; border-radius:6px; transition:background 0.2s;" onmouseover="this.style.background='var(--bg-surface-hover)'" onmouseout="this.style.background='transparent'"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg></button><span>${t}</span>`;
+            }
+            document.getElementById('gModalTitle').innerHTML=tHtml; 
+            document.getElementById('gModalBody').innerHTML=c; 
+            const el = document.getElementById('genericModal'); 
+            el.classList.remove('hidden'); 
+            setTimeout(()=>el.classList.add('active'),10); 
+        }
+        
+        function closeGenericModal() { 
+            const el = document.getElementById('genericModal'); 
+            el.classList.remove('active'); 
+            setTimeout(() => { 
+                el.classList.add('hidden'); 
+                document.getElementById('gModalContent').style.maxWidth = ''; 
+                document.getElementById('gModalContent').style.width = '';
+            }, 200); 
+        }
+        
         function showConfirm(m, cb) { document.getElementById('confirmModal').querySelector('h3').innerText=m; confirmCallback=cb; const el=document.getElementById('confirmModal'); el.classList.remove('hidden'); setTimeout(()=>el.classList.add('active'),10); }
         function closeConfirm() { const el=document.getElementById('confirmModal'); el.classList.remove('active'); setTimeout(()=>el.classList.add('hidden'),200); confirmCallback=null; }
         function showToast(m) { const t=document.createElement('div'); t.className='toast'; t.innerText=m; document.getElementById('toast-container').appendChild(t); setTimeout(()=>t.remove(),3000); }
@@ -1146,6 +1191,10 @@
             const isStreakEnabled = h.showStreak !== false;
             const isArchived = h.archived === true;
             
+            const modalContent = document.getElementById('gModalContent');
+            modalContent.style.maxWidth = '480px';
+            modalContent.style.width = '100%';
+
             const html = `
                 <div class="input-group" style="margin-bottom:16px;">
                     <label class="input-label" style="margin-bottom:4px;">Nombre</label>
