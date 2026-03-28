@@ -1,19 +1,12 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <!-- ======================================================================= -->
-    <!-- SECTOR 1: CABECERA Y METADATOS (HEAD)                                   -->
-    <!-- ======================================================================= -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Habit Tracker v3.0</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-        // ========================================================================= 
-        // SECTOR 6: ESTADO GLOBAL Y CONFIGURACIÓN INICIAL (JAVASCRIPT)            
-        // ========================================================================= 
-
         tailwind.config = {
             corePlugins: { preflight: false },
             darkMode: 'class',
@@ -30,9 +23,6 @@
     </script>
     
     <style>
-        /* ========================================================================= */
-        /* SECTOR 2: ESTILOS BASE Y TEMAS DE COLOR (CSS)                             */
-        /* ========================================================================= */
         /* --- TEMA CLARO (Default) --- */
         :root {
             --bg-body: #f2f2f7;
@@ -169,10 +159,6 @@
         ::-webkit-scrollbar-track { background: var(--scrollbar-bg); }
         ::-webkit-scrollbar-thumb { background-color: var(--scrollbar-thumb); border-radius: 10px; border: 2px solid var(--bg-body); }
 
-        /* ========================================================================= */
-        /* SECTOR 3: ESTILOS DE COMPONENTES DE INTERFAZ (UI)                         */
-        /* ========================================================================= */
-        
         /* --- HEADER --- */
         header {
             padding: 12px 16px; border-bottom: 0.5px solid var(--border-color);
@@ -375,10 +361,6 @@
         .menu-row:active { background-color: var(--bg-surface-hover); }
         .menu-row span:last-child { color: var(--text-muted); font-size: 1.2rem; }
         
-        /* ========================================================================= */
-        /* SECTOR 4: MODALES, TOASTS Y ELEMENTOS FLOTANTES                           */
-        /* ========================================================================= */
-        
         /* Modales genéricos base */
         #genericModal, #newHabitModal, #confirmModal, #noteModal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 60; background-color: rgba(0,0,0,0.4); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; padding: 16px; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
         #genericModal.active, #newHabitModal.active, #confirmModal.active, #noteModal.active { opacity: 1; pointer-events: auto; }
@@ -429,9 +411,6 @@
     </style>
 </head>
 <body>
-    <!-- ======================================================================= -->
-    <!-- SECTOR 5: ESTRUCTURA VISUAL DE LA APLICACIÓN (HTML BODY)                -->
-    <!-- ======================================================================= -->
     <canvas id="confettiCanvas"></canvas>
     
     <header>
@@ -483,9 +462,8 @@
             <div class="menu-section">
                 <label class="menu-section-label">Gestión</label>
                 <div class="menu-card">
-                    <div class="menu-row" onclick="openSection('categorias')"><span>🗂️ Categorías</span><span>›</span></div>
-                    <div class="menu-row" onclick="openArchivedHabits()"><span>📦 Hábitos Archivados</span><span>›</span></div>
-                    <div class="menu-row" onclick="openSubMenu('backup')"><span>💾 Backup</span><span>›</span></div>
+                    <div class="menu-row" onclick="openCategoryManager('categories')"><span>Categorías</span><span>›</span></div>
+                    <div class="menu-row" onclick="openSubMenu('backup')"><span>Backup</span><span>›</span></div>
                 </div>
             </div>
             
@@ -588,9 +566,6 @@
         const ICON_PENCIL = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>`;
         const ICON_TRASH = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>`;
 
-        // ========================================================================= 
-        // SECTOR 7: FUNCIÓN DE INICIALIZACIÓN MÁSTER                              
-        // ========================================================================= 
         function init() {
             try {
                 let loaded = JSON.parse(localStorage.getItem('habitTrackerV5'));
@@ -657,10 +632,6 @@
             }
         }
 
-        // ========================================================================= 
-        // SECTOR 9: LÓGICA DE EVENTOS ARRASTRAR Y SOLTAR (DRAG & DROP)            
-        // ========================================================================= 
-        
         /* --- DRAG DROP --- */
         function handleDragStart(e, id) { draggedHabitId = id; e.dataTransfer.effectAllowed='move'; e.target.classList.add('dragging'); }
         function handleDragEnd(e) { e.target.classList.remove('dragging'); document.querySelectorAll('.subcategory-row').forEach(el => el.classList.remove('drag-over')); }
@@ -669,10 +640,6 @@
         function dropOnSubcat(e, catId, subName) { e.preventDefault(); e.currentTarget.classList.remove('drag-over'); const h = state.habits.find(x => x.id == draggedHabitId); if(h) { const tCat = state.categories.find(c => c.id == catId); if(tCat && h.category.id != catId) h.category = tCat; h.subcategory = subName; saveData(); renderCalendar(); showToast('Hábito movido'); } }
         function dropOnHabit(e, targetId) { e.preventDefault(); const tH = state.habits.find(h=>h.id==targetId), dH = state.habits.find(h=>h.id==draggedHabitId); if(tH && dH && targetId!=draggedHabitId) { if(dH.category.id!=tH.category.id) dH.category=tH.category; dH.subcategory=tH.subcategory; saveData(); renderCalendar(); } }
 
-        // ========================================================================= 
-        // SECTOR 8: MOTOR DE RENDERIZADO DEL CALENDARIO PRINCIPAL                 
-        // ========================================================================= 
-        
         /* --- RENDER CALENDAR --- */
         function renderCalendar() {
             const container = document.getElementById('habitsContainer');
@@ -717,7 +684,7 @@
                 const catHead = document.createElement('div'); catHead.className = 'category-group-header';
                 let dotHTML = dotColor ? `<div class="cat-status-dot" style="background:${dotColor}; box-shadow:0 0 4px ${dotColor};"></div>` : '';
                 
-                catHead.innerHTML = `<div class="cat-header-sticky"><div class="cat-info" onclick="toggleCategory('${cat.id}')"><span style="color:${cat.color}; font-size:0.7rem;">${isCollapsed?'►':'▼'}</span><span>${cat.name}</span>${dotHTML}</div><button onclick="openCategoryManager('${cat.id}')" class="menu-btn-shared">⋮</button></div><div class="cat-header-fill"></div>`;
+                catHead.innerHTML = `<div class="cat-header-sticky"><div class="cat-info" onclick="toggleCategory('${cat.id}')"><span style="color:${cat.color}; font-size:0.7rem;">${isCollapsed?'►':'▼'}</span><span>${cat.name}</span>${dotHTML}</div><button onclick="openCategoryMenu('${cat.id}')" class="menu-btn-shared">⋮</button></div><div class="cat-header-fill"></div>`;
                 grid.appendChild(catHead);
 
                 if (isCollapsed) return;
@@ -760,8 +727,6 @@
 
                         let validDaysInMonth = 0;
                         let checks = 0;
-                        const habitCreatedDate = new Date(h.created || h.id);
-                        habitCreatedDate.setHours(0,0,0,0);
 
                         for(let i=1; i<=daysInMonth; i++) {
                             const loopIso = `${year}-${String(month+1).padStart(2,'0')}-${String(i).padStart(2,'0')}`;
@@ -772,21 +737,14 @@
                             const indicator = note ? `<div class="note-indicator"></div>` : '';
 
                             const currentDate = new Date(year, month, i);
-                            const isBeforeCreation = currentDate < habitCreatedDate;
                             const isWeekEnd = (i % 7 === 0);
 
-                            if (!isBeforeCreation) {
-                                validDaysInMonth++;
-                                if(stat==='done' || stat==='skip') checks++;
-                            }
+                            // MODIFICACIÓN: Contamos todos los días independientemente de la fecha de creación
+                            validDaysInMonth++;
+                            if(stat==='done' || stat==='skip') checks++;
                             
                             let cls = 'cell-btn ' + (isWeekEnd ? 'week-separator ' : '') + (isToday?'today-border':'');
 
-                            if (isBeforeCreation) {
-                                cells += `<div class="${cls}" style="background-color: var(--bg-body); opacity: 0.3; cursor: not-allowed;" title="Previo a creación"></div>`;
-                                continue;
-                            }
-                            
                             let styleStr = '', txt = '';
                             let wrapClass = 'flex items-center justify-center transition-all w-full h-full';
 
@@ -871,7 +829,7 @@
 
         function changeMonth(d) { state.viewDate.setMonth(state.viewDate.getMonth()+d); renderCalendar(); }
 
-        /* --- ANTIGUO MANAGER DE CATEGORÍAS (Se mantiene por compatibilidad si se usa en otro lado) --- */
+        /* --- NUEVO MANAGER DE CATEGORÍAS HORIZONTAL (CON SUB-CHIPS) --- */
         function openCategoryManager() {
             window.toggleMenu(false);
             const modalContent = document.getElementById('gModalContent');
@@ -1365,9 +1323,6 @@
             } else if (type === 'apariencia') {
                 title.innerText = 'Apariencia';
                 renderApariencia();
-            } else if (type === 'categorias') {
-                title.innerText = 'Categorías';
-                renderCategoriasSection();
             }
         }
 
@@ -2403,258 +2358,6 @@
             `;
             
             container.innerHTML = html;
-        }
-
-        // ==========================================
-        //         HÁBITOS ARCHIVADOS
-        // ==========================================
-        function openArchivedHabits() {
-            window.toggleMenu(false);
-            const archived = state.habits.filter(h => h.archived);
-            
-            let html = '<div style="display:flex; flex-direction:column; gap:12px; max-height:60vh; overflow-y:auto; padding-right:8px;">';
-            
-            if (archived.length === 0) {
-                html += '<div style="text-align:center; color:var(--text-muted); padding: 40px 0; font-weight: 500;">No tienes hábitos archivados.</div>';
-            } else {
-                archived.forEach(h => {
-                    html += `
-                        <div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg-surface-hover); padding:16px; border-radius:16px; border: 0.5px solid var(--border-color);">
-                            <div style="flex: 1; min-width: 0;">
-                                <div style="font-weight:700; font-size: 1.1rem; color:var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${h.name}</div>
-                                <div style="font-size:0.85rem; color:var(--text-muted); font-weight: 500; margin-top: 2px;">
-                                    <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:${h.category.color}; margin-right:4px;"></span>
-                                    ${h.category.name} ${h.subcategory ? `> ${h.subcategory}` : ''}
-                                </div>
-                            </div>
-                            <button onclick="unarchiveHabit(${h.id})" class="primary-btn" style="width:auto; padding:8px 16px; font-size:0.85rem; border-radius: 10px; flex-shrink: 0; margin-left: 12px;">Restaurar</button>
-                        </div>
-                    `;
-                });
-            }
-            html += '</div>';
-            
-            openGenericModal('Hábitos Archivados', html);
-        }
-
-        function unarchiveHabit(id) {
-            const h = state.habits.find(x => x.id === id);
-            if (h) {
-                h.archived = false;
-                saveData();
-                renderCalendar();
-                closeGenericModal();
-                showToast('Hábito restaurado');
-                // Reabrir para que se actualice la lista
-                setTimeout(openArchivedHabits, 250);
-            }
-        }
-
-        // ==========================================
-        //         NUEVA SECCIÓN: CATEGORÍAS (FULLSCREEN)
-        // ==========================================
-        function renderCategoriasSection() {
-            const container = document.getElementById('customSectionBody');
-            
-            let html = `
-                <div style="padding: 24px; display: flex; flex-direction: column; gap: 24px; height: calc(100vh - 60px); box-sizing: border-box;">
-
-                    <div style="display: flex; gap: 12px; align-items: center; background: var(--bg-surface); padding: 12px 16px; border-radius: 20px; border: 0.5px solid var(--border-color); box-shadow: 0 4px 12px rgba(0,0,0,0.03); max-width: 400px; flex-shrink: 0;">
-                        <div class="color-picker-wrapper" style="width: 36px; height: 36px; flex-shrink: 0; border: 2px solid var(--border-color);">
-                            <input type="color" id="newSectionCatColor" value="#007aff">
-                        </div>
-                        <input id="newSectionCatName" placeholder="Nueva categoría..." class="modern-input" style="flex: 1; border: none; background: transparent; padding: 0; font-size: 1.05rem; font-weight: 600;" onkeyup="if(event.key==='Enter') addSectionCategory()">
-                        <button onclick="addSectionCategory()" style="background: var(--primary); color: white; border-radius: 12px; padding: 0 16px; height: 36px; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 0.9rem; flex-shrink: 0; transition: transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">Añadir</button>
-                    </div>
-
-                    <div style="display: flex; flex-direction: column; flex-wrap: wrap; gap: 16px; align-content: flex-start; flex: 1; min-height: 0; overflow-x: auto; overflow-y: hidden; padding-bottom: 16px;">
-            `;
-
-            if (state.categories.length === 0) {
-                html += `<div style="color:var(--text-muted); padding: 20px 0; font-weight: 500;">No hay categorías creadas.</div>`;
-            }
-
-            state.categories.forEach((c) => {
-                const subCount = c.subcategories ? c.subcategories.length : 0;
-                const habitsCount = state.habits.filter(h => h.category.id === c.id).length;
-                // Tomar primera letra para el ícono
-                const firstLetter = c.name.charAt(0).toUpperCase();
-
-                html += `
-                    <div style="background: var(--bg-surface); border: 0.5px solid var(--border-color); border-radius: 20px; padding: 16px; display: flex; align-items: center; justify-content: space-between; transition: all 0.2s; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.02); width: 90vw; max-width: 350px; flex-shrink: 0;" onclick="openEditCategoryModal('${c.id}')" onmouseover="this.style.backgroundColor='var(--bg-surface-hover)'" onmouseout="this.style.backgroundColor='var(--bg-surface)'">
-                        
-                        <div style="display: flex; align-items: center; gap: 16px; flex: 1; min-width: 0;">
-                            <div style="width: 50px; height: 50px; background-color: ${c.color}20; border-radius: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                                <span style="color: ${c.color}; font-size: 1.5rem; font-weight: 800;">${firstLetter}</span>
-                            </div>
-                            
-                            <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center;">
-                                <span style="font-weight: 700; font-size: 1.15rem; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: -0.01em;">${c.name}</span>
-                                <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 500; margin-top: 2px;">
-                                    ${habitsCount} hábito${habitsCount !== 1 ? 's' : ''}${subCount > 0 ? ` • ${subCount} subcategoría${subCount !== 1 ? 's' : ''}` : ''}
-                                </span>
-                            </div>
-                        </div>
-                        
-                        <div style="color: var(--text-muted); padding-left: 12px; opacity: 0.4;">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
-                        </div>
-                    </div>
-                `;
-            });
-
-            html += `
-                    </div>
-                </div>
-            `;
-
-            container.innerHTML = html;
-        }
-
-        function addSectionCategory() {
-            const nameInput = document.getElementById('newSectionCatName');
-            const colorInput = document.getElementById('newSectionCatColor');
-            const name = nameInput.value.trim();
-
-            if (name) {
-                state.categories.push({ id: Date.now(), name: name, color: colorInput.value, subcategories: [] });
-                saveData();
-                renderCalendar();
-                renderCategoriasSection();
-                showToast('Categoría creada');
-            } else {
-                showToast('Escribe un nombre');
-                nameInput.focus();
-            }
-        }
-
-        function openEditCategoryModal(id) {
-            const cat = state.categories.find(c => c.id == id);
-            if(!cat) return;
-            
-            const modalContent = document.getElementById('gModalContent');
-            modalContent.style.maxWidth = '420px';
-            modalContent.style.width = '100%';
-
-            let html = `
-                <div class="input-group" style="margin-bottom: 16px;">
-                    <label class="input-label">Nombre de la Categoría</label>
-                    <input id="editCatNameFull" value="${cat.name.replace(/"/g, '&quot;')}" class="modern-input" style="font-weight: 600;">
-                </div>
-                
-                <div class="input-group" style="margin-bottom: 24px; flex-direction: row; align-items: center; justify-content: space-between; background: var(--bg-body); padding: 12px 16px; border-radius: 12px; border: 0.5px solid var(--border-color);">
-                    <label class="input-label" style="margin: 0; color: var(--text-main);">Color de Identificación</label>
-                    <div class="color-picker-wrapper" style="width: 32px; height: 32px; border: 2px solid var(--border-color);">
-                        <input type="color" id="editCatColorFull" value="${cat.color}">
-                    </div>
-                </div>
-
-                <div style="margin-bottom: 24px; background: var(--bg-body); border-radius: 16px; border: 0.5px solid var(--border-color); padding: 16px;">
-                    <label class="input-label" style="margin-bottom: 12px;">Subcategorías</label>
-                    
-                    <div style="display: flex; gap: 8px; margin-bottom: 16px;">
-                        <input id="newSubInputFull" class="modern-input" placeholder="Añadir nueva..." style="padding: 10px 14px; font-size: 0.95rem; border-color: var(--border-color);" onkeyup="if(event.key==='Enter') addSubToCatFull('${id}')">
-                        <button onclick="addSubToCatFull('${id}')" class="secondary-btn" style="width: auto; padding: 0 16px;">+</button>
-                    </div>
-                    
-                    <div id="subcatListFull" style="display: flex; flex-direction: column; gap: 8px; max-height: 180px; overflow-y: auto; padding-right: 4px;">
-            `;
-
-            if(cat.subcategories && cat.subcategories.length > 0) {
-                cat.subcategories.forEach(sub => {
-                    html += `
-                        <div style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-surface); padding: 10px 14px; border-radius: 12px; border: 0.5px solid var(--border-color);">
-                            <span style="font-weight: 600; font-size: 0.95rem;">${sub}</span>
-                            <button onclick="removeSubFromCatFull('${id}', '${sub.replace(/'/g, "\\'")}')" class="action-icon-btn" style="color: var(--danger); padding: 4px;">${ICON_TRASH}</button>
-                        </div>
-                    `;
-                });
-            } else {
-                html += `<div style="text-align: center; color: var(--text-muted); font-size: 0.85rem; padding: 12px 0;">No hay subcategorías</div>`;
-            }
-
-            html += `
-                    </div>
-                </div>
-
-                <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 16px;">
-                    <button onclick="saveCatFull('${id}')" class="primary-btn">Guardar Cambios</button>
-                    <div style="height: 1px; background: var(--border-color); margin: 4px 0;"></div>
-                    <button onclick="deleteCatFull('${id}')" class="option-btn" style="color: var(--danger); justify-content: center;">Eliminar Categoría</button>
-                </div>
-            `;
-
-            openGenericModal('Editar Categoría', html);
-        }
-
-        function saveCatFull(id) {
-            const newName = document.getElementById('editCatNameFull').value.trim();
-            const newColor = document.getElementById('editCatColorFull').value;
-
-            if(!newName) return showToast('El nombre no puede estar vacío');
-
-            const cat = state.categories.find(c => c.id == id);
-            if(cat) {
-                cat.name = newName;
-                cat.color = newColor;
-                state.habits.forEach(h => { 
-                    if(h.category.id == id) { 
-                        h.category.name = newName; 
-                        h.category.color = newColor; 
-                    } 
-                });
-                saveData(); 
-                renderCalendar(); 
-                renderCategoriasSection(); 
-                closeGenericModal(); 
-                showToast('Categoría actualizada');
-            }
-        }
-
-        function deleteCatFull(id) {
-            showConfirm('¿Eliminar categoría? Se borrarán sus hábitos.', () => {
-                 state.categories = state.categories.filter(c => c.id != id); 
-                 state.habits = state.habits.filter(h => h.category.id != id); 
-                 saveData(); 
-                 renderCalendar(); 
-                 renderCategoriasSection(); 
-                 closeGenericModal();
-                 showToast('Categoría eliminada'); 
-            });
-        }
-
-        function addSubToCatFull(id) {
-            const input = document.getElementById('newSubInputFull');
-            const name = input.value.trim();
-            if(!name) return;
-
-            const cat = state.categories.find(c => c.id == id);
-            if(cat) {
-                if(!cat.subcategories) cat.subcategories = [];
-                if(!cat.subcategories.includes(name)) { 
-                    cat.subcategories.push(name); 
-                    saveData(); 
-                    renderCalendar(); 
-                    openEditCategoryModal(id); // Recargar modal
-                } else {
-                    showToast('La subcategoría ya existe');
-                }
-            }
-        }
-
-        function removeSubFromCatFull(id, subName) {
-            const cat = state.categories.find(c => c.id == id);
-            if(cat) {
-                showConfirm('¿Eliminar esta subcategoría?', () => {
-                    cat.subcategories = cat.subcategories.filter(s => s !== subName);
-                    state.habits.forEach(h => { 
-                        if(h.category.id == id && h.subcategory === subName) { h.subcategory = ""; } 
-                    });
-                    saveData(); 
-                    renderCalendar(); 
-                    openEditCategoryModal(id); // Recargar modal
-                });
-            }
         }
 
         init();
