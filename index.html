@@ -6,6 +6,7 @@
     <title>Habit Tracker v3.0</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
+    <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
     <script>
         tailwind.config = {
             corePlugins: { preflight: false },
@@ -120,6 +121,58 @@
             border: 1px solid var(--primary);
         }
 
+        /* --- TEMA HUB METALIZADO --- */
+        html.metallic-hub {
+            --bg-body: #0a1118;
+            --bg-surface: #14202d;
+            --bg-surface-hover: #1f3145;
+            --text-main: #eef2f5;
+            --text-muted: #8b9eb0;
+            --border-color: #2c425c;
+            --divider-strong: #4d6d8f;
+            --primary: #00f3ff;
+            --on-primary: #000000;
+            --danger: #ff2a2a;
+            --success: #00ffcc;
+            --toast-bg: #14202d;
+            --toast-text: #eef2f5;
+            --scrollbar-thumb: #2c425c;
+            --scrollbar-bg: transparent;
+            --menu-bg: #0a1118;
+        }
+        
+        html.metallic-hub body {
+            background-color: var(--bg-body);
+            background-image: 
+                radial-gradient(circle at 50% -20%, rgba(0, 243, 255, 0.15), transparent 40%),
+                linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0) 20%, rgba(0,0,0,0.2) 50%, rgba(255,255,255,0.03) 80%, rgba(255,255,255,0) 100%),
+                linear-gradient(to right, #0a1118, #14202d, #0a1118);
+            background-size: 200% 200%, 200% 200%, 100% 100%;
+            animation: metallicShine 15s ease-in-out infinite alternate;
+        }
+
+        @keyframes metallicShine {
+            0% { background-position: 0% 0%, 0% 50%, 0% 0%; }
+            100% { background-position: 100% 0%, 100% 50%, 0% 0%; }
+        }
+
+        html.metallic-hub .btn-new, html.metallic-hub .primary-btn {
+            box-shadow: 0 0 10px rgba(0, 243, 255, 0.3), inset 0 1px 1px rgba(255,255,255,0.2);
+            border: 1px solid rgba(0, 243, 255, 0.5);
+            background: linear-gradient(180deg, rgba(0,243,255,0.2) 0%, transparent 100%), var(--primary);
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+        html.metallic-hub .btn-new:hover, html.metallic-hub .primary-btn:hover {
+            box-shadow: 0 0 20px rgba(0, 243, 255, 0.6), inset 0 1px 2px rgba(255,255,255,0.4);
+            transform: translateY(-2px);
+        }
+
+        html.metallic-hub .habit-row, html.metallic-hub .menu-card, html.metallic-hub .modal-card, html.metallic-hub #todaysHubContainer {
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(139, 158, 176, 0.15);
+            background: linear-gradient(145deg, #172533, #0f1822);
+        }
+
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
         
         body { 
@@ -201,15 +254,50 @@
             background-color: var(--bg-body);
         }
 
-        /* --- QUOTE --- */
-        #quoteContainer {
-            flex: none; height: 140px; 
-            border-top: 0.5px solid var(--border-color); background-color: var(--bg-surface);
-            padding: 16px; display: flex; align-items: center; justify-content: center;
-            text-align: center; cursor: pointer; transition: background-color 0.2s; position: relative;
+        /* --- BOTTOM WIDGETS DOCK --- */
+        #bottomDashboard {
+            display: flex; flex: none; height: 190px; 
+            border-top: 0.5px solid var(--border-color); background-color: rgba(0,0,0,0.1);
+            box-shadow: 0 -4px 30px rgba(0,0,0,0.1);
+            overflow-x: auto; padding: 16px; gap: 16px; scroll-snap-type: x mandatory;
+            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
         }
-        #quoteContainer:hover { background-color: var(--bg-surface-hover); }
-        #quoteDisplay { width: 100%; white-space: pre-wrap; line-height: 1.4; font-weight: 500; color: var(--text-main); opacity: 0.9; }
+        
+        .ios-widget-card {
+            width: 158px; height: 158px; flex-shrink: 0; border-radius: 24px;
+            background: var(--bg-surface); border: 1px solid rgba(255,255,255,0.05);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            position: relative; overflow: hidden; scroll-snap-align: start;
+            display: flex; flex-direction: column; cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .ios-widget-card:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 8px 25px rgba(0,0,0,0.3); }
+
+        /* Weather specific */
+        #card-weather {
+            background: linear-gradient(180deg, #71a9d4 0%, #b3c5cd 100%);
+            color: #ffffff; padding: 16px; justify-content: space-between; border: none;
+        }
+        
+        /* Quote specific */
+        #card-quote {
+            background: var(--bg-surface-hover); padding: 16px;
+            justify-content: center; text-align: center; color: var(--text-main); font-weight: 500; font-size: 0.9rem; line-height: 1.4;
+        }
+        
+        /* Finance specific */
+        #card-finance {
+            background: #1c1c1e; padding: 0; border: none;
+        }
+        
+        /* New Widgets */
+        #card-stats { background: linear-gradient(135deg, #2d1b3f 0%, #1a1a2e 100%); padding: 16px; color: #fff; border: none; }
+        #card-water { background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); padding: 16px; color: #fff; border: none; }
+        #card-pomodoro { background: linear-gradient(135deg, #cb2d3e 0%, #ef473a 100%); padding: 16px; color: #fff; border: none; transition: background 0.5s; }
+        #card-pomodoro.active { background: linear-gradient(135deg, #e65c00 0%, #F9D423 100%); color: #000; }
+        
+        .chip { display: inline-block; padding: 6px 12px; border-radius: 16px; background: rgba(255,255,255,0.1); font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: background 0.2s; margin: 4px; color: var(--text-main); border: 1px solid rgba(255,255,255,0.2); }
+        .chip:hover { background: var(--primary); color: #000; }
 
         /* --- GRID --- */
         .row-structure { display: flex; width: 100%; min-width: max-content; }
@@ -269,11 +357,17 @@
 
         /* --- NOTES & TOOLTIPS --- */
         .note-indicator {
-            position: absolute; top: 0; right: 0;
-            width: 0; height: 0;
-            border-style: solid; border-width: 0 8px 8px 0;
-            border-color: transparent var(--text-muted) transparent transparent;
-            opacity: 0.8; pointer-events: none;
+            position: absolute; 
+            top: 4px; 
+            right: 4px;
+            width: 10px; 
+            height: 10px;
+            border-radius: 50%;
+            background-color: var(--primary);
+            border: 2px solid var(--bg-surface);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+            pointer-events: none; 
+            z-index: 10;
         }
         #customTooltip {
             position: fixed; background: rgba(28, 28, 30, 0.95); color: #fff;
@@ -428,10 +522,78 @@
     </div>
 
     <main id="mainContent">
+        <div id="todaysHubContainer" style="display: none; padding: 20px; flex-shrink: 0; background: var(--bg-surface); border-bottom: 0.5px solid var(--border-color); box-shadow: 0 4px 10px rgba(0,0,0,0.1); z-index: 25;">
+            <h2 style="font-size: 1.3rem; font-weight: 700; margin-bottom: 16px; color: var(--text-main); display: flex; align-items: center; justify-content: space-between;">
+                Tareas de Hoy
+                <span id="hubDateDisplay" style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;"></span>
+            </h2>
+            <div id="hubTasksList" style="display: flex; gap: 12px; overflow-x: auto; padding-bottom: 12px; scroll-snap-type: x mandatory;">
+            </div>
+        </div>
         <div id="calendarHeader"></div>
         <div id="habitsContainer"></div>
-        <div id="quoteContainer" onclick="editQuote()">
-            <div id="quoteDisplay" class="empty-quote-placeholder">Haz clic para escribir una frase...</div>
+        
+        <div id="bottomDashboard">
+            
+            <!-- Weather Card -->
+            <div id="card-weather" class="ios-widget-card" title="Remedios de Escalada">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                    <div>
+                        <div id="weatherTemp" style="font-size: 2.4rem; font-weight: 600; line-height: 1; text-shadow: 0 2px 4px rgba(0,0,0,0.15); letter-spacing: -1px;">--°</div>
+                        <div id="weatherDesc" style="font-size: 0.75rem; font-weight: 600; opacity: 0.9; margin-top: 6px; text-shadow: 0 1px 2px rgba(0,0,0,0.1);">Cargando...</div>
+                    </div>
+                    <div id="weatherIcon" style="font-size: 1.6rem; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15)); line-height: 1;">☁️</div>
+                </div>
+                <div id="weatherLoc" style="font-size: 0.75rem; font-weight: 700; opacity: 0.9; margin-top: auto; line-height: 1.2; text-shadow: 0 1px 2px rgba(0,0,0,0.1);">Remedios de Escalada,<br>Argentina</div>
+            </div>
+
+            <!-- Finance Card -->
+            <div id="card-finance" class="ios-widget-card" ondblclick="promptFinanceSymbol()">
+                <!-- Invisible overlay to capture dblclick since iframe steals events -->
+                <div style="position: absolute; inset: 0; z-index: 10;" title="Doble clic para buscar activo"></div>
+                <div class="tradingview-widget-container" id="tv_widget_container" style="height:100%;width:100%; pointer-events: none;">
+                </div>
+            </div>
+
+            <!-- Stats Card -->
+            <div id="card-stats" class="ios-widget-card" title="Progreso de Hoy">
+                <div style="font-size: 0.8rem; font-weight: 700; opacity: 0.9;">Progreso Diario</div>
+                <div style="display: flex; flex: 1; align-items: center; justify-content: center; position: relative;">
+                    <svg width="100" height="100" viewBox="0 0 100 100">
+                        <circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="10"></circle>
+                        <circle id="statsRing" cx="50" cy="50" r="40" fill="none" stroke="var(--success)" stroke-width="10" stroke-dasharray="251.2" stroke-dashoffset="251.2" transform="rotate(-90 50 50)" style="transition: stroke-dashoffset 0.8s ease-out;"></circle>
+                    </svg>
+                    <div id="statsPct" style="position: absolute; font-size: 1.3rem; font-weight: 800;">0%</div>
+                </div>
+            </div>
+
+            <!-- Pomodoro Card -->
+            <div id="card-pomodoro" class="ios-widget-card" onclick="togglePomodoro()" ondblclick="promptPomodoroTime()" title="Pomodoro (Click: Iniciar/Pausar | Doble clic: Editar tiempo)">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                    <div style="font-size: 0.8rem; font-weight: 700; opacity: 0.9;">Pomodoro</div>
+                    <div id="pomoIcon" style="font-size: 1.2rem;">🍅</div>
+                </div>
+                <div id="pomoTime" style="margin-top: auto; font-size: 2.8rem; font-weight: 800; line-height: 1; text-align: center; font-variant-numeric: tabular-nums;">25:00</div>
+                <div id="pomoStatus" style="font-size: 0.65rem; text-align: center; opacity: 0.8; font-weight: 600; margin-top: 4px; text-transform: uppercase;">Listo</div>
+            </div>
+
+            <!-- Water Card -->
+            <div id="card-water" class="ios-widget-card" title="Recordatorio de Hidratación">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                    <div style="font-size: 0.8rem; font-weight: 700; opacity: 0.9;">Salud</div>
+                    <div style="font-size: 1.2rem;">💧</div>
+                </div>
+                <div style="margin-top: auto;">
+                    <div style="font-size: 1.2rem; font-weight: 800; line-height: 1.2;">Toma agua</div>
+                    <div style="font-size: 0.75rem; opacity: 0.8; margin-top: 4px; font-weight: 500; line-height: 1.2;">Mantente hidratado hoy.</div>
+                </div>
+            </div>
+
+            <!-- Quote/Notes Card -->
+            <div id="card-quote" class="ios-widget-card" onclick="editQuote()" title="Frase o Nota">
+                <div id="quoteDisplay" style="display: -webkit-box; -webkit-line-clamp: 6; -webkit-box-orient: vertical; overflow: hidden;">Haz clic para escribir una nota o frase...</div>
+            </div>
+
         </div>
     </main>
 
@@ -580,6 +742,11 @@
                     if(state.settings.theme === undefined) state.settings.theme = state.settings.darkMode ? 'dark' : 'light';
                     if(!state.settings.boxStyle) state.settings.boxStyle = state.settings.iconStyle === 'solid' ? 'solid' : 'minimal';
                     
+                    if(!state.settings.hasSeenMetallicHub) {
+                        state.settings.theme = 'metallic-hub';
+                        state.settings.hasSeenMetallicHub = true;
+                    }
+                    
                     state.habits.forEach(h => { 
                         if (!h.notes) h.notes = {}; 
                         if (h.description === undefined) h.description = "";
@@ -603,6 +770,11 @@
                 saveData();
             } catch (e) {}
             
+            // Cargar Widget Finanzas y Clima
+            const savedSymbol = state.settings.financeSymbol || 'AMEX:SPY';
+            setTimeout(() => loadFinanceWidget(savedSymbol), 500);
+            fetchWeather();
+            
             document.getElementById('appYearTitle').innerText = new Date().getFullYear();
 
             applyTheme(); renderCalendar(); renderQuote();
@@ -616,11 +788,12 @@
         
         function applyTheme() { 
             const htmlClassList = document.documentElement.classList;
-            htmlClassList.remove('dark', 'oled', 'synthwave');
+            htmlClassList.remove('dark', 'oled', 'synthwave', 'metallic-hub');
             
             if (state.settings.theme === 'dark') htmlClassList.add('dark');
             else if (state.settings.theme === 'oled') htmlClassList.add('oled');
             else if (state.settings.theme === 'synthwave') htmlClassList.add('synthwave');
+            else if (state.settings.theme === 'metallic-hub') htmlClassList.add('metallic-hub');
             
             if(state.settings.dividerColor) document.documentElement.style.setProperty('--divider-strong', state.settings.dividerColor);
             
@@ -628,6 +801,7 @@
                 document.documentElement.style.setProperty('--primary', state.settings.accentColor);
             } else {
                 if (state.settings.theme === 'synthwave') document.documentElement.style.setProperty('--primary', '#ff0099');
+                else if (state.settings.theme === 'metallic-hub') document.documentElement.style.setProperty('--primary', '#00f3ff');
                 else document.documentElement.style.setProperty('--primary', (state.settings.theme === 'dark' || state.settings.theme === 'oled') ? '#0a84ff' : '#007aff');
             }
         }
@@ -787,6 +961,80 @@
             container.appendChild(grid);
             container.onscroll = () => { headerContainer.scrollLeft = container.scrollLeft; };
             setTimeout(syncHeaderWidth, 0);
+            updateStatsCard();
+            renderHub();
+        }
+
+        function renderHub() {
+            const hubContainer = document.getElementById('todaysHubContainer');
+            const tasksList = document.getElementById('hubTasksList');
+            
+            hubContainer.style.display = 'block';
+            
+            const n = new Date(); 
+            const todayISO = `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`;
+            
+            document.getElementById('hubDateDisplay').innerText = n.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
+            
+            tasksList.innerHTML = '';
+            
+            const activeHabits = state.habits.filter(h => !h.archived);
+            if (activeHabits.length === 0) {
+                tasksList.innerHTML = `<div style="padding:20px; color:var(--text-muted); width: 100%; text-align: center; font-weight: 600;">No hay tareas.</div>`;
+                return;
+            }
+            
+            let pendingCount = 0;
+            activeHabits.forEach(h => {
+                const stat = h.history[todayISO];
+                const isDone = stat === 'done' || stat === 'skip';
+                
+                const card = document.createElement('div');
+                card.style.cssText = `
+                    scroll-snap-align: start;
+                    min-width: 150px;
+                    flex-shrink: 0;
+                    padding: 16px;
+                    border-radius: 16px;
+                    background: ${isDone ? 'var(--bg-surface-hover)' : 'var(--bg-surface)'};
+                    border: 1px solid ${isDone ? 'var(--border-color)' : (stat === 'fail' ? 'var(--danger)' : 'var(--primary)')};
+                    opacity: ${isDone ? '0.5' : '1'};
+                    cursor: pointer;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 8px;
+                    transition: transform 0.2s, box-shadow 0.2s;
+                    box-shadow: ${isDone ? 'none' : '0 4px 12px rgba(0,0,0,0.1)'};
+                    position: relative;
+                    overflow: hidden;
+                `;
+                
+                if(!isDone) {
+                    card.onmouseover = () => { card.style.transform = 'translateY(-2px)'; card.style.boxShadow = '0 6px 16px rgba(0,0,0,0.15)'; };
+                    card.onmouseout = () => { card.style.transform = 'translateY(0)'; card.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)'; };
+                }
+
+                card.onclick = (e) => {
+                    toggleDay(h.id, todayISO, e);
+                };
+                
+                let icon = '⏳';
+                if(stat === 'done') icon = '✅';
+                else if(stat === 'fail') icon = '❌';
+                else if(stat === 'skip') icon = '➖';
+                
+                card.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div style="width: 12px; height: 12px; border-radius: 50%; background: ${h.category.color}; box-shadow: 0 0 8px ${h.category.color};"></div>
+                        <span style="font-size: 1.2rem;">${icon}</span>
+                    </div>
+                    <div style="font-weight: 700; color: var(--text-main); font-size: 1.05rem; line-height: 1.2; margin-top: 8px;">${h.name}</div>
+                    <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; letter-spacing: 0.05em;">${h.category.name}</div>
+                `;
+                
+                tasksList.appendChild(card);
+                if(!isDone) pendingCount++;
+            });
         }
 
         function syncHeaderWidth() {
@@ -1169,11 +1417,209 @@
             }, 200); 
         }
         
+        function switchWidget(id, event) {
+            document.querySelectorAll('.widget-panel').forEach(p => p.classList.add('hidden'));
+            document.querySelectorAll('.widget-tab').forEach(t => t.classList.remove('active'));
+            document.getElementById(`widget-${id}`).classList.remove('hidden');
+            if(event) event.currentTarget.classList.add('active');
+            state.settings.activeWidget = id;
+            saveData();
+        }
+
+        function saveQuickNote() {
+            state.settings.quickNote = document.getElementById('quickNoteInput').value;
+            saveData();
+        }
+
+        function promptFinanceSymbol() {
+            const current = state.settings.financeSymbol || 'AMEX:SPY';
+            const html = `
+                <div style="margin-bottom: 20px;">
+                    <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 8px;">Populares:</p>
+                    <div style="display: flex; flex-wrap: wrap; gap: 4px;">
+                        <span class="chip" onclick="document.getElementById('newSymbolInput').value='AMEX:SPY'; saveNewFinanceSymbol()">S&P 500</span>
+                        <span class="chip" onclick="document.getElementById('newSymbolInput').value='NASDAQ:QQQ'; saveNewFinanceSymbol()">Nasdaq</span>
+                        <span class="chip" onclick="document.getElementById('newSymbolInput').value='NASDAQ:AAPL'; saveNewFinanceSymbol()">Apple</span>
+                        <span class="chip" onclick="document.getElementById('newSymbolInput').value='NASDAQ:TSLA'; saveNewFinanceSymbol()">Tesla</span>
+                        <span class="chip" onclick="document.getElementById('newSymbolInput').value='BINANCE:BTCUSDT'; saveNewFinanceSymbol()">Bitcoin</span>
+                        <span class="chip" onclick="document.getElementById('newSymbolInput').value='BINANCE:ETHUSDT'; saveNewFinanceSymbol()">Ethereum</span>
+                        <span class="chip" onclick="document.getElementById('newSymbolInput').value='BCBA:YPFD'; saveNewFinanceSymbol()">YPF</span>
+                        <span class="chip" onclick="document.getElementById('newSymbolInput').value='BCBA:GGAL'; saveNewFinanceSymbol()">Galicia</span>
+                    </div>
+                </div>
+                <div class="input-group" style="margin-bottom: 24px;">
+                    <label class="input-label">O busca manualmente (Mercado:Símbolo)</label>
+                    <input id="newSymbolInput" value="${current}" class="modern-input" placeholder="Ej: NASDAQ:MSFT">
+                </div>
+                <button onclick="saveNewFinanceSymbol()" class="primary-btn">Cargar Gráfico</button>
+            `;
+            openGenericModal('Hub Financiero', html);
+            setTimeout(() => {
+                const input = document.getElementById('newSymbolInput');
+                if(input) { input.focus(); input.select(); }
+            }, 100);
+        }
+
+        function saveNewFinanceSymbol() {
+            const sym = document.getElementById('newSymbolInput').value.trim().toUpperCase();
+            if(sym) {
+                loadFinanceWidget(sym);
+                closeGenericModal();
+            }
+        }
+
+        function loadFinanceWidget(symbol) {
+            const container = document.getElementById('tv_widget_container');
+            if(!container) return;
+            container.innerHTML = `<div class="tradingview-widget-container__widget" style="height:100%;width:100%"></div>`;
+            
+            const script = document.createElement('script');
+            script.type = 'text/javascript';
+            script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js';
+            script.async = true;
+            script.innerHTML = JSON.stringify({
+                "symbol": symbol,
+                "width": "100%",
+                "height": "100%",
+                "locale": "es",
+                "dateRange": "1M",
+                "colorTheme": "dark",
+                "isTransparent": true,
+                "autosize": true,
+                "largeChartUrl": ""
+            });
+            container.appendChild(script);
+            
+            state.settings.financeSymbol = symbol;
+            saveData();
+        }
+
+        async function fetchWeather() {
+            try {
+                // Lat/Lon para Remedios de Escalada, Buenos Aires
+                const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=-34.71&longitude=-58.39&current_weather=true');
+                const data = await res.json();
+                if(data && data.current_weather) {
+                    const temp = Math.round(data.current_weather.temperature);
+                    const code = data.current_weather.weathercode;
+                    document.getElementById('weatherTemp').innerText = temp + '°C';
+                    
+                    // Simple weather code mapping
+                    let icon = '☀️', desc = 'Despejado';
+                    if(code >= 1 && code <= 3) { icon = '⛅'; desc = 'Nubes y sol'; }
+                    else if(code >= 45 && code <= 48) { icon = '🌫️'; desc = 'Niebla'; }
+                    else if(code >= 51 && code <= 67) { icon = '🌧️'; desc = 'Lluvia'; }
+                    else if(code >= 71 && code <= 82) { icon = '🌨️'; desc = 'Nieve'; }
+                    else if(code >= 95) { icon = '⛈️'; desc = 'Tormenta'; }
+                    
+                    document.getElementById('weatherIcon').innerText = icon;
+                    document.getElementById('weatherDesc').innerText = desc;
+                }
+            } catch(e) {
+                document.getElementById('weatherDesc').innerText = 'Sin conexión';
+            }
+        }
+        
+        // --- LOGICA NUEVOS WIDGETS --- //
+        
+        function getTodayLocal() {
+            const n = new Date();
+            return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`;
+        }
+        
+        // Stats Widget
+        function updateStatsCard() {
+            const todayStr = getTodayLocal();
+            const habits = state.habits.filter(h => !h.archived);
+            let completed = 0;
+            habits.forEach(h => { if(h.history[todayStr] && h.history[todayStr].status === 'done' || h.history[todayStr] === 'done') completed++; });
+            
+            let pct = 0;
+            if(habits.length > 0) pct = Math.round((completed / habits.length) * 100);
+            
+            document.getElementById('statsPct').innerText = pct + '%';
+            // Circumference of r=40 is 251.2
+            const offset = 251.2 - (251.2 * pct / 100);
+            document.getElementById('statsRing').style.strokeDashoffset = offset;
+            
+            const ringColor = pct === 100 ? 'var(--success)' : (pct > 0 ? 'var(--primary)' : 'var(--border-color)');
+            document.getElementById('statsRing').style.stroke = ringColor;
+        }
+
+        // Pomodoro Widget
+        let pomoInterval = null;
+        let pomoTimeLeft = 25 * 60; // 25 mins
+        let pomoOriginalTime = 25 * 60;
+        let isPomoRunning = false;
+
+        function promptPomodoroTime() {
+            if(isPomoRunning) return; // Don't change if running
+            const html = `
+                <div class="input-group" style="margin-bottom: 24px;">
+                    <label class="input-label">Minutos de Enfoque</label>
+                    <input id="pomoMinsInput" type="number" min="1" max="120" value="${Math.floor(pomoOriginalTime / 60)}" class="modern-input">
+                </div>
+                <button onclick="setPomodoroTime()" class="primary-btn">Aceptar</button>
+            `;
+            openGenericModal('Configurar Pomodoro', html);
+        }
+
+        function setPomodoroTime() {
+            const m = parseInt(document.getElementById('pomoMinsInput').value);
+            if(!isNaN(m) && m > 0) {
+                pomoOriginalTime = m * 60;
+                pomoTimeLeft = pomoOriginalTime;
+                updatePomoDisplay();
+                closeGenericModal();
+            }
+        }
+
+        function updatePomoDisplay() {
+            const m = Math.floor(pomoTimeLeft / 60).toString().padStart(2, '0');
+            const s = (pomoTimeLeft % 60).toString().padStart(2, '0');
+            document.getElementById('pomoTime').innerText = `${m}:${s}`;
+        }
+        function togglePomodoro() {
+            const card = document.getElementById('card-pomodoro');
+            if (isPomoRunning) {
+                // Pause
+                clearInterval(pomoInterval);
+                isPomoRunning = false;
+                document.getElementById('pomoStatus').innerText = 'Pausado';
+                card.classList.remove('active');
+            } else {
+                // Start
+                if(pomoTimeLeft === 0) pomoTimeLeft = pomoOriginalTime; // Reset if finished
+                isPomoRunning = true;
+                document.getElementById('pomoStatus').innerText = 'Enfoque...';
+                card.classList.add('active');
+                
+                pomoInterval = setInterval(() => {
+                    pomoTimeLeft--;
+                    updatePomoDisplay();
+                    if(pomoTimeLeft <= 0) {
+                        clearInterval(pomoInterval);
+                        isPomoRunning = false;
+                        document.getElementById('pomoStatus').innerText = '¡Terminado!';
+                        card.classList.remove('active');
+                        showToast("¡Pomodoro Completado!");
+                        // Play sound beep
+                        try {
+                            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                            const osc = ctx.createOscillator(); osc.connect(ctx.destination);
+                            osc.frequency.setValueAtTime(800, ctx.currentTime);
+                            osc.start(); osc.stop(ctx.currentTime + 0.5);
+                        } catch(e) {}
+                    }
+                }, 1000);
+            }
+        }
+
         function showConfirm(m, cb) { document.getElementById('confirmModal').querySelector('h3').innerText=m; confirmCallback=cb; const el=document.getElementById('confirmModal'); el.classList.remove('hidden'); setTimeout(()=>el.classList.add('active'),10); }
         function closeConfirm() { const el=document.getElementById('confirmModal'); el.classList.remove('active'); setTimeout(()=>el.classList.add('hidden'),200); confirmCallback=null; }
         function showToast(m) { const t=document.createElement('div'); t.className='toast'; t.innerText=m; document.getElementById('toast-container').appendChild(t); setTimeout(()=>t.remove(),3000); }
-        function editQuote() { openGenericModal('Frase', `<textarea id="qIn" class="modern-input" style="min-height:100px; margin-bottom:16px;">${state.settings.dailyNote||""}</textarea><button onclick="saveQ()" class="primary-btn">Guardar</button>`); }
-        function saveQ() { state.settings.dailyNote = document.getElementById('qIn').value; saveData(); renderQuote(); closeGenericModal(); showToast('Frase guardada'); }
+        function editQuote() { openGenericModal('Nota / Frase', `<textarea id="qIn" class="modern-input" style="min-height:100px; margin-bottom:16px;">${state.settings.dailyNote||""}</textarea><button onclick="saveQ()" class="primary-btn">Guardar</button>`); setTimeout(()=>document.getElementById('qIn').focus(),100); }
+        function saveQ() { state.settings.dailyNote = document.getElementById('qIn').value; saveData(); renderQuote(); closeGenericModal(); showToast('Guardado'); }
         function renderQuote() { document.getElementById('quoteDisplay').innerText = state.settings.dailyNote || "Haz clic para escribir una frase..."; }
         
         /* --- GESTIÓN HÁBITO --- */
@@ -1445,17 +1891,17 @@
                     <div>
                         <h3 style="font-size: 1.2rem; font-weight: 700; margin-bottom: 16px; color: var(--text-main); letter-spacing: -0.01em;">Temas</h3>
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-                            <div onclick="setTheme('light')" style="cursor: pointer; border: 2.5px solid ${state.settings.theme === 'light' ? 'var(--primary)' : 'var(--border-color)'}; border-radius: 16px; padding: 20px; background: #f2f2f7; display: flex; flex-direction: column; align-items: center; gap: 12px; transition: border-color 0.2s;">
-                                <div style="width: 48px; height: 48px; border-radius: 50%; background: #ffffff; border: 1px solid #c6c6c8; box-shadow: 0 2px 10px rgba(0,0,0,0.05);"></div>
-                                <span style="font-weight: 600; color: #000; font-size: 1rem;">Claro</span>
+                            <div onclick="setTheme('metallic-hub')" style="cursor: pointer; border: 2.5px solid ${state.settings.theme === 'metallic-hub' ? 'var(--primary)' : 'var(--border-color)'}; border-radius: 16px; padding: 20px; background: linear-gradient(135deg, #0b131e, #152238); display: flex; flex-direction: column; align-items: center; gap: 12px; transition: border-color 0.2s;">
+                                <div style="width: 48px; height: 48px; border-radius: 50%; background: #1b263b; border: 1px solid rgba(0,243,255,0.5); box-shadow: 0 0 10px rgba(0,243,255,0.2);"></div>
+                                <span style="font-weight: 600; color: #00f3ff; font-size: 1rem; text-shadow: 0 0 5px rgba(0,243,255,0.3);">Metalizado Hub</span>
                             </div>
                             <div onclick="setTheme('dark')" style="cursor: pointer; border: 2.5px solid ${state.settings.theme === 'dark' ? 'var(--primary)' : 'var(--border-color)'}; border-radius: 16px; padding: 20px; background: #1c1c1e; display: flex; flex-direction: column; align-items: center; gap: 12px; transition: border-color 0.2s;">
                                 <div style="width: 48px; height: 48px; border-radius: 50%; background: #2c2c2e; border: 1px solid #38383a; box-shadow: 0 2px 10px rgba(0,0,0,0.5);"></div>
                                 <span style="font-weight: 600; color: #fff; font-size: 1rem;">Oscuro</span>
                             </div>
-                            <div onclick="setTheme('oled')" style="cursor: pointer; border: 2.5px solid ${state.settings.theme === 'oled' ? 'var(--primary)' : 'var(--border-color)'}; border-radius: 16px; padding: 20px; background: #000000; display: flex; flex-direction: column; align-items: center; gap: 12px; transition: border-color 0.2s;">
-                                <div style="width: 48px; height: 48px; border-radius: 50%; background: #000000; border: 1px solid #222222; box-shadow: 0 2px 10px rgba(255,255,255,0.05);"></div>
-                                <span style="font-weight: 600; color: #fff; font-size: 1rem;">OLED (Batería)</span>
+                            <div onclick="setTheme('light')" style="cursor: pointer; border: 2.5px solid ${state.settings.theme === 'light' ? 'var(--primary)' : 'var(--border-color)'}; border-radius: 16px; padding: 20px; background: #f2f2f7; display: flex; flex-direction: column; align-items: center; gap: 12px; transition: border-color 0.2s;">
+                                <div style="width: 48px; height: 48px; border-radius: 50%; background: #ffffff; border: 1px solid #c6c6c8; box-shadow: 0 2px 10px rgba(0,0,0,0.05);"></div>
+                                <span style="font-weight: 600; color: #000; font-size: 1rem;">Claro</span>
                             </div>
                             <div onclick="setTheme('synthwave')" style="cursor: pointer; border: 2.5px solid ${state.settings.theme === 'synthwave' ? 'var(--primary)' : 'var(--border-color)'}; border-radius: 16px; padding: 20px; background: linear-gradient(45deg, #0b0c10, #1a0b2e); display: flex; flex-direction: column; align-items: center; gap: 12px; transition: border-color 0.2s;">
                                 <div style="width: 48px; height: 48px; border-radius: 50%; background: transparent; border: 2px solid #ff0099; box-shadow: 0 0 10px #ff0099;"></div>
