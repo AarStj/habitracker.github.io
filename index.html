@@ -1039,8 +1039,19 @@
                 let loaded = JSON.parse(localStorage.getItem('habitTrackerV5'));
                 if(!loaded) loaded = JSON.parse(localStorage.getItem('habitTrackerV6_3')) || JSON.parse(localStorage.getItem('habitTrackerV6_1'));
                 if (loaded) {
-                    state = loaded; 
+                    if (Array.isArray(loaded)) {
+                        state.habits = loaded;
+                    } else {
+                        if (loaded.habits) state.habits = loaded.habits;
+                        if (loaded.categories) state.categories = loaded.categories;
+                        if (loaded.settings) state.settings = { ...state.settings, ...loaded.settings };
+                        if (loaded.pagosServices) state.pagosServices = loaded.pagosServices;
+                        if (loaded.pagosMonthly) state.pagosMonthly = loaded.pagosMonthly;
+                        if (loaded.metas) state.metas = loaded.metas;
+                    }
+
                     state.viewDate = new Date(); 
+                    if(!state.settings) state.settings = { theme: 'light', collapsedCats: {}, collapsedSubCats: {}, dailyNote: "", boxStyle: 'minimal' };
                     if(state.categories) state.categories.forEach(c => { if(!c.subcategories) c.subcategories = []; });
                     if(!state.settings.collapsedSubCats) state.settings.collapsedSubCats = {};
                     
@@ -1082,7 +1093,7 @@
             } catch (e) {}
             
             // Cargar Widget Finanzas y Clima
-            const savedSymbol = state.settings.financeSymbol || 'AMEX:SPY';
+            const savedSymbol = (state.settings && state.settings.financeSymbol) ? state.settings.financeSymbol : 'AMEX:SPY';
             setTimeout(() => loadFinanceWidget(savedSymbol), 500);
             fetchWeather();
             
