@@ -769,9 +769,18 @@
 
     <div id="menuOverlay" onclick="window.toggleMenu(false)" class="hidden opacity-0 fixed inset-0"></div>
     <div id="menuContent">
-        <div class="menu-header">
-            <h3>Menú</h3>
-            <button onclick="window.toggleMenu(false)" class="btn-icon" style="background: var(--bg-surface-hover); border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">✕</button>
+        <div class="menu-header" style="flex-direction: column; align-items: stretch; gap: 12px; padding-bottom: 8px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                <div id="menuUserProfile" style="display: none; align-items: center; gap: 10px;">
+                    <img id="menuUserPhoto" src="" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; background: #333;">
+                    <div style="display: flex; flex-direction: column; overflow: hidden;">
+                        <span id="menuUserName" style="font-weight: 700; font-size: 0.95rem; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; max-width: 150px;">Usuario</span>
+                        <span id="menuUserEmail" style="font-size: 0.75rem; opacity: 0.7; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; max-width: 150px;">correo@ejemplo.com</span>
+                    </div>
+                </div>
+                <button onclick="window.toggleMenu(false)" class="btn-icon" style="background: var(--bg-surface-hover); border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; margin-left: auto;">✕</button>
+            </div>
+            <h3 style="margin-top: 4px;">Menú</h3>
         </div>
         <div class="menu-scroll-area">
             
@@ -792,18 +801,20 @@
             </div>
             
             <div class="menu-section">
-                <label class="menu-section-label">Gestión</label>
+                <label class="menu-section-label">Gestión y Datos</label>
                 <div class="menu-card">
                     <div class="menu-row" onclick="openCategoryManager('categories')"><span>Categorías</span><span>›</span></div>
-                </div>
-            </div>
-
-            <div class="menu-section">
-                <label class="menu-section-label">Datos</label>
-                <div class="menu-card">
-                    <div class="menu-row" onclick="exportData()"><span>📤 Exportar</span><span>›</span></div>
-                    <div class="menu-row" onclick="importData()"><span>📥 Importar</span><span>›</span></div>
-                    <div class="menu-row" onclick="manualMonthlyBackup()"><span>💾 Guardar backup mensual</span><span>›</span></div>
+                    <div class="menu-row" onclick="toggleDatosMenu()" id="btnDatosMenu" style="border-top: 1px solid var(--border-color);">
+                        <span>Datos</span><span id="datosMenuArrow" style="transition: transform 0.3s ease;">▼</span>
+                    </div>
+                    <div id="datosMenuOptions" style="display: none; flex-direction: column; padding: 0 16px; background: var(--bg-body); border-top: 1px solid var(--border-color);">
+                        <div class="menu-row" onclick="exportData()" style="padding: 12px 0;"><span>📤 Exportar</span></div>
+                        <div class="menu-row" onclick="importData()" style="border-top: 1px solid var(--border-color); padding: 12px 0;"><span>📥 Importar</span></div>
+                        <div class="menu-row" style="border-top: 1px solid var(--border-color); padding: 12px 0; display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-size: 0.85rem; font-weight: 500;">💾 Auto-Backup Mensual</span>
+                            <div id="autoBackupToggle" class="switch-toggle active" onclick="toggleAutoBackupSetting()"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -899,6 +910,37 @@
             console.error("Promise Error: " + (event.reason ? event.reason.message : event.reason));
         };
 
+        function getStorageKey() {
+            if (currentUser) return 'habitTrackerV5_' + currentUser.uid;
+            return 'habitTrackerV5_local';
+        }
+
+        function toggleDatosMenu() {
+            const menu = document.getElementById('datosMenuOptions');
+            const arrow = document.getElementById('datosMenuArrow');
+            if (menu.style.display === 'none') {
+                menu.style.display = 'flex';
+                arrow.style.transform = 'rotate(180deg)';
+            } else {
+                menu.style.display = 'none';
+                arrow.style.transform = 'rotate(0deg)';
+            }
+        }
+
+        function toggleAutoBackupSetting() {
+            if (!state.settings) state.settings = {};
+            state.settings.autoBackupMonthly = !(state.settings.autoBackupMonthly ?? true);
+            
+            const toggleBtn = document.getElementById('autoBackupToggle');
+            if (state.settings.autoBackupMonthly) {
+                toggleBtn.classList.add('active');
+            } else {
+                toggleBtn.classList.remove('active');
+            }
+            saveData();
+            showToast(state.settings.autoBackupMonthly ? 'Auto-Backup Activado' : 'Auto-Backup Desactivado');
+        }
+
         const DEFAULT_CATEGORIES = [{ id: 'gen', name: 'General', color: '#8e8e93', subcategories: [] }];
         let state = { 
             habits: [], 
@@ -964,15 +1006,27 @@
                     // Detectar cambio de cuenta: si hay datos de otro usuario, limpiarlos
                     const prevUID = localStorage.getItem('habitTrackerPrevUID');
                     if (prevUID && prevUID !== user.uid) {
-                        // Otro usuario inició sesión — limpiar datos del anterior y recargar
-                        console.log('[Auth] Cambio de cuenta detectado. Limpiando datos locales.');
-                        localStorage.removeItem('habitTrackerV5');
+                        // Otro usuario inició sesión — recargar para usar su clave
+                        console.log('[Auth] Cambio de cuenta detectado. Recargando para cargar nuevos datos.');
                         localStorage.removeItem('habitTrackerUser');
                         localStorage.setItem('habitTrackerPrevUID', user.uid);
                         window.location.reload();
                         return; // Detener ejecución hasta recargar
                     }
                     localStorage.setItem('habitTrackerPrevUID', user.uid);
+
+                    // Render user profile
+                    document.getElementById('menuUserProfile').style.display = 'flex';
+                    document.getElementById('menuUserPhoto').src = user.photoURL || 'https://via.placeholder.com/40';
+                    document.getElementById('menuUserName').innerText = user.displayName || 'Usuario';
+                    document.getElementById('menuUserEmail').innerText = user.email || '';
+
+                    // Migración: si existe habitTrackerV5 (datos viejos) y NO existe la clave nueva, migrar
+                    const newKey = 'habitTrackerV5_' + user.uid;
+                    if (!localStorage.getItem(newKey)) {
+                        const oldData = localStorage.getItem('habitTrackerV5');
+                        if (oldData) localStorage.setItem(newKey, oldData);
+                    }
 
                     // Si es el primer inicio de sesión o un dispositivo nuevo
                     if (!hasLocalData) {
@@ -988,7 +1042,7 @@
                         if (doc.exists) {
                             const data = doc.data();
                             if (data.state && data.state.length > 50) {
-                                const localStateStr = localStorage.getItem('habitTrackerV5');
+                                const localStateStr = localStorage.getItem(getStorageKey());
                                 
                                 let cloudState, localState;
                                 try { cloudState = JSON.parse(data.state); } catch(e) {}
@@ -1004,8 +1058,8 @@
                                 
                                 if (cloudHabits > 0 && cloudDataSig !== localDataSig) {
                                     // La nube tiene datos distintos — guardar backup y sincronizar
-                                    if (localStateStr) localStorage.setItem('habitTrackerV5_backup', localStateStr);
-                                    localStorage.setItem('habitTrackerV5', data.state);
+                                    if (localStateStr) localStorage.setItem(getStorageKey() + '_backup', localStateStr);
+                                    localStorage.setItem(getStorageKey(), data.state);
                                     init();
                                 } else if (cloudHabits === 0 && localHabits > 0) {
                                     // La nube está vacía pero local tiene datos — subir local a nube
@@ -1017,7 +1071,7 @@
                             }
                         } else {
                             // La nube no tiene documento — subir datos locales si existen
-                            const localStateStr = localStorage.getItem('habitTrackerV5');
+                            const localStateStr = localStorage.getItem(getStorageKey());
                             if (localStateStr && localStateStr.length > 20) {
                                 db.collection('users').doc(user.uid).set({
                                     state: localStateStr,
@@ -1046,7 +1100,7 @@
                     if (unsubscribeSync) { unsubscribeSync(); unsubscribeSync = null; }
                     
                     // Solo limpiar y mostrar login si NO hay datos locales guardados
-                    const hasStoredData = !!localStorage.getItem('habitTrackerV5');
+                    const hasStoredData = !!localStorage.getItem(getStorageKey());
                     if (!hasStoredData) {
                         hasLocalData = false;
                         localStorage.removeItem('habitTrackerUser');
@@ -1113,7 +1167,7 @@
             if (!auth) { showToast('Firebase no disponible'); return; }
             auth.signOut().then(() => {
                 localStorage.removeItem('habitTrackerUser');
-                localStorage.removeItem('habitTrackerV5');
+                // No borramos la clave del usuario (getStorageKey()) para mantener sus datos separados en local.
                 window.toggleMenu(false);
                 document.getElementById('habitsContainer').innerHTML = '';
                 document.getElementById('authOverlay').style.display = 'flex';
@@ -1147,7 +1201,10 @@
         }
 
         function performMonthlyBackup(dateStr) {
-            const stateStr = localStorage.getItem('habitTrackerV5');
+            // Respeta la opción de settings
+            if (state.settings && state.settings.autoBackupMonthly === false) return;
+            
+            const stateStr = localStorage.getItem(getStorageKey());
             if (!stateStr || stateStr.length < 20) return;
             const key = 'habitTrackerMonthlyBackup_' + (dateStr || new Date().toISOString().split('T')[0]);
             localStorage.setItem(key, stateStr);
@@ -1189,14 +1246,14 @@
             let didRecover = false;
             try {
                 let loaded;
-                try { loaded = JSON.parse(localStorage.getItem('habitTrackerV5')); } catch(e) {}
+                try { loaded = JSON.parse(localStorage.getItem(getStorageKey())); } catch(e) {}
                 // Si V5 está vacío o corrupto, intentamos recuperar de CUALQUIER copia previa local
                 if(!loaded || !loaded.habits || loaded.habits.length === 0) {
                     let bestBackup = null;
                     let bestCount = 0;
                     for(let i=0; i<localStorage.length; i++) {
                         const key = localStorage.key(i);
-                        if (key !== 'habitTrackerV5' && key.toLowerCase().includes('habit')) {
+                        if (key !== getStorageKey() && key.toLowerCase().includes('habit')) {
                             try {
                                 const parsed = JSON.parse(localStorage.getItem(key));
                                 if (parsed && parsed.habits && parsed.habits.length > bestCount) {
@@ -1242,6 +1299,12 @@
                         state.settings.theme = 'ios-original';
                         state.settings.hasSeenIOSOriginal = true;
                     }
+                    
+                    if(state.settings.autoBackupMonthly === false) {
+                        document.getElementById('autoBackupToggle').classList.remove('active');
+                    } else {
+                        document.getElementById('autoBackupToggle').classList.add('active');
+                    }
 
                     if(state.settings.widgetsOpen) {
                         document.getElementById('widgetsContainer').style.display = 'block';
@@ -1269,7 +1332,7 @@
                 });
                 
                 const stateStr = JSON.stringify(state);
-                localStorage.setItem('habitTrackerV5', stateStr); 
+                localStorage.setItem(getStorageKey(), stateStr); 
                 
                 if (didRecover && currentUser) {
                     // Forzar sincronización a la nube si recuperamos datos, para arreglar la base de datos
@@ -1299,7 +1362,7 @@
         let syncTimeout = null;
         function saveData() { 
             const stateStr = JSON.stringify(state);
-            localStorage.setItem('habitTrackerV5', stateStr);
+            localStorage.setItem(getStorageKey(), stateStr);
             if (currentUser) localStorage.setItem('habitTrackerPrevUID', currentUser.uid);
             if (currentUser && !isInitializing) {
                 clearTimeout(syncTimeout);
@@ -2023,7 +2086,7 @@
         }
 
         function exportData() {
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(localStorage.getItem('habitTrackerV5') || JSON.stringify(state));
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(localStorage.getItem(getStorageKey()) || JSON.stringify(state));
             const downloadAnchorNode = document.createElement('a');
             downloadAnchorNode.setAttribute("href", dataStr);
             downloadAnchorNode.setAttribute("download", "habit_tracker_backup.json");
@@ -2047,7 +2110,7 @@
                         const parsed = JSON.parse(content);
                         if (parsed && (parsed.habits || Array.isArray(parsed))) {
                             // Guardar datos localmente
-                            localStorage.setItem('habitTrackerV5', content);
+                            localStorage.setItem(getStorageKey(), content);
                             localStorage.setItem('habitTrackerUser', 'true');
                             
                             // Subir a Firestore si hay sesión activa
