@@ -891,40 +891,63 @@
 
         let isLoginMode = true;
         let currentUser = null;
+        let hasLocalData = localStorage.getItem('habitTrackerUser') === 'true';
+        let unsubscribeSync = null;
 
-        auth.onAuthStateChanged(async user => {
+        // CARGA INSTANTÁNEA (OFFLINE / CACHÉ)
+        if (hasLocalData) {
+            document.getElementById('authOverlay').style.display = 'none';
+            init();
+        }
+
+        auth.onAuthStateChanged(user => {
             if (user) {
                 currentUser = user;
-                document.getElementById('authOverlay').style.display = 'flex';
-                document.getElementById('authOverlay').style.opacity = '1';
-                document.getElementById('authLoader').style.display = 'flex';
-                document.getElementById('authCard').style.display = 'none';
-                document.getElementById('authLoader').innerHTML = `
-                    <div style="width: 40px; height: 40px; border: 4px solid rgba(0, 243, 255, 0.2); border-top-color: #00f3ff; border-radius: 50%; animation: spin 1s linear infinite;"></div>
-                    Sincronizando...
-                `;
+                localStorage.setItem('habitTrackerUser', 'true');
 
-                try {
-                    const doc = await db.collection('users').doc(user.uid).get();
-                    if (doc.exists) {
-                        const data = doc.data();
-                        if (data.state) {
-                            localStorage.setItem('habitTrackerV5', data.state);
-                        }
-                    }
-                } catch(e) {
-                    console.error("Error sincronizando:", e);
+                // Si es el primer inicio de sesión o un dispositivo nuevo
+                if (!hasLocalData) {
+                    document.getElementById('authOverlay').style.display = 'flex';
+                    document.getElementById('authCard').style.display = 'none';
+                    document.getElementById('authLoader').style.display = 'flex';
                 }
 
-                document.getElementById('authOverlay').style.display = 'none';
-                init(); // Call normal init only after logged in
+                if (unsubscribeSync) unsubscribeSync();
+
+                // Sincronización en TIEMPO REAL
+                unsubscribeSync = db.collection('users').doc(user.uid).onSnapshot(doc => {
+                    if (doc.exists) {
+                        const data = doc.data();
+                        const localStateStr = localStorage.getItem('habitTrackerV5');
+                        if (data.state && data.state !== localStateStr) {
+                            localStorage.setItem('habitTrackerV5', data.state);
+                            init(); // Recargar interfaz porque hay nuevos datos en la nube
+                        }
+                    }
+                    
+                    if (!hasLocalData) {
+                        hasLocalData = true;
+                        init();
+                    }
+                    document.getElementById('authOverlay').style.display = 'none';
+                }, err => {
+                    console.error("Error en sync:", err);
+                    if (!hasLocalData) {
+                        hasLocalData = true;
+                        init();
+                        document.getElementById('authOverlay').style.display = 'none';
+                    }
+                });
+
             } else {
                 currentUser = null;
+                hasLocalData = false;
+                if (unsubscribeSync) { unsubscribeSync(); unsubscribeSync = null; }
+                localStorage.removeItem('habitTrackerUser');
                 document.getElementById('authOverlay').style.display = 'flex';
                 document.getElementById('authOverlay').style.opacity = '1';
                 document.getElementById('authLoader').style.display = 'none';
                 document.getElementById('authCard').style.display = 'block';
-                // Reset state in UI if they logout
                 document.getElementById('habitsContainer').innerHTML = '';
             }
         });
@@ -1074,12 +1097,13 @@
 
         let syncTimeout = null;
         function saveData() { 
-            localStorage.setItem('habitTrackerV5', JSON.stringify(state)); 
+            const stateStr = JSON.stringify(state);
+            localStorage.setItem('habitTrackerV5', stateStr); 
             if (currentUser) {
                 clearTimeout(syncTimeout);
                 syncTimeout = setTimeout(() => {
                     db.collection('users').doc(currentUser.uid).set({
-                        state: JSON.stringify(state),
+                        state: stateStr,
                         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                     }, {merge: true}).catch(err => console.error("Error al guardar en la nube:", err));
                 }, 1000);
