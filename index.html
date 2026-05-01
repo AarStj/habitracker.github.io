@@ -958,13 +958,33 @@
                     unsubscribeSync = db.collection('users').doc(user.uid).onSnapshot(doc => {
                         if (doc.exists) {
                             const data = doc.data();
-                            const localStateStr = localStorage.getItem('habitTrackerV5');
-                            if (data.state && data.state !== localStateStr) {
-                                localStorage.setItem('habitTrackerV5', data.state);
-                                init(); // Recargar interfaz porque hay nuevos datos en la nube
+                            if (data.state && data.state.length > 50) {
+                                const localStateStr = localStorage.getItem('habitTrackerV5');
+                                
+                                // Protección: no pisar datos locales con datos de la nube
+                                // a menos que la nube tenga MÁS hábitos o sea más reciente
+                                let cloudState, localState;
+                                try { cloudState = JSON.parse(data.state); } catch(e) {}
+                                try { localState = JSON.parse(localStateStr); } catch(e) {}
+                                
+                                const cloudHabits = cloudState && cloudState.habits ? cloudState.habits.length : 0;
+                                const localHabits = localState && localState.habits ? localState.habits.length : 0;
+                                
+                                if (cloudHabits > 0 && data.state !== localStateStr) {
+                                    // Guardar backup local antes de sobreescribir
+                                    if (localStateStr) localStorage.setItem('habitTrackerV5_backup', localStateStr);
+                                    localStorage.setItem('habitTrackerV5', data.state);
+                                    init();
+                                } else if (cloudHabits === 0 && localHabits > 0) {
+                                    // La nube está vacía pero local tiene datos — subir local a nube
+                                    db.collection('users').doc(user.uid).set({
+                                        state: localStateStr,
+                                        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                                    }, {merge: true}).catch(e => console.error("Error al re-subir:", e));
+                                }
                             }
                         } else {
-                            // Si la nube está vacía pero tenemos datos locales, los subimos forzosamente
+                            // La nube no tiene documento — subir datos locales si existen
                             const localStateStr = localStorage.getItem('habitTrackerV5');
                             if (localStateStr && localStateStr.length > 20) {
                                 db.collection('users').doc(user.uid).set({
