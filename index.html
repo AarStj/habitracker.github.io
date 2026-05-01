@@ -792,13 +792,25 @@
                 <label class="menu-section-label">Gestión</label>
                 <div class="menu-card">
                     <div class="menu-row" onclick="openCategoryManager('categories')"><span>Categorías</span><span>›</span></div>
-                    <div class="menu-row" onclick="exportData()"><span>Exportar Datos</span><span>›</span></div>
-                    <div class="menu-row" onclick="importData()"><span>Importar Datos</span><span>›</span></div>
+                </div>
+            </div>
+
+            <div class="menu-section">
+                <label class="menu-section-label">Datos</label>
+                <div class="menu-card">
+                    <div class="menu-row" onclick="exportData()"><span>📤 Exportar</span><span>›</span></div>
+                    <div class="menu-row" onclick="importData()"><span>📥 Importar</span><span>›</span></div>
+                    <div class="menu-row" onclick="manualMonthlyBackup()"><span>💾 Guardar backup mensual</span><span>›</span></div>
+                </div>
+            </div>
+
+            <div class="menu-section">
+                <div class="menu-card">
                     <div class="menu-row" onclick="logout()" style="color:var(--danger)"><span>Cerrar Sesión</span><span>›</span></div>
                 </div>
             </div>
-            
-            <div class="menu-section" style="margin-top: 32px;">
+
+            <div class="menu-section" style="margin-top: 8px;">
                 <div class="menu-card">
                     <button onclick="resetData()" class="menu-row" style="color:var(--danger); justify-content: center; font-weight: 600;">Eliminar todo</button>
                 </div>
@@ -1081,7 +1093,52 @@
         }
 
         function logout() {
-            auth.signOut();
+            if (!auth) { showToast('Firebase no disponible'); return; }
+            auth.signOut().then(() => {
+                localStorage.removeItem('habitTrackerUser');
+                localStorage.removeItem('habitTrackerV5');
+                window.toggleMenu(false);
+                document.getElementById('habitsContainer').innerHTML = '';
+                document.getElementById('authOverlay').style.display = 'flex';
+                document.getElementById('authOverlay').style.opacity = '1';
+                document.getElementById('authLoader').style.display = 'none';
+                document.getElementById('authCard').style.display = 'block';
+            }).catch(e => showToast('Error al cerrar sesión: ' + e.message));
+        }
+
+        // Auto-backup: guarda snapshot del último día de cada mes
+        function checkMonthlyBackup() {
+            const now = new Date();
+            const today = now.toISOString().split('T')[0];
+            const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+            const lastDayStr = lastDay.toISOString().split('T')[0];
+            const lastBackupKey = 'habitTrackerMonthlyBackupDate';
+            const lastBackupDate = localStorage.getItem(lastBackupKey);
+
+            if (today === lastDayStr && lastBackupDate !== today) {
+                performMonthlyBackup(today);
+            }
+        }
+
+        function performMonthlyBackup(dateStr) {
+            const stateStr = localStorage.getItem('habitTrackerV5');
+            if (!stateStr || stateStr.length < 20) return;
+            const key = 'habitTrackerMonthlyBackup_' + (dateStr || new Date().toISOString().split('T')[0]);
+            localStorage.setItem(key, stateStr);
+            localStorage.setItem('habitTrackerMonthlyBackupDate', dateStr || new Date().toISOString().split('T')[0]);
+            // Subir backup a Firestore
+            if (currentUser && db) {
+                db.collection('users').doc(currentUser.uid).collection('monthlyBackups').doc(key).set({
+                    state: stateStr,
+                    date: dateStr,
+                    savedAt: firebase.firestore.FieldValue.serverTimestamp()
+                }).catch(e => console.error('Error backup cloud:', e));
+            }
+            showToast('💾 Backup mensual guardado (' + key + ')');
+        }
+
+        function manualMonthlyBackup() {
+            performMonthlyBackup(new Date().toISOString().split('T')[0]);
             window.toggleMenu(false);
         }
 
@@ -1196,7 +1253,8 @@
                 }
             } catch (e) { console.error("Error en init:", e); }
             isInitializing = false;
-            
+            checkMonthlyBackup(); // Auto-backup del último día del mes
+
             // Cargar Widget Finanzas y Clima
             const savedSymbol = (state.settings && state.settings.financeSymbol) ? state.settings.financeSymbol : 'AMEX:SPY';
             setTimeout(() => loadFinanceWidget(savedSymbol), 500);
