@@ -956,6 +956,20 @@
                 if (user) {
                     currentUser = user;
                     localStorage.setItem('habitTrackerUser', 'true');
+                    localStorage.setItem('habitTrackerActiveUID', user.uid);
+
+                    // Detectar cambio de cuenta: si hay datos de otro usuario, limpiarlos
+                    const prevUID = localStorage.getItem('habitTrackerPrevUID');
+                    if (prevUID && prevUID !== user.uid) {
+                        // Otro usuario inició sesión — limpiar datos del anterior y recargar
+                        console.log('[Auth] Cambio de cuenta detectado. Limpiando datos locales.');
+                        localStorage.removeItem('habitTrackerV5');
+                        localStorage.removeItem('habitTrackerUser');
+                        localStorage.setItem('habitTrackerPrevUID', user.uid);
+                        window.location.reload();
+                        return; // Detener ejecución hasta recargar
+                    }
+                    localStorage.setItem('habitTrackerPrevUID', user.uid);
 
                     // Si es el primer inicio de sesión o un dispositivo nuevo
                     if (!hasLocalData) {
@@ -1186,7 +1200,8 @@
                     if (bestBackup) {
                         loaded = bestBackup;
                         didRecover = true;
-                        alert("¡Sistema de Recuperación de Emergencia Activado!\nSe han encontrado " + bestCount + " hábitos en tu historial local y han sido restaurados.");
+                        console.log('[Recovery] Se recuperaron ' + bestCount + ' hábitos del historial local.');
+                        showToast && showToast('✅ ' + bestCount + ' hábitos recuperados del historial local');
                     }
                 }
 
@@ -1272,7 +1287,8 @@
         let syncTimeout = null;
         function saveData() { 
             const stateStr = JSON.stringify(state);
-            localStorage.setItem('habitTrackerV5', stateStr); 
+            localStorage.setItem('habitTrackerV5', stateStr);
+            if (currentUser) localStorage.setItem('habitTrackerPrevUID', currentUser.uid);
             if (currentUser && !isInitializing) {
                 clearTimeout(syncTimeout);
                 syncTimeout = setTimeout(() => {
