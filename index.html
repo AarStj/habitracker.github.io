@@ -1041,14 +1041,29 @@
             try {
                 let loaded;
                 try { loaded = JSON.parse(localStorage.getItem('habitTrackerV5')); } catch(e) {}
-                
-                // Si V5 está vacío o corrupto, intentamos recuperar de copias previas locales
+                // Si V5 está vacío o corrupto, intentamos recuperar de CUALQUIER copia previa local
                 if(!loaded || !loaded.habits || loaded.habits.length === 0) {
-                    let backup;
-                    try { backup = JSON.parse(localStorage.getItem('habitTrackerV6_3')) || JSON.parse(localStorage.getItem('habitTrackerV6_1')); } catch(e){}
-                    if (backup && backup.habits && backup.habits.length > 0) {
-                        loaded = backup;
+                    let bestBackup = null;
+                    let bestCount = 0;
+                    for(let i=0; i<localStorage.length; i++) {
+                        const key = localStorage.key(i);
+                        if (key !== 'habitTrackerV5' && key.toLowerCase().includes('habit')) {
+                            try {
+                                const parsed = JSON.parse(localStorage.getItem(key));
+                                if (parsed && parsed.habits && parsed.habits.length > bestCount) {
+                                    bestCount = parsed.habits.length;
+                                    bestBackup = parsed;
+                                } else if (Array.isArray(parsed) && parsed.length > bestCount) {
+                                    bestCount = parsed.length;
+                                    bestBackup = parsed;
+                                }
+                            } catch(e) {}
+                        }
+                    }
+                    if (bestBackup) {
+                        loaded = bestBackup;
                         didRecover = true;
+                        alert("¡Sistema de Recuperación de Emergencia Activado!\nSe han encontrado " + bestCount + " hábitos en tu historial local y han sido restaurados.");
                     }
                 }
 
@@ -1853,6 +1868,20 @@
             
             state.settings.financeSymbol = symbol;
             saveData();
+        }
+
+        function diagnoseStorage() {
+            let info = "Claves en LocalStorage:\n\n";
+            let total = 0;
+            for(let i=0; i<localStorage.length; i++) {
+                const k = localStorage.key(i);
+                const val = localStorage.getItem(k) || "";
+                info += `${k} : ${val.length} caracteres\n`;
+                total++;
+            }
+            if(total === 0) info = "LocalStorage está completamente vacío.";
+            alert(info);
+            console.log(info);
         }
 
         async function fetchWeather() {
