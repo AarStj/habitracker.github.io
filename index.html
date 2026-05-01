@@ -963,6 +963,15 @@
                                 localStorage.setItem('habitTrackerV5', data.state);
                                 init(); // Recargar interfaz porque hay nuevos datos en la nube
                             }
+                        } else {
+                            // Si la nube está vacía pero tenemos datos locales, los subimos forzosamente
+                            const localStateStr = localStorage.getItem('habitTrackerV5');
+                            if (localStateStr && localStateStr.length > 20) {
+                                db.collection('users').doc(user.uid).set({
+                                    state: localStateStr,
+                                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                                }, {merge: true}).catch(e => console.error("Error upload init:", e));
+                            }
                         }
                         
                         if (!hasLocalData) {
