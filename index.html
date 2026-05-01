@@ -792,7 +792,8 @@
                 <label class="menu-section-label">Gestión</label>
                 <div class="menu-card">
                     <div class="menu-row" onclick="openCategoryManager('categories')"><span>Categorías</span><span>›</span></div>
-                    <div class="menu-row" onclick="openSubMenu('backup')"><span>Backup</span><span>›</span></div>
+                    <div class="menu-row" onclick="exportData()"><span>Exportar Datos</span><span>›</span></div>
+                    <div class="menu-row" onclick="importData()"><span>Importar Datos</span><span>›</span></div>
                     <div class="menu-row" onclick="logout()" style="color:var(--danger)"><span>Cerrar Sesión</span><span>›</span></div>
                 </div>
             </div>
@@ -1868,6 +1869,44 @@
             
             state.settings.financeSymbol = symbol;
             saveData();
+        }
+
+        function exportData() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(localStorage.getItem('habitTrackerV5') || JSON.stringify(state));
+            const downloadAnchorNode = document.createElement('a');
+            downloadAnchorNode.setAttribute("href", dataStr);
+            downloadAnchorNode.setAttribute("download", "habit_tracker_backup.json");
+            document.body.appendChild(downloadAnchorNode);
+            downloadAnchorNode.click();
+            downloadAnchorNode.remove();
+        }
+
+        function importData() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'application/json';
+            input.onchange = e => {
+                const file = e.target.files[0];
+                if(!file) return;
+                const reader = new FileReader();
+                reader.readAsText(file, 'UTF-8');
+                reader.onload = readerEvent => {
+                    try {
+                        const content = readerEvent.target.result;
+                        const parsed = JSON.parse(content);
+                        if (parsed && (parsed.habits || Array.isArray(parsed))) {
+                            localStorage.setItem('habitTrackerV5', content);
+                            alert("Datos importados con éxito. La página se recargará.");
+                            location.reload();
+                        } else {
+                            alert("El archivo no tiene el formato correcto.");
+                        }
+                    } catch(err) {
+                        alert("Error al procesar el archivo.");
+                    }
+                }
+            };
+            input.click();
         }
 
         function diagnoseStorage() {
