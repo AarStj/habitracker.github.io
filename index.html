@@ -658,6 +658,9 @@
             
             <div id="authError"></div>
             <div class="auth-switch" id="authSwitchBtn" onclick="toggleAuthMode()">¿No tienes cuenta? Regístrate</div>
+            <div style="margin-top: 15px; text-align: center;">
+                <button onclick="startLocalMode()" style="background: none; border: none; color: #8b9eb0; font-size: 0.85rem; text-decoration: underline; cursor: pointer; padding: 5px;">Usar en Local (Sin Cuenta)</button>
+            </div>
         </div>
     </div>
 
@@ -889,11 +892,11 @@
 
     <script>
         window.onerror = function(msg, url, line, col, error) {
-            alert("JS Error: " + msg + "\nLine: " + line + ":" + col);
+            console.error("JS Error: " + msg + "\nLine: " + line + ":" + col);
             return false;
         };
         window.onunhandledrejection = function(event) {
-            alert("Promise Error: " + (event.reason ? event.reason.message : event.reason));
+            console.error("Promise Error: " + (event.reason ? event.reason.message : event.reason));
         };
 
         const DEFAULT_CATEGORIES = [{ id: 'gen', name: 'General', color: '#8e8e93', subcategories: [] }];
@@ -1118,6 +1121,15 @@
                 document.getElementById('authLoader').style.display = 'none';
                 document.getElementById('authCard').style.display = 'block';
             }).catch(e => showToast('Error al cerrar sesión: ' + e.message));
+        }
+
+        function startLocalMode() {
+            localStorage.setItem('habitTrackerUser', 'true');
+            localStorage.removeItem('habitTrackerPrevUID');
+            localStorage.removeItem('habitTrackerActiveUID');
+            document.getElementById('authOverlay').style.display = 'none';
+            hasLocalData = true;
+            init();
         }
 
         // Auto-backup: guarda snapshot del último día de cada mes
