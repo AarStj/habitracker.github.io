@@ -819,7 +819,7 @@
             </div>
 
             <div class="menu-section">
-                <div class="menu-card">
+                <div class="menu-card" id="authMenuAction">
                     <div class="menu-row" onclick="logout()" style="color:var(--danger)"><span>Cerrar Sesión</span><span>›</span></div>
                 </div>
             </div>
@@ -1040,6 +1040,8 @@
                         document.getElementById('authLoader').style.display = 'flex';
                     }
 
+                    document.getElementById('authMenuAction').innerHTML = `<div class="menu-row" onclick="logout()" style="color:var(--danger)"><span>Cerrar Sesión</span><span>›</span></div>`;
+
                     if (unsubscribeSync) unsubscribeSync();
 
                     // Sincronización en TIEMPO REAL
@@ -1104,19 +1106,20 @@
                     currentUser = null;
                     if (unsubscribeSync) { unsubscribeSync(); unsubscribeSync = null; }
                     
-                    // Solo limpiar y mostrar login si NO hay datos locales guardados
+                    document.getElementById('authMenuAction').innerHTML = `<div class="menu-row" onclick="showLogin()" style="color:var(--primary)"><span>Iniciar Sesión</span><span>›</span></div>`;
+
+                    // Mostrar login si NO hay datos locales guardados, o si explícitamente se cerró sesión (habitTrackerUser != true)
                     const hasStoredData = !!localStorage.getItem(getStorageKey());
-                    if (!hasStoredData) {
+                    const isLocalMode = localStorage.getItem('habitTrackerUser') === 'true';
+
+                    if (!hasStoredData || !isLocalMode) {
                         hasLocalData = false;
-                        localStorage.removeItem('habitTrackerUser');
                         document.getElementById('authOverlay').style.display = 'flex';
                         document.getElementById('authOverlay').style.opacity = '1';
                         document.getElementById('authLoader').style.display = 'none';
                         document.getElementById('authCard').style.display = 'block';
-                        document.getElementById('habitsContainer').innerHTML = '';
+                        if (!hasStoredData) document.getElementById('habitsContainer').innerHTML = '';
                     } else {
-                        // Hay datos locales — NO borrar la interfaz, solo mostrar overlay de login suavemente
-                        // para que el usuario pueda ver sus datos y conectarse cuando quiera
                         document.getElementById('authOverlay').style.display = 'none';
                         if (!hasLocalData) {
                             hasLocalData = true;
@@ -1125,6 +1128,14 @@
                     }
                 }
             });
+        }
+
+        function showLogin() {
+            window.toggleMenu(false);
+            document.getElementById('authOverlay').style.display = 'flex';
+            document.getElementById('authOverlay').style.opacity = '1';
+            document.getElementById('authLoader').style.display = 'none';
+            document.getElementById('authCard').style.display = 'block';
         }
 
         function toggleAuthMode() {
