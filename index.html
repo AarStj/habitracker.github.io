@@ -876,6 +876,13 @@
     <div id="toast-container"></div>
 
     <script>
+        window.onerror = function(msg, url, line, col, error) {
+            alert("JS Error: " + msg + "\nLine: " + line + ":" + col);
+            return false;
+        };
+        window.onunhandledrejection = function(event) {
+            alert("Promise Error: " + (event.reason ? event.reason.message : event.reason));
+        };
         // --- FIREBASE CONFIGURATION ---
         const firebaseConfig = {
             apiKey: "AIzaSyDKVvcMrzEe9Y3Zl_ZR4sflD_v3dBbjIAU",
@@ -886,9 +893,16 @@
             appId: "1:608473944981:web:9354d7e72c56c4878a1c9c",
             measurementId: "G-G83Z90FTKJ"
         };
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.firestore();
+        
+        let auth = null;
+        let db = null;
+        try {
+            firebase.initializeApp(firebaseConfig);
+            auth = firebase.auth();
+            db = firebase.firestore();
+        } catch(e) {
+            console.warn("Firebase initialization failed:", e);
+        }
 
         let isLoginMode = true;
         let currentUser = null;
@@ -896,62 +910,64 @@
         let unsubscribeSync = null;
 
         // CARGA INSTANTÁNEA (OFFLINE / CACHÉ)
-        if (hasLocalData) {
+        if (hasLocalData || !auth) {
             document.getElementById('authOverlay').style.display = 'none';
             init();
         }
 
-        auth.onAuthStateChanged(user => {
-            if (user) {
-                currentUser = user;
-                localStorage.setItem('habitTrackerUser', 'true');
+        if (auth) {
+            auth.onAuthStateChanged(user => {
+                if (user) {
+                    currentUser = user;
+                    localStorage.setItem('habitTrackerUser', 'true');
 
-                // Si es el primer inicio de sesión o un dispositivo nuevo
-                if (!hasLocalData) {
-                    document.getElementById('authOverlay').style.display = 'flex';
-                    document.getElementById('authCard').style.display = 'none';
-                    document.getElementById('authLoader').style.display = 'flex';
-                }
+                    // Si es el primer inicio de sesión o un dispositivo nuevo
+                    if (!hasLocalData) {
+                        document.getElementById('authOverlay').style.display = 'flex';
+                        document.getElementById('authCard').style.display = 'none';
+                        document.getElementById('authLoader').style.display = 'flex';
+                    }
 
-                if (unsubscribeSync) unsubscribeSync();
+                    if (unsubscribeSync) unsubscribeSync();
 
-                // Sincronización en TIEMPO REAL
-                unsubscribeSync = db.collection('users').doc(user.uid).onSnapshot(doc => {
-                    if (doc.exists) {
-                        const data = doc.data();
-                        const localStateStr = localStorage.getItem('habitTrackerV5');
-                        if (data.state && data.state !== localStateStr) {
-                            localStorage.setItem('habitTrackerV5', data.state);
-                            init(); // Recargar interfaz porque hay nuevos datos en la nube
+                    // Sincronización en TIEMPO REAL
+                    unsubscribeSync = db.collection('users').doc(user.uid).onSnapshot(doc => {
+                        if (doc.exists) {
+                            const data = doc.data();
+                            const localStateStr = localStorage.getItem('habitTrackerV5');
+                            if (data.state && data.state !== localStateStr) {
+                                localStorage.setItem('habitTrackerV5', data.state);
+                                init(); // Recargar interfaz porque hay nuevos datos en la nube
+                            }
                         }
-                    }
-                    
-                    if (!hasLocalData) {
-                        hasLocalData = true;
-                        init();
-                    }
-                    document.getElementById('authOverlay').style.display = 'none';
-                }, err => {
-                    console.error("Error en sync:", err);
-                    if (!hasLocalData) {
-                        hasLocalData = true;
-                        init();
+                        
+                        if (!hasLocalData) {
+                            hasLocalData = true;
+                            init();
+                        }
                         document.getElementById('authOverlay').style.display = 'none';
-                    }
-                });
+                    }, err => {
+                        console.error("Error en sync:", err);
+                        if (!hasLocalData) {
+                            hasLocalData = true;
+                            init();
+                            document.getElementById('authOverlay').style.display = 'none';
+                        }
+                    });
 
-            } else {
-                currentUser = null;
-                hasLocalData = false;
-                if (unsubscribeSync) { unsubscribeSync(); unsubscribeSync = null; }
-                localStorage.removeItem('habitTrackerUser');
-                document.getElementById('authOverlay').style.display = 'flex';
-                document.getElementById('authOverlay').style.opacity = '1';
-                document.getElementById('authLoader').style.display = 'none';
-                document.getElementById('authCard').style.display = 'block';
-                document.getElementById('habitsContainer').innerHTML = '';
-            }
-        });
+                } else {
+                    currentUser = null;
+                    hasLocalData = false;
+                    if (unsubscribeSync) { unsubscribeSync(); unsubscribeSync = null; }
+                    localStorage.removeItem('habitTrackerUser');
+                    document.getElementById('authOverlay').style.display = 'flex';
+                    document.getElementById('authOverlay').style.opacity = '1';
+                    document.getElementById('authLoader').style.display = 'none';
+                    document.getElementById('authCard').style.display = 'block';
+                    document.getElementById('habitsContainer').innerHTML = '';
+                }
+            });
+        }
 
         function toggleAuthMode() {
             isLoginMode = !isLoginMode;
