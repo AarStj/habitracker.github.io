@@ -1034,10 +1034,24 @@
         const ICON_PENCIL = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>`;
         const ICON_TRASH = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>`;
 
+        let isInitializing = false;
         function init() {
+            isInitializing = true;
+            let didRecover = false;
             try {
-                let loaded = JSON.parse(localStorage.getItem('habitTrackerV5'));
-                if(!loaded) loaded = JSON.parse(localStorage.getItem('habitTrackerV6_3')) || JSON.parse(localStorage.getItem('habitTrackerV6_1'));
+                let loaded;
+                try { loaded = JSON.parse(localStorage.getItem('habitTrackerV5')); } catch(e) {}
+                
+                // Si V5 está vacío o corrupto, intentamos recuperar de copias previas locales
+                if(!loaded || !loaded.habits || loaded.habits.length === 0) {
+                    let backup;
+                    try { backup = JSON.parse(localStorage.getItem('habitTrackerV6_3')) || JSON.parse(localStorage.getItem('habitTrackerV6_1')); } catch(e){}
+                    if (backup && backup.habits && backup.habits.length > 0) {
+                        loaded = backup;
+                        didRecover = true;
+                    }
+                }
+
                 if (loaded) {
                     if (Array.isArray(loaded)) {
                         state.habits = loaded;
@@ -1089,8 +1103,18 @@
                     if(!m.year) m.year = new Date().getFullYear();
                 });
                 
-                saveData();
-            } catch (e) {}
+                const stateStr = JSON.stringify(state);
+                localStorage.setItem('habitTrackerV5', stateStr); 
+                
+                if (didRecover && currentUser) {
+                    // Forzar sincronización a la nube si recuperamos datos, para arreglar la base de datos
+                    db.collection('users').doc(currentUser.uid).set({
+                        state: stateStr,
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    }, {merge: true}).catch(err => console.error("Error al recuperar en nube:", err));
+                }
+            } catch (e) { console.error("Error en init:", e); }
+            isInitializing = false;
             
             // Cargar Widget Finanzas y Clima
             const savedSymbol = (state.settings && state.settings.financeSymbol) ? state.settings.financeSymbol : 'AMEX:SPY';
@@ -1110,7 +1134,7 @@
         function saveData() { 
             const stateStr = JSON.stringify(state);
             localStorage.setItem('habitTrackerV5', stateStr); 
-            if (currentUser) {
+            if (currentUser && !isInitializing) {
                 clearTimeout(syncTimeout);
                 syncTimeout = setTimeout(() => {
                     db.collection('users').doc(currentUser.uid).set({
