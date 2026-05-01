@@ -691,7 +691,7 @@
         
         <div id="widgetsAccordion" style="flex: none; border-top: 0.5px solid var(--border-color); background-color: rgba(0,0,0,0.1); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); z-index: 20;">
             <div onclick="toggleWidgets()" style="padding: 16px; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; user-select: none; gap: 6px;">
-                <span id="widgetsToggleIcon" style="transition: transform 0.3s; font-size: 1.2rem; color: var(--text-muted); transform: rotate(0deg);">▼</span>
+                <span id="widgetsToggleIcon" style="transition: transform 0.3s; font-size: 1.2rem; color: var(--text-muted); transform: rotate(0deg);">▲</span>
                 <span style="font-weight: 600; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); display: flex; align-items: center; gap: 8px;">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="2"></rect><rect x="14" y="3" width="7" height="7" rx="2"></rect><rect x="14" y="14" width="7" height="7" rx="2"></rect><rect x="3" y="14" width="7" height="7" rx="2"></rect></svg>
                     Widgets
@@ -961,8 +961,6 @@
                             if (data.state && data.state.length > 50) {
                                 const localStateStr = localStorage.getItem('habitTrackerV5');
                                 
-                                // Protección: no pisar datos locales con datos de la nube
-                                // a menos que la nube tenga MÁS hábitos o sea más reciente
                                 let cloudState, localState;
                                 try { cloudState = JSON.parse(data.state); } catch(e) {}
                                 try { localState = JSON.parse(localStateStr); } catch(e) {}
@@ -970,8 +968,13 @@
                                 const cloudHabits = cloudState && cloudState.habits ? cloudState.habits.length : 0;
                                 const localHabits = localState && localState.habits ? localState.habits.length : 0;
                                 
-                                if (cloudHabits > 0 && data.state !== localStateStr) {
-                                    // Guardar backup local antes de sobreescribir
+                                // Comparar solo datos reales (hábitos), no UI state
+                                // para evitar que cambios de vista (collapsedCats, viewDate) recarguen la interfaz
+                                const cloudDataSig = cloudState ? JSON.stringify(cloudState.habits) + JSON.stringify(cloudState.categories) : '';
+                                const localDataSig = localState ? JSON.stringify(localState.habits) + JSON.stringify(localState.categories) : '';
+                                
+                                if (cloudHabits > 0 && cloudDataSig !== localDataSig) {
+                                    // La nube tiene datos distintos — guardar backup y sincronizar
                                     if (localStateStr) localStorage.setItem('habitTrackerV5_backup', localStateStr);
                                     localStorage.setItem('habitTrackerV5', data.state);
                                     init();
@@ -1009,15 +1012,29 @@
                     });
 
                 } else {
+                    // Usuario no autenticado
                     currentUser = null;
-                    hasLocalData = false;
                     if (unsubscribeSync) { unsubscribeSync(); unsubscribeSync = null; }
-                    localStorage.removeItem('habitTrackerUser');
-                    document.getElementById('authOverlay').style.display = 'flex';
-                    document.getElementById('authOverlay').style.opacity = '1';
-                    document.getElementById('authLoader').style.display = 'none';
-                    document.getElementById('authCard').style.display = 'block';
-                    document.getElementById('habitsContainer').innerHTML = '';
+                    
+                    // Solo limpiar y mostrar login si NO hay datos locales guardados
+                    const hasStoredData = !!localStorage.getItem('habitTrackerV5');
+                    if (!hasStoredData) {
+                        hasLocalData = false;
+                        localStorage.removeItem('habitTrackerUser');
+                        document.getElementById('authOverlay').style.display = 'flex';
+                        document.getElementById('authOverlay').style.opacity = '1';
+                        document.getElementById('authLoader').style.display = 'none';
+                        document.getElementById('authCard').style.display = 'block';
+                        document.getElementById('habitsContainer').innerHTML = '';
+                    } else {
+                        // Hay datos locales — NO borrar la interfaz, solo mostrar overlay de login suavemente
+                        // para que el usuario pueda ver sus datos y conectarse cuando quiera
+                        document.getElementById('authOverlay').style.display = 'none';
+                        if (!hasLocalData) {
+                            hasLocalData = true;
+                            init();
+                        }
+                    }
                 }
             });
         }
@@ -1073,11 +1090,11 @@
             const icon = document.getElementById('widgetsToggleIcon');
             if(container.style.display === 'none') {
                 container.style.display = 'block';
-                icon.style.transform = 'rotate(-180deg)';
+                icon.style.transform = 'rotate(-180deg)'; // ▲ rotado = ▼
                 state.settings.widgetsOpen = true;
             } else {
                 container.style.display = 'none';
-                icon.style.transform = 'rotate(0deg)';
+                icon.style.transform = 'rotate(0deg)'; // ▲
                 state.settings.widgetsOpen = false;
             }
             saveData();
@@ -1943,14 +1960,30 @@
                         const content = readerEvent.target.result;
                         const parsed = JSON.parse(content);
                         if (parsed && (parsed.habits || Array.isArray(parsed))) {
+                            // Guardar datos localmente
                             localStorage.setItem('habitTrackerV5', content);
-                            alert("Datos importados con éxito. La página se recargará.");
-                            location.reload();
+                            localStorage.setItem('habitTrackerUser', 'true');
+                            
+                            // Subir a Firestore si hay sesión activa
+                            if (currentUser && db) {
+                                db.collection('users').doc(currentUser.uid).set({
+                                    state: content,
+                                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                                }, {merge: true})
+                                .then(() => console.log('Datos subidos a la nube correctamente'))
+                                .catch(e => console.error('Error al subir:', e));
+                            }
+                            
+                            // Recargar la interfaz sin recargar la página
+                            hasLocalData = true;
+                            init();
+                            window.toggleMenu && toggleMenu(false);
+                            showToast('✅ ' + (parsed.habits ? parsed.habits.length : 0) + ' hábitos importados correctamente');
                         } else {
                             alert("El archivo no tiene el formato correcto.");
                         }
                     } catch(err) {
-                        alert("Error al procesar el archivo.");
+                        alert("Error al procesar el archivo: " + err.message);
                     }
                 }
             };
