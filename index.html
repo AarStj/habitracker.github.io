@@ -810,6 +810,8 @@
                     <div id="datosMenuOptions" style="display: none; flex-direction: column; padding: 0 16px; background: var(--bg-body); border-top: 1px solid var(--border-color);">
                         <div class="menu-row" onclick="exportData()" style="padding: 12px 0;"><span>📤 Exportar</span></div>
                         <div class="menu-row" onclick="importData()" style="border-top: 1px solid var(--border-color); padding: 12px 0;"><span>📥 Importar</span></div>
+                        <div class="menu-row" onclick="recoverAprilData()" style="border-top: 1px solid var(--border-color); padding: 12px 0;"><span>🔄 Recuperar datos de Abril</span></div>
+                        <div class="menu-row" onclick="resetData()" style="border-top: 1px solid var(--border-color); padding: 12px 0; color:var(--danger)"><span>🗑️ Eliminar cuenta y datos</span></div>
                         <div class="menu-row" style="border-top: 1px solid var(--border-color); padding: 12px 0; display: flex; justify-content: space-between; align-items: center;">
                             <span style="font-size: 0.85rem; font-weight: 500;">💾 Auto-Backup Mensual</span>
                             <div id="autoBackupToggle" class="switch-toggle active" onclick="toggleAutoBackupSetting()"></div>
@@ -824,11 +826,7 @@
                 </div>
             </div>
 
-            <div class="menu-section" style="margin-top: 8px;">
-                <div class="menu-card">
-                    <button onclick="resetData()" class="menu-row" style="color:var(--danger); justify-content: center; font-weight: 600;">Eliminar todo</button>
-                </div>
-            </div>
+
             
         </div>
     </div>
@@ -2360,7 +2358,58 @@
         }
 
         function deleteHabit(id) { closeGenericModal(); state.habits=state.habits.filter(h=>h.id!==id); saveData(); renderCalendar(); showToast('Eliminado'); }
-        function resetData() { showConfirm("¿Eliminar todos los datos permanentemente?", () => { localStorage.clear(); location.reload(); }); }
+        function resetData() { 
+            showConfirm("¿Eliminar todos los datos permanentemente y restaurar la cuenta?", async () => { 
+                localStorage.removeItem(getStorageKey());
+                if (typeof currentUser !== 'undefined' && currentUser && typeof db !== 'undefined' && db) {
+                    try {
+                        await db.collection('users').doc(currentUser.uid).delete();
+                    } catch(e) {}
+                }
+                location.reload(); 
+            }); 
+        }
+
+        function recoverAprilData() {
+            let recoveredData = null;
+            let recoveredDate = "";
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key.includes('2026-04') || key.includes('2025-04') || key.includes('2024-04')) {
+                    const data = localStorage.getItem(key);
+                    if (data && data.includes('categories')) {
+                        recoveredData = data;
+                        recoveredDate = key;
+                        break;
+                    }
+                }
+            }
+            if (!recoveredData) {
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    if (key.startsWith('habitTrackerV5_') && key !== getStorageKey() && key !== 'habitTrackerV5_local') {
+                        const data = localStorage.getItem(key);
+                        if (data && data.includes('categories')) {
+                            recoveredData = data;
+                            recoveredDate = "Copia anterior (" + key + ")";
+                            break;
+                        }
+                    }
+                }
+            }
+            if (!recoveredData) {
+                showToast("No se encontraron respaldos locales.");
+                return;
+            }
+            showConfirm(`¿Recuperar datos encontrados (${recoveredDate})? Esto reemplazará los datos en esta cuenta.`, () => {
+                localStorage.setItem(getStorageKey(), recoveredData);
+                try {
+                    state = JSON.parse(recoveredData);
+                    if (typeof saveData === 'function') saveData();
+                } catch(e) {}
+                location.reload();
+            });
+        }
         function downloadData() { const a=document.createElement('a'); a.href="data:text/json;charset=utf-8,"+encodeURIComponent(JSON.stringify(state)); a.download="habit_tracker_backup.json"; a.click(); closeGenericModal(); }
         function uploadData(i) { const r=new FileReader(); r.onload=e=>{ try{state=JSON.parse(e.target.result);saveData();location.reload();}catch(x){showToast('Error archivo');}}; r.readAsText(i.files[0]); }
         function playSound() { try { const c=new(window.AudioContext||window.webkitAudioContext); const o=c.createOscillator();const g=c.createGain(); o.connect(g);g.connect(c.destination); o.frequency.value=800; g.gain.setValueAtTime(0.05,c.currentTime); g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+0.05); o.start();o.stop(c.currentTime+0.05); } catch(e){} }
