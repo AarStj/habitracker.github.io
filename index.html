@@ -759,7 +759,7 @@
 
             <!-- Quote/Notes Card -->
             <div id="card-quote" class="ios-widget-card" onclick="editQuote()" title="Frase o Nota">
-                <div id="quoteDisplay" style="display: -webkit-box; -webkit-line-clamp: 6; -webkit-box-orient: vertical; overflow: hidden;">Haz clic para escribir una nota o frase...</div>
+                <div id="quoteDisplay" style="display: -webkit-box; -webkit-line-clamp: 6; line-clamp: 6; -webkit-box-orient: vertical; overflow: hidden;">Haz clic para escribir una nota o frase...</div>
             </div>
 
                 </div>
@@ -911,7 +911,7 @@
         };
 
         function getStorageKey() {
-            if (currentUser) return 'habitTrackerV5_' + currentUser.uid;
+            if (currentUser) return 'habitTrackerV5_' + (currentUser.email || currentUser.uid);
             return 'habitTrackerV5_local';
         }
 
@@ -1022,10 +1022,15 @@
                     document.getElementById('menuUserEmail').innerText = user.email || '';
 
                     // Migración: si existe habitTrackerV5 (datos viejos) y NO existe la clave nueva, migrar
-                    const newKey = 'habitTrackerV5_' + user.uid;
+                    const newKey = 'habitTrackerV5_' + (user.email || user.uid);
                     if (!localStorage.getItem(newKey)) {
-                        const oldData = localStorage.getItem('habitTrackerV5');
-                        if (oldData) localStorage.setItem(newKey, oldData);
+                        const oldUidData = localStorage.getItem('habitTrackerV5_' + user.uid);
+                        if (oldUidData) {
+                            localStorage.setItem(newKey, oldUidData);
+                        } else {
+                            const oldData = localStorage.getItem('habitTrackerV5');
+                            if (oldData) localStorage.setItem(newKey, oldData);
+                        }
                     }
 
                     // Si es el primer inicio de sesión o un dispositivo nuevo
@@ -1167,13 +1172,7 @@
             if (!auth) { showToast('Firebase no disponible'); return; }
             auth.signOut().then(() => {
                 localStorage.removeItem('habitTrackerUser');
-                // No borramos la clave del usuario (getStorageKey()) para mantener sus datos separados en local.
-                window.toggleMenu(false);
-                document.getElementById('habitsContainer').innerHTML = '';
-                document.getElementById('authOverlay').style.display = 'flex';
-                document.getElementById('authOverlay').style.opacity = '1';
-                document.getElementById('authLoader').style.display = 'none';
-                document.getElementById('authCard').style.display = 'block';
+                window.location.reload();
             }).catch(e => showToast('Error al cerrar sesión: ' + e.message));
         }
 
@@ -1254,6 +1253,10 @@
                     for(let i=0; i<localStorage.length; i++) {
                         const key = localStorage.key(i);
                         if (key !== getStorageKey() && key.toLowerCase().includes('habit')) {
+                            // Evitar cargar datos de otra cuenta (keys que empiezan con habitTrackerV5_ y no son _local)
+                            if (key.startsWith('habitTrackerV5_') && key !== 'habitTrackerV5_local') {
+                                continue;
+                            }
                             try {
                                 const parsed = JSON.parse(localStorage.getItem(key));
                                 if (parsed && parsed.habits && parsed.habits.length > bestCount) {
