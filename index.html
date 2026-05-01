@@ -883,6 +883,30 @@
         window.onunhandledrejection = function(event) {
             alert("Promise Error: " + (event.reason ? event.reason.message : event.reason));
         };
+
+        const DEFAULT_CATEGORIES = [{ id: 'gen', name: 'General', color: '#8e8e93', subcategories: [] }];
+        let state = { 
+            habits: [], 
+            categories: JSON.parse(JSON.stringify(DEFAULT_CATEGORIES)), 
+            settings: { theme: 'light', collapsedCats: {}, collapsedSubCats: {}, dailyNote: "", boxStyle: 'minimal', dividerColor: null, accentColor: null }, 
+            viewDate: new Date(),
+            pagosServices: [],
+            pagosMonthly: {},
+            metas: [] 
+        };
+        let selectedCategory = null; let selectedSubcat = ""; let confirmCallback = null; let draggedHabitId = null;
+        let selectionAnchor = null; 
+        let currentManageCatId = null; 
+        let pagosViewDate = new Date();
+        let metasViewYear = new Date().getFullYear();
+        let progresoViewYear = new Date().getFullYear();
+
+        // ICONS
+        const ICON_PENCIL = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>`;
+        const ICON_TRASH = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>`;
+
+        let isInitializing = false;
+
         // --- FIREBASE CONFIGURATION ---
         const firebaseConfig = {
             apiKey: "AIzaSyDKVvcMrzEe9Y3Zl_ZR4sflD_v3dBbjIAU",
@@ -1030,28 +1054,7 @@
             saveData();
         }
 
-        const DEFAULT_CATEGORIES = [{ id: 'gen', name: 'General', color: '#8e8e93', subcategories: [] }];
-        let state = { 
-            habits: [], 
-            categories: JSON.parse(JSON.stringify(DEFAULT_CATEGORIES)), 
-            settings: { theme: 'light', collapsedCats: {}, collapsedSubCats: {}, dailyNote: "", boxStyle: 'minimal', dividerColor: null, accentColor: null }, 
-            viewDate: new Date(),
-            pagosServices: [],
-            pagosMonthly: {},
-            metas: [] 
-        };
-        let selectedCategory = null; let selectedSubcat = ""; let confirmCallback = null; let draggedHabitId = null;
-        let selectionAnchor = null; 
-        let currentManageCatId = null; 
-        let pagosViewDate = new Date();
-        let metasViewYear = new Date().getFullYear();
-        let progresoViewYear = new Date().getFullYear();
 
-        // ICONS
-        const ICON_PENCIL = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>`;
-        const ICON_TRASH = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>`;
-
-        let isInitializing = false;
         function init() {
             isInitializing = true;
             let didRecover = false;
