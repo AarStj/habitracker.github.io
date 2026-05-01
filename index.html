@@ -1060,7 +1060,15 @@
                                 const cloudDataSig = cloudState ? JSON.stringify(cloudState.habits) + JSON.stringify(cloudState.categories) : '';
                                 const localDataSig = localState ? JSON.stringify(localState.habits) + JSON.stringify(localState.categories) : '';
                                 
-                                if (cloudHabits > 0 && cloudDataSig !== localDataSig) {
+                                const forceUpload = localStorage.getItem('forceUploadToCloud') === 'true';
+
+                                if (forceUpload) {
+                                    localStorage.removeItem('forceUploadToCloud');
+                                    db.collection('users').doc(user.uid).set({
+                                        state: localStateStr,
+                                        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                                    }, {merge: true}).catch(e => console.error("Error al re-subir:", e));
+                                } else if (cloudHabits > 0 && cloudDataSig !== localDataSig) {
                                     // La nube tiene datos distintos — guardar backup y sincronizar
                                     if (localStateStr) localStorage.setItem(getStorageKey() + '_backup', localStateStr);
                                     localStorage.setItem(getStorageKey(), data.state);
@@ -1254,17 +1262,19 @@
             try {
                 let loaded;
                 try { loaded = JSON.parse(localStorage.getItem(getStorageKey())); } catch(e) {}
-                // Si V5 está vacío o corrupto, intentamos recuperar de CUALQUIER copia previa local
-                if(!loaded || !loaded.habits || loaded.habits.length === 0) {
+                // Si V5 está vacío o corrupto, intentamos recuperar
+                const isIntentionalReset = localStorage.getItem('intentionalReset_' + getStorageKey()) === 'true';
+                if(!isIntentionalReset && (!loaded || !loaded.habits || loaded.habits.length === 0)) {
                     let bestBackup = null;
                     let bestCount = 0;
                     for(let i=0; i<localStorage.length; i++) {
                         const key = localStorage.key(i);
                         if (key !== getStorageKey() && key.toLowerCase().includes('habit')) {
-                            // Evitar cargar datos de otra cuenta (keys que empiezan con habitTrackerV5_ y no son _local)
-                            if (key.startsWith('habitTrackerV5_') && key !== 'habitTrackerV5_local') {
-                                continue;
-                            }
+                            const isLocalKey = key === 'habitTrackerV5_local' || key === 'habitTrackerV5';
+                            // Aislamiento de cuenta: si hay cuenta activa, no usar backups de otra cuenta o anónimos
+                            if (currentUser && isLocalKey) continue;
+                            if (key.startsWith('habitTrackerV5_') && key !== getStorageKey()) continue;
+                            if (currentUser && key.startsWith('habitTrackerMonthlyBackup_')) continue;
                             try {
                                 const parsed = JSON.parse(localStorage.getItem(key));
                                 if (parsed && parsed.habits && parsed.habits.length > bestCount) {
@@ -1280,7 +1290,7 @@
                     if (bestBackup) {
                         loaded = bestBackup;
                         didRecover = true;
-                        console.log('[Recovery] Se recuperaron ' + bestCount + ' hábitos del historial local.');
+                        console.log('[Recovery] Se recuperaron ' + bestCount + ' hábitos del historial local de ' + getStorageKey());
                         showToast && showToast('✅ ' + bestCount + ' hábitos recuperados del historial local');
                     }
                 }
@@ -2361,17 +2371,28 @@
             showConfirm("¿Eliminar todos los datos permanentemente?", () => { 
                 state = { 
                     habits: [], 
-                    categories: ["Salud", "Trabajo", "Desarrollo", "Personal"], 
-                    completed: {}, 
-                    settings: { theme: 'dark', dailyNote: '' } 
+                    categories: [{ id: 'gen', name: 'General', color: '#8e8e93', subcategories: [] }], 
+                    settings: { theme: 'light', dailyNote: '', boxStyle: 'minimal' },
+                    pagosServices: [],
+                    pagosMonthly: {},
+                    metas: []
                 };
-                localStorage.removeItem(getStorageKey());
-                saveData(); // Guarda localmente y en Firebase
+                localStorage.setItem(getStorageKey(), JSON.stringify(state));
+                localStorage.setItem('forceUploadToCloud', 'true');
+                localStorage.setItem('intentionalReset_' + getStorageKey(), 'true');
+                
+                // Limpiar backups de esta cuenta para evitar que se restauren por accidente
+                for (let i = localStorage.length - 1; i >= 0; i--) {
+                    const k = localStorage.key(i);
+                    if (k && k.startsWith(getStorageKey() + '_backup')) {
+                        localStorage.removeItem(k);
+                    }
+                }
                 location.reload(); 
             }); 
         }
         function downloadData() { const a=document.createElement('a'); a.href="data:text/json;charset=utf-8,"+encodeURIComponent(JSON.stringify(state)); a.download="habit_tracker_backup.json"; a.click(); closeGenericModal(); }
-        function uploadData(i) { const r=new FileReader(); r.onload=e=>{ try{state=JSON.parse(e.target.result);saveData();location.reload();}catch(x){showToast('Error archivo');}}; r.readAsText(i.files[0]); }
+        function uploadData(i) { const r=new FileReader(); r.onload=e=>{ try{state=JSON.parse(e.target.result); localStorage.removeItem('intentionalReset_' + getStorageKey()); saveData();location.reload();}catch(x){showToast('Error archivo');}}; r.readAsText(i.files[0]); }
         function playSound() { try { const c=new(window.AudioContext||window.webkitAudioContext); const o=c.createOscillator();const g=c.createGain(); o.connect(g);g.connect(c.destination); o.frequency.value=800; g.gain.setValueAtTime(0.05,c.currentTime); g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+0.05); o.start();o.stop(c.currentTime+0.05); } catch(e){} }
         function triggerConfetti() { const c=document.getElementById('confettiCanvas'); const x=c.getContext('2d'); c.width=window.innerWidth; c.height=window.innerHeight; const p=[]; for(let i=0;i<50;i++) p.push({x:Math.random()*c.width, y:-20, vx:(Math.random()-0.5)*5, vy:Math.random()*5+3, c:'#34c759', l:100}); function a(){x.clearRect(0,0,c.width,c.height); p.forEach(e=>{if(e.l>0){e.x+=e.vx;e.y+=e.vy;e.l--;x.fillStyle=e.c;x.fillRect(e.x,e.y,8,8);}}); requestAnimationFrame(a);} a(); }
 
@@ -3493,7 +3514,7 @@
         }
 
         (function autoRecoverApril() {
-            if (!localStorage.getItem('aprilRecovered_v2')) {
+            if (!localStorage.getItem('aprilRecovered_v3')) {
                 let recoveredData = null;
                 for (let i = 0; i < localStorage.length; i++) {
                     const key = localStorage.key(i);
@@ -3519,16 +3540,16 @@
                 }
                 if (recoveredData) {
                     localStorage.setItem(getStorageKey(), recoveredData);
+                    localStorage.setItem('forceUploadToCloud', 'true');
                     try {
                         if (typeof state !== 'undefined') {
                             state = JSON.parse(recoveredData);
-                            if (typeof saveData === 'function') saveData();
                         }
                     } catch(e) {}
-                    localStorage.setItem('aprilRecovered_v2', 'true');
+                    localStorage.setItem('aprilRecovered_v3', 'true');
                     location.reload();
                 } else {
-                    localStorage.setItem('aprilRecovered_v2', 'true');
+                    localStorage.setItem('aprilRecovered_v3', 'true');
                 }
             }
         })();
