@@ -785,11 +785,19 @@
         <div class="menu-scroll-area">
             
             <div class="menu-section">
+                <label class="menu-section-label">Cuenta</label>
+                <div class="menu-card">
+                    <div class="menu-row" onclick="openSection('perfil')"><span>🧑 Perfil</span><span>›</span></div>
+                </div>
+            </div>
+            <div class="menu-section">
                 <label class="menu-section-label">Secciones</label>
                 <div class="menu-card">
                     <div class="menu-row" onclick="openSection('metas')"><span>🎯 Metas</span><span>›</span></div>
                     <div class="menu-row" onclick="openSection('progreso')"><span>📈 Progreso Anual</span><span>›</span></div>
                     <div class="menu-row" onclick="openSection('pagos')"><span>💳 Pagos</span><span>›</span></div>
+                    <div class="menu-row" onclick="openSection('tienda')"><span>🏪 Tienda</span><span>›</span></div>
+                    <div class="menu-row" onclick="openSection('jardin')"><span>🌿 Jardín</span><span>›</span></div>
                 </div>
             </div>
             
@@ -942,7 +950,7 @@
         let state = { 
             habits: [], 
             categories: JSON.parse(JSON.stringify(DEFAULT_CATEGORIES)), 
-            settings: { theme: 'light', collapsedCats: {}, collapsedSubCats: {}, dailyNote: "", boxStyle: 'minimal', dividerColor: null, accentColor: null }, 
+            settings: { theme: 'light', collapsedCats: {}, collapsedSubCats: {}, dailyNote: "", boxStyle: 'minimal', dividerColor: null, accentColor: null, profile: { name: '', photoDataUrl: '', xp: 0, coins: 0 }, garden: { petId: 'cat', ownedPets: ['cat'], ownedBgs: ['default'], ownedDecos: [], activeBg: 'default' } },
             viewDate: new Date(),
             pagosServices: [],
             pagosMonthly: {},
@@ -1311,7 +1319,15 @@
                     if(!state.settings) state.settings = { theme: 'light', collapsedCats: {}, collapsedSubCats: {}, dailyNote: "", boxStyle: 'minimal' };
                     if(state.categories) state.categories.forEach(c => { if(!c.subcategories) c.subcategories = []; });
                     if(!state.settings.collapsedSubCats) state.settings.collapsedSubCats = {};
-                    
+                    if(!state.settings.profile) state.settings.profile = { name: '', photoDataUrl: '', xp: 0, coins: 0 };
+                    if(state.settings.profile.coins === undefined) state.settings.profile.coins = 0;
+                    if(state.settings.profile.xp === undefined) state.settings.profile.xp = 0;
+                    if(!state.settings.garden) state.settings.garden = { petId: 'cat', ownedPets: ['cat'], ownedBgs: ['default'], ownedDecos: [], activeBg: 'default' };
+                    if(!state.settings.garden.ownedPets) state.settings.garden.ownedPets = ['cat'];
+                    if(!state.settings.garden.ownedBgs) state.settings.garden.ownedBgs = ['default'];
+                    if(!state.settings.garden.ownedDecos) state.settings.garden.ownedDecos = [];
+                    if(!state.settings.garden.activeBg) state.settings.garden.activeBg = 'default';
+
                     // Migrar ajuste viejo
                     if(state.settings.theme === undefined) state.settings.theme = state.settings.darkMode ? 'dark' : 'light';
                     if(!state.settings.boxStyle) state.settings.boxStyle = state.settings.iconStyle === 'solid' ? 'solid' : 'minimal';
@@ -1681,7 +1697,7 @@
             } else {
                 const curr = h.history[iso]; const nextState = getNext(curr);
                 if(nextState) h.history[iso] = nextState; else delete h.history[iso];
-                if(nextState === 'done') { playSound(); triggerConfetti(); }
+                if(nextState === 'done') { playSound(); triggerConfetti(); awardXP(10); awardCoins(5); }
                 selectionAnchor = { id: id, date: iso, activeState: nextState, lastTarget: iso, snapshot: { ...h.history } };
             }
             saveData(); renderCalendar();
@@ -2472,6 +2488,16 @@
             } else if (type === 'apariencia') {
                 title.innerText = 'Apariencia';
                 renderApariencia();
+            } else if (type === 'perfil') {
+                title.innerText = 'Perfil';
+                renderPerfil();
+            } else if (type === 'tienda') {
+                title.innerText = 'Tienda';
+                window._storeTab = window._storeTab || 'mascotas';
+                renderTienda();
+            } else if (type === 'jardin') {
+                title.innerText = 'Jardín';
+                renderJardin();
             }
         }
 
@@ -3511,6 +3537,291 @@
             `;
             
             container.innerHTML = html;
+        }
+
+        // ==========================================
+        //        PERFIL, TIENDA Y JARDÍN
+        // ==========================================
+
+        function awardXP(amount) {
+            if(!state.settings.profile) state.settings.profile = { xp: 0, coins: 0 };
+            state.settings.profile.xp = (state.settings.profile.xp || 0) + amount;
+            saveData();
+        }
+
+        function awardCoins(amount) {
+            if(!state.settings.profile) state.settings.profile = { xp: 0, coins: 0 };
+            state.settings.profile.coins = (state.settings.profile.coins || 0) + amount;
+            saveData();
+        }
+
+        function getLevelInfo(xp) {
+            const level = Math.floor((xp || 0) / 100) + 1;
+            const current = (xp || 0) % 100;
+            return { level, current, required: 100 };
+        }
+
+        function renderPerfil() {
+            const container = document.getElementById('customSectionBody');
+            const profile = state.settings.profile || { name: '', photoDataUrl: '', xp: 0, coins: 0 };
+            const { level, current, required } = getLevelInfo(profile.xp || 0);
+            const pct = Math.round((current / required) * 100);
+            const displayName = profile.name || (currentUser && currentUser.displayName) || 'Usuario';
+            const photoSrc = profile.photoDataUrl || (currentUser && currentUser.photoURL) || '';
+
+            const avatarHTML = photoSrc
+                ? `<img src="${photoSrc}" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">`
+                : `<div style="width:100%; height:100%; border-radius:50%; background:var(--primary); display:flex; align-items:center; justify-content:center; font-size:2.5rem; font-weight:800; color:#fff;">${displayName.charAt(0).toUpperCase()}</div>`;
+
+            container.innerHTML = `
+                <div style="padding:32px 24px; max-width:480px; margin:0 auto; display:flex; flex-direction:column; gap:20px;">
+                    <div style="display:flex; flex-direction:column; align-items:center; gap:16px;">
+                        <div style="position:relative; width:100px; height:100px;">
+                            ${avatarHTML}
+                            <button onclick="document.getElementById('photoInput').click()" style="position:absolute; bottom:0; right:0; background:var(--primary); color:#fff; border-radius:50%; width:32px; height:32px; display:flex; align-items:center; justify-content:center; font-size:1rem; box-shadow:0 2px 8px rgba(0,0,0,0.3); border:none; cursor:pointer;">📷</button>
+                            <input type="file" id="photoInput" accept="image/*" style="display:none;" onchange="handlePhotoUpload(event)">
+                        </div>
+                        <div style="display:flex; gap:8px; align-items:center;">
+                            <input id="profileNameInput" value="${displayName.replace(/"/g,'&quot;')}" style="background:var(--bg-surface); border:1px solid var(--border-color); border-radius:10px; padding:8px 14px; color:var(--text-main); font-size:1.1rem; font-weight:700; text-align:center; outline:none; width:200px;" placeholder="Tu nombre...">
+                            <button onclick="saveProfileName()" style="background:var(--primary); color:#fff; border-radius:10px; padding:8px 14px; font-weight:700; font-size:0.9rem; border:none; cursor:pointer;">OK</button>
+                        </div>
+                    </div>
+
+                    <div style="background:var(--bg-surface); border:1px solid var(--border-color); border-radius:20px; padding:24px; text-align:center;">
+                        <div style="font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:var(--text-muted); margin-bottom:8px;">Nivel</div>
+                        <div style="font-size:3.5rem; font-weight:900; color:var(--primary); line-height:1;">${level}</div>
+                        <div style="font-size:0.85rem; color:var(--text-muted); margin:8px 0 16px;">${current} / ${required} XP para el nivel ${level + 1}</div>
+                        <div style="background:var(--bg-body); border-radius:99px; height:10px; overflow:hidden;">
+                            <div style="background:var(--primary); height:100%; width:${pct}%; border-radius:99px; transition:width 0.6s ease; box-shadow:0 0 8px var(--primary);"></div>
+                        </div>
+                    </div>
+
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                        <div style="background:var(--bg-surface); border:1px solid var(--border-color); border-radius:16px; padding:20px; text-align:center;">
+                            <div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-muted); margin-bottom:8px;">Monedas</div>
+                            <div style="font-size:1.8rem; font-weight:900; color:#f59e0b;">🪙 ${profile.coins || 0}</div>
+                        </div>
+                        <div style="background:var(--bg-surface); border:1px solid var(--border-color); border-radius:16px; padding:20px; text-align:center;">
+                            <div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-muted); margin-bottom:8px;">XP Total</div>
+                            <div style="font-size:1.8rem; font-weight:900; color:var(--success);">⚡ ${profile.xp || 0}</div>
+                        </div>
+                    </div>
+
+                    <div style="background:var(--bg-surface); border:1px solid var(--border-color); border-radius:16px; padding:16px 20px; font-size:0.8rem; color:var(--text-muted); line-height:1.8; text-align:center;">
+                        Completá hábitos para ganar <strong style="color:var(--primary);">+10 XP</strong> y <strong style="color:#f59e0b;">+5 🪙</strong> por hábito.
+                    </div>
+                </div>
+            `;
+        }
+
+        function handlePhotoUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                if(!state.settings.profile) state.settings.profile = { xp: 0, coins: 0 };
+                state.settings.profile.photoDataUrl = e.target.result;
+                saveData();
+                renderPerfil();
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function saveProfileName() {
+            const input = document.getElementById('profileNameInput');
+            if (!input) return;
+            if(!state.settings.profile) state.settings.profile = { xp: 0, coins: 0 };
+            state.settings.profile.name = input.value.trim();
+            saveData();
+            showToast('Nombre guardado');
+        }
+
+        // ---- TIENDA ----
+        const STORE_ITEMS = {
+            mascotas: [
+                { id: 'cat',    name: 'Gato',   emoji: '🐱', price: 0,   desc: 'Tu mascota inicial' },
+                { id: 'dog',    name: 'Perro',  emoji: '🐶', price: 100, desc: 'Fiel y cariñoso' },
+                { id: 'rabbit', name: 'Conejo', emoji: '🐰', price: 200, desc: 'Rápido y curioso' },
+                { id: 'fox',    name: 'Zorro',  emoji: '🦊', price: 400, desc: 'Astuto y elegante' },
+                { id: 'dragon', name: 'Dragón', emoji: '🐲', price: 800, desc: 'El guardián del jardín' },
+            ],
+            decoraciones: [
+                { id: 'flowers',  name: 'Flores',  emoji: '🌸', price: 50,  desc: 'Coloridas y alegres' },
+                { id: 'tree',     name: 'Árbol',   emoji: '🌲', price: 100, desc: 'Sombra para la mascota' },
+                { id: 'fountain', name: 'Fuente',  emoji: '⛲', price: 200, desc: 'El lujo del jardín' },
+            ],
+            fondos: [
+                { id: 'default',   name: 'Jardín clásico', emoji: '🌿', price: 0,   desc: 'El hogar original' },
+                { id: 'mountains', name: 'Montañas',       emoji: '🏔️', price: 150, desc: 'Vista espectacular' },
+                { id: 'beach',     name: 'Playa',          emoji: '🏖️', price: 300, desc: 'Brisa marina' },
+            ],
+        };
+
+        function renderTienda() {
+            const container = document.getElementById('customSectionBody');
+            const profile = state.settings.profile || { coins: 0 };
+            const garden = state.settings.garden || { ownedPets: ['cat'], ownedBgs: ['default'], ownedDecos: [], petId: 'cat', activeBg: 'default' };
+            const coins = profile.coins || 0;
+            const activeTab = window._storeTab || 'mascotas';
+            const items = STORE_ITEMS[activeTab];
+
+            const tabs = [
+                { id: 'mascotas',    label: '🐾 Mascotas' },
+                { id: 'decoraciones', label: '🏡 Decos' },
+                { id: 'fondos',      label: '🌅 Fondos' },
+            ];
+
+            let itemsHTML = '';
+            items.forEach(item => {
+                const isOwned = activeTab === 'mascotas'
+                    ? garden.ownedPets.includes(item.id)
+                    : activeTab === 'decoraciones'
+                    ? garden.ownedDecos.includes(item.id)
+                    : garden.ownedBgs.includes(item.id);
+
+                const isActive = activeTab === 'mascotas'
+                    ? garden.petId === item.id
+                    : activeTab === 'fondos'
+                    ? garden.activeBg === item.id
+                    : false;
+
+                let actionBtn = '';
+                if (isOwned) {
+                    if (activeTab === 'mascotas' || activeTab === 'fondos') {
+                        actionBtn = isActive
+                            ? `<div style="padding:8px 16px; border-radius:99px; background:var(--success); color:#fff; font-size:0.8rem; font-weight:700; flex-shrink:0;">✓ Activo</div>`
+                            : `<button onclick="activateStoreItem('${activeTab}','${item.id}')" style="padding:8px 16px; border-radius:99px; background:var(--bg-body); border:1px solid var(--border-color); color:var(--text-main); font-size:0.8rem; font-weight:700; cursor:pointer; flex-shrink:0;">Usar</button>`;
+                    } else {
+                        actionBtn = `<div style="padding:8px 16px; border-radius:99px; background:var(--success); color:#fff; font-size:0.8rem; font-weight:700; flex-shrink:0;">✓ En jardín</div>`;
+                    }
+                } else if (coins >= item.price) {
+                    actionBtn = `<button onclick="buyStoreItem('${activeTab}','${item.id}',${item.price})" style="padding:8px 16px; border-radius:99px; background:var(--primary); color:#fff; font-size:0.8rem; font-weight:700; cursor:pointer; flex-shrink:0; border:none;">🪙 ${item.price}</button>`;
+                } else {
+                    actionBtn = `<div style="padding:8px 16px; border-radius:99px; background:var(--bg-surface-hover); color:var(--text-muted); font-size:0.8rem; font-weight:600; flex-shrink:0;">🪙 ${item.price}</div>`;
+                }
+
+                itemsHTML += `
+                    <div style="background:var(--bg-surface); border:${isActive ? '2px solid var(--primary)' : '1px solid var(--border-color)'}; border-radius:16px; padding:16px; display:flex; align-items:center; gap:14px;">
+                        <div style="font-size:2.2rem; width:52px; height:52px; display:flex; align-items:center; justify-content:center; background:var(--bg-body); border-radius:12px; flex-shrink:0;">${item.emoji}</div>
+                        <div style="flex:1; min-width:0;">
+                            <div style="font-weight:700; font-size:0.95rem; color:var(--text-main);">${item.name}</div>
+                            <div style="font-size:0.78rem; color:var(--text-muted); margin-top:2px;">${item.desc}</div>
+                        </div>
+                        ${actionBtn}
+                    </div>
+                `;
+            });
+
+            container.innerHTML = `
+                <div style="padding:20px; max-width:480px; margin:0 auto; display:flex; flex-direction:column; gap:16px; padding-bottom:40px;">
+                    <div style="background:linear-gradient(135deg, #2d1f00, #1a1000); border:1px solid rgba(245,158,11,0.3); border-radius:16px; padding:14px 20px; display:flex; align-items:center; justify-content:space-between;">
+                        <span style="color:#f59e0b; font-weight:700;">Tu saldo</span>
+                        <span style="color:#f59e0b; font-weight:900; font-size:1.3rem;">🪙 ${coins}</span>
+                    </div>
+                    <div style="display:flex; gap:6px; background:var(--bg-surface); padding:4px; border-radius:12px; border:1px solid var(--border-color);">
+                        ${tabs.map(t => `<button onclick="window._storeTab='${t.id}'; renderTienda();" style="flex:1; padding:8px 4px; border-radius:8px; font-weight:700; font-size:0.72rem; background:${activeTab===t.id?'var(--primary)':'transparent'}; color:${activeTab===t.id?'#fff':'var(--text-muted)'}; transition:all 0.2s; border:none; cursor:pointer;">${t.label}</button>`).join('')}
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:10px;">${itemsHTML}</div>
+                </div>
+            `;
+        }
+
+        function buyStoreItem(category, itemId, price) {
+            if(!state.settings.profile) state.settings.profile = { xp: 0, coins: 0 };
+            if ((state.settings.profile.coins || 0) < price) { showToast('No tienes suficientes monedas 🪙'); return; }
+            state.settings.profile.coins -= price;
+            const garden = state.settings.garden;
+            if (category === 'mascotas') { if (!garden.ownedPets.includes(itemId)) garden.ownedPets.push(itemId); }
+            else if (category === 'fondos') { if (!garden.ownedBgs.includes(itemId)) garden.ownedBgs.push(itemId); }
+            else if (category === 'decoraciones') { if (!garden.ownedDecos.includes(itemId)) garden.ownedDecos.push(itemId); }
+            saveData();
+            showToast('¡Comprado!');
+            renderTienda();
+        }
+
+        function activateStoreItem(category, itemId) {
+            const garden = state.settings.garden;
+            if (category === 'mascotas') garden.petId = itemId;
+            else if (category === 'fondos') garden.activeBg = itemId;
+            saveData();
+            renderTienda();
+        }
+
+        // ---- JARDÍN ----
+        const GARDEN_BG = {
+            default:   { sky: 'linear-gradient(180deg,#4caf50 0%,#388e3c 100%)', extra: '' },
+            mountains: { sky: 'linear-gradient(180deg,#546e7a 0%,#78909c 100%)', extra: '' },
+            beach:     { sky: 'linear-gradient(180deg,#0288d1 0%,#26c6da 100%)', extra: '' },
+        };
+
+        const PET_EMOJIS = { cat:'🐱', dog:'🐶', rabbit:'🐰', fox:'🦊', dragon:'🐲' };
+        const DECO_EMOJIS = { flowers:'🌸', tree:'🌲', fountain:'⛲' };
+
+        function renderJardin() {
+            const container = document.getElementById('customSectionBody');
+            const garden = state.settings.garden || { petId:'cat', ownedPets:['cat'], ownedBgs:['default'], ownedDecos:[], activeBg:'default' };
+            const hour = new Date().getHours();
+
+            let skyGrad, timeLabel, sunMoon, hasClouds, hasStars;
+            if (hour >= 5 && hour < 7) {
+                skyGrad = 'linear-gradient(180deg,#ff7043 0%,#ffb74d 40%,#ffe0b2 100%)';
+                timeLabel = 'Amanecer'; sunMoon = '🌅'; hasClouds = false; hasStars = false;
+            } else if (hour >= 7 && hour < 18) {
+                skyGrad = 'linear-gradient(180deg,#1e88e5 0%,#42a5f5 60%,#90caf9 100%)';
+                timeLabel = 'Día'; sunMoon = '☀️'; hasClouds = true; hasStars = false;
+            } else if (hour >= 18 && hour < 20) {
+                skyGrad = 'linear-gradient(180deg,#b71c1c 0%,#ff7043 40%,#ffd54f 100%)';
+                timeLabel = 'Atardecer'; sunMoon = '🌇'; hasClouds = false; hasStars = false;
+            } else {
+                skyGrad = 'linear-gradient(180deg,#0d1b2a 0%,#1a237e 60%,#283593 100%)';
+                timeLabel = 'Noche'; sunMoon = '🌙'; hasClouds = false; hasStars = true;
+            }
+
+            const bgId = garden.activeBg || 'default';
+            const grassGrad = bgId === 'beach'
+                ? 'linear-gradient(180deg,#f9a825 0%,#f57f17 100%)'
+                : bgId === 'mountains'
+                ? 'linear-gradient(180deg,#78909c 0%,#546e7a 100%)'
+                : 'linear-gradient(180deg,#4caf50 0%,#2e7d32 100%)';
+
+            const petEmoji = PET_EMOJIS[garden.petId] || '🐱';
+            const petName = (STORE_ITEMS.mascotas.find(p=>p.id===garden.petId)||{name:'Mascota'}).name;
+
+            let starsHTML = '';
+            if (hasStars) {
+                const starPositions = [[8,12],[22,35],[45,8],[65,20],[80,5],[35,48],[55,30],[90,40],[15,55],[70,15]];
+                starPositions.forEach(([t,l]) => {
+                    starsHTML += `<div style="position:absolute;top:${t}%;left:${l}%;font-size:0.5rem;opacity:0.8;">⭐</div>`;
+                });
+            }
+
+            const decoHTML = (garden.ownedDecos || []).map(d => `<span style="font-size:1.8rem;">${DECO_EMOJIS[d]||''}</span>`).join('');
+
+            container.innerHTML = `
+                <div style="display:flex; flex-direction:column; height:100%; min-height:460px; overflow:hidden;">
+                    <div style="position:relative; flex:1; min-height:360px; background:${skyGrad}; overflow:hidden;">
+                        ${starsHTML}
+                        <div style="position:absolute;top:14px;right:14px;background:rgba(0,0,0,0.3);backdrop-filter:blur(8px);border-radius:20px;padding:5px 12px;color:#fff;font-size:0.78rem;font-weight:700;">${sunMoon} ${timeLabel}</div>
+                        ${hasClouds ? `<div style="position:absolute;top:18%;left:8%;font-size:2.2rem;opacity:0.75;animation:gardenFloat 7s ease-in-out infinite;">☁️</div><div style="position:absolute;top:12%;left:52%;font-size:1.8rem;opacity:0.55;animation:gardenFloat 9s ease-in-out infinite 3s;">☁️</div>` : ''}
+                        <div style="position:absolute;bottom:0;left:0;right:0;height:38%;background:${grassGrad};border-radius:60% 60% 0 0 / 28% 28% 0 0;">
+                            <div style="position:absolute;top:4px;right:16px;display:flex;gap:10px;align-items:flex-end;">${decoHTML}</div>
+                            <div style="position:absolute;bottom:16px;left:50%;transform:translateX(-50%);font-size:3.2rem;animation:petBounce 2.2s ease-in-out infinite;cursor:pointer;" onclick="showToast('¡${petEmoji} está feliz!');" title="${petName}">${petEmoji}</div>
+                        </div>
+                    </div>
+                    <div style="padding:14px 20px;background:var(--bg-surface);border-top:1px solid var(--border-color);display:flex;gap:12px;align-items:center;flex-shrink:0;">
+                        <div style="font-size:1.4rem;">${petEmoji}</div>
+                        <div>
+                            <div style="font-weight:700;font-size:0.9rem;color:var(--text-main);">${petName}</div>
+                            <div style="font-size:0.75rem;color:var(--text-muted);">Completá hábitos para ganar monedas</div>
+                        </div>
+                        <button onclick="openSection('tienda')" style="margin-left:auto;background:var(--primary);color:#fff;border-radius:12px;padding:9px 14px;font-weight:700;font-size:0.8rem;border:none;cursor:pointer;">🏪 Tienda</button>
+                    </div>
+                </div>
+                <style>
+                    @keyframes petBounce { 0%,100%{transform:translateX(-50%) translateY(0);} 50%{transform:translateX(-50%) translateY(-14px);} }
+                    @keyframes gardenFloat { 0%,100%{transform:translateX(0);} 50%{transform:translateX(18px);} }
+                </style>
+            `;
         }
 
         (function autoRecoverApril() {
