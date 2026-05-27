@@ -844,6 +844,35 @@
         </div>
     </div>
 
+    <!-- Admin Panel (sudo) -->
+    <div id="adminPanel" onclick="closeAdminPanel()" class="hidden" style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:9999;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;">
+        <div onclick="event.stopPropagation()" style="background:var(--bg-surface);border-radius:20px;padding:24px;width:min(320px,90vw);border:1.5px solid #ff0099;box-shadow:0 0 32px rgba(255,0,153,0.3);">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+                <div>
+                    <div style="font-size:1.1rem;font-weight:800;color:#ff0099;">⚡ Admin</div>
+                    <div id="adminStats" style="font-size:0.75rem;color:var(--text-muted);margin-top:2px;"></div>
+                </div>
+                <button onclick="closeAdminPanel()" style="color:var(--text-muted);font-size:1.1rem;padding:4px 8px;">✕</button>
+            </div>
+
+            <div style="font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);margin-bottom:8px;">Recursos</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;">
+                <button onclick="adminGiveCoins()" style="background:var(--bg-body);border:1px solid var(--border-color);border-radius:10px;padding:10px;font-size:0.85rem;font-weight:600;color:var(--text-main);cursor:pointer;">🪙 +9999 monedas</button>
+                <button onclick="adminGiveXP()" style="background:var(--bg-body);border:1px solid var(--border-color);border-radius:10px;padding:10px;font-size:0.85rem;font-weight:600;color:var(--text-main);cursor:pointer;">⚡ +9999 XP</button>
+            </div>
+
+            <div style="font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);margin-bottom:8px;">Jardín</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;">
+                <button onclick="adminFillGarden()" style="background:var(--bg-body);border:1px solid var(--border-color);border-radius:10px;padding:10px;font-size:0.85rem;font-weight:600;color:var(--text-main);cursor:pointer;">🌱 Llenar jardín</button>
+                <button onclick="adminMaxTrees()" style="background:var(--bg-body);border:1px solid var(--border-color);border-radius:10px;padding:10px;font-size:0.85rem;font-weight:600;color:var(--text-main);cursor:pointer;">🌳 Árboles al máx</button>
+                <button onclick="adminClearGarden()" style="background:var(--bg-body);border:1px solid var(--border-color);border-radius:10px;padding:10px;font-size:0.85rem;font-weight:600;color:var(--text-main);cursor:pointer;">🗑️ Vaciar jardín</button>
+                <button onclick="adminUnlockStore()" style="background:var(--bg-body);border:1px solid var(--border-color);border-radius:10px;padding:10px;font-size:0.85rem;font-weight:600;color:var(--text-main);cursor:pointer;">🏪 Unlock tienda</button>
+            </div>
+
+            <button onclick="adminReset()" style="width:100%;background:var(--bg-body);border:1px solid var(--danger);border-radius:10px;padding:10px;font-size:0.85rem;font-weight:600;color:var(--danger);cursor:pointer;">🔄 Reset recursos</button>
+        </div>
+    </div>
+
     <div id="customTooltip"></div>
 
     <div id="newHabitModal" onclick="window.toggleNewHabit(false)" class="hidden">
@@ -3939,6 +3968,95 @@
                 }
             }
         })();
+
+        // ---- ADMIN PANEL (sudo) ----
+        (function() {
+            let buf = '';
+            document.addEventListener('keydown', (e) => {
+                if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) return;
+                buf += e.key.toLowerCase();
+                if (buf.length > 4) buf = buf.slice(-4);
+                if (buf === 'sudo') { buf = ''; openAdminPanel(); }
+            });
+        })();
+
+        function openAdminPanel() {
+            const p = (state.settings && state.settings.profile) || {};
+            document.getElementById('adminStats').innerText =
+                `🪙 ${p.coins || 0}  ⚡ ${p.xp || 0} XP  🌿 ${(state.settings.garden && state.settings.garden.trees && state.settings.garden.trees.length) || 0}/3 árboles`;
+            document.getElementById('adminPanel').classList.remove('hidden');
+        }
+
+        function closeAdminPanel() {
+            document.getElementById('adminPanel').classList.add('hidden');
+        }
+
+        function adminGiveCoins() {
+            if (!state.settings.profile) state.settings.profile = { xp: 0, coins: 0 };
+            state.settings.profile.coins = (state.settings.profile.coins || 0) + 9999;
+            saveData();
+            document.getElementById('adminStats').innerText =
+                `🪙 ${state.settings.profile.coins}  ⚡ ${state.settings.profile.xp} XP  🌿 ${state.settings.garden.trees.length}/3 árboles`;
+            showToast('🪙 +9999 monedas');
+        }
+
+        function adminGiveXP() {
+            if (!state.settings.profile) state.settings.profile = { xp: 0, coins: 0 };
+            state.settings.profile.xp = (state.settings.profile.xp || 0) + 9999;
+            saveData();
+            document.getElementById('adminStats').innerText =
+                `🪙 ${state.settings.profile.coins}  ⚡ ${state.settings.profile.xp} XP  🌿 ${state.settings.garden.trees.length}/3 árboles`;
+            showToast('⚡ +9999 XP');
+        }
+
+        function adminFillGarden() {
+            if (!state.settings.garden) state.settings.garden = { trees: [], ownedBgs: ['default'], ownedDecos: [], activeBg: 'default' };
+            state.settings.garden.trees = [
+                { type: 'roble', growth: 0 },
+                { type: 'cerezo', growth: 0 },
+                { type: 'bambu', growth: 0 },
+            ];
+            saveData();
+            document.getElementById('adminStats').innerText =
+                `🪙 ${state.settings.profile.coins}  ⚡ ${state.settings.profile.xp} XP  🌿 ${state.settings.garden.trees.length}/3 árboles`;
+            showToast('🌱 Jardín llenado con 3 semillas');
+        }
+
+        function adminMaxTrees() {
+            if (!state.settings.garden || !state.settings.garden.trees || !state.settings.garden.trees.length) {
+                showToast('No hay árboles en el jardín');
+                return;
+            }
+            state.settings.garden.trees.forEach(t => { t.growth = 100; });
+            saveData();
+            showToast('🌳 Árboles al máximo');
+        }
+
+        function adminClearGarden() {
+            if (!state.settings.garden) return;
+            state.settings.garden.trees = [];
+            saveData();
+            document.getElementById('adminStats').innerText =
+                `🪙 ${state.settings.profile.coins}  ⚡ ${state.settings.profile.xp} XP  🌿 0/3 árboles`;
+            showToast('🗑️ Jardín vaciado');
+        }
+
+        function adminUnlockStore() {
+            if (!state.settings.garden) state.settings.garden = { trees: [], ownedBgs: ['default'], ownedDecos: [], activeBg: 'default' };
+            state.settings.garden.ownedBgs = ['default', 'mountains', 'beach'];
+            state.settings.garden.ownedDecos = ['flowers', 'rock', 'fountain'];
+            saveData();
+            showToast('🏪 Tienda desbloqueada');
+        }
+
+        function adminReset() {
+            const cur = state.settings.profile || {};
+            state.settings.profile = { name: cur.name || '', photoDataUrl: cur.photoDataUrl || '', xp: 0, coins: 0 };
+            state.settings.garden = { trees: [], ownedBgs: ['default'], ownedDecos: [], activeBg: 'default' };
+            saveData();
+            closeAdminPanel();
+            showToast('🔄 Recursos reseteados');
+        }
     </script>
 </body>
 </html>
