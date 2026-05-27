@@ -771,9 +771,8 @@
     <div id="menuContent">
         <div style="padding:16px 16px 12px 16px; display:flex; align-items:center; justify-content:space-between; gap:12px; border-bottom:0.5px solid var(--border-color);">
             <div id="menuUserProfile" style="display:flex; align-items:center; gap:12px; cursor:pointer; flex:1; min-width:0;" onclick="openSection('perfil'); window.toggleMenu(false);">
-                <div id="menuUserAvatar" style="width:46px; height:46px; border-radius:50%; background:var(--primary); display:flex; align-items:center; justify-content:center; flex-shrink:0; overflow:hidden; position:relative;">
+                <div id="menuUserAvatar" style="width:46px; height:46px; border-radius:50%; background:var(--primary); display:flex; align-items:center; justify-content:center; flex-shrink:0; overflow:hidden; background-size:cover; background-position:center;">
                     <span id="menuUserInitial" style="color:#fff; font-size:1.3rem; font-weight:700; line-height:1; pointer-events:none;">U</span>
-                    <img id="menuUserPhoto" src="" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; border-radius:50%; display:none;">
                 </div>
                 <div style="overflow:hidden; min-width:0;">
                     <div id="menuUserName" style="font-weight:700; font-size:0.95rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Usuario</div>
@@ -3589,16 +3588,16 @@
         }
 
         function refreshMenuAvatar(name, photo) {
-            const photoEl = document.getElementById('menuUserPhoto');
+            const avatarEl = document.getElementById('menuUserAvatar');
             const initialEl = document.getElementById('menuUserInitial');
-            if (!photoEl || !initialEl) return;
+            if (!avatarEl || !initialEl) return;
             initialEl.innerText = (name || 'U').charAt(0).toUpperCase();
             if (photo) {
-                photoEl.src = photo;
-                photoEl.style.display = 'block';
+                avatarEl.style.backgroundImage = `url("${photo.replace(/"/g, '\\"')}")`;
+                initialEl.style.display = 'none';
             } else {
-                photoEl.src = '';
-                photoEl.style.display = 'none';
+                avatarEl.style.backgroundImage = '';
+                initialEl.style.display = '';
             }
         }
 
