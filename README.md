@@ -33,5 +33,5 @@ Un sistema simple para registrar hábitos diarios y ver tu progreso.
 
 ------------------------------------------------------
 LINK:
-https://aarstj.github.io/habitracker.github.io/
+https://evolucionaar.github.io/habitracker.github.io/
 ------------------------------------------------------
