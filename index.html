@@ -950,7 +950,7 @@
         let state = { 
             habits: [], 
             categories: JSON.parse(JSON.stringify(DEFAULT_CATEGORIES)), 
-            settings: { theme: 'light', collapsedCats: {}, collapsedSubCats: {}, dailyNote: "", boxStyle: 'minimal', dividerColor: null, accentColor: null, profile: { name: '', photoDataUrl: '', xp: 0, coins: 0 }, garden: { petId: 'cat', ownedPets: ['cat'], ownedBgs: ['default'], ownedDecos: [], activeBg: 'default' } },
+            settings: { theme: 'light', collapsedCats: {}, collapsedSubCats: {}, dailyNote: "", boxStyle: 'minimal', dividerColor: null, accentColor: null, profile: { name: '', photoDataUrl: '', xp: 0, coins: 0 }, garden: { trees: [], ownedBgs: ['default'], ownedDecos: [], activeBg: 'default' } },
             viewDate: new Date(),
             pagosServices: [],
             pagosMonthly: {},
@@ -1322,8 +1322,8 @@
                     if(!state.settings.profile) state.settings.profile = { name: '', photoDataUrl: '', xp: 0, coins: 0 };
                     if(state.settings.profile.coins === undefined) state.settings.profile.coins = 0;
                     if(state.settings.profile.xp === undefined) state.settings.profile.xp = 0;
-                    if(!state.settings.garden) state.settings.garden = { petId: 'cat', ownedPets: ['cat'], ownedBgs: ['default'], ownedDecos: [], activeBg: 'default' };
-                    if(!state.settings.garden.ownedPets) state.settings.garden.ownedPets = ['cat'];
+                    if(!state.settings.garden) state.settings.garden = { trees: [], ownedBgs: ['default'], ownedDecos: [], activeBg: 'default' };
+                    if(!state.settings.garden.trees) state.settings.garden.trees = [];
                     if(!state.settings.garden.ownedBgs) state.settings.garden.ownedBgs = ['default'];
                     if(!state.settings.garden.ownedDecos) state.settings.garden.ownedDecos = [];
                     if(!state.settings.garden.activeBg) state.settings.garden.activeBg = 'default';
@@ -1697,7 +1697,7 @@
             } else {
                 const curr = h.history[iso]; const nextState = getNext(curr);
                 if(nextState) h.history[iso] = nextState; else delete h.history[iso];
-                if(nextState === 'done') { playSound(); triggerConfetti(); awardXP(10); awardCoins(5); }
+                if(nextState === 'done') { playSound(); triggerConfetti(); awardXP(10); awardCoins(5); growTrees(); }
                 selectionAnchor = { id: id, date: iso, activeState: nextState, lastTarget: iso, snapshot: { ...h.history } };
             }
             saveData(); renderCalendar();
@@ -2493,7 +2493,7 @@
                 renderPerfil();
             } else if (type === 'tienda') {
                 title.innerText = 'Tienda';
-                window._storeTab = window._storeTab || 'mascotas';
+                window._storeTab = window._storeTab || 'semillas';
                 renderTienda();
             } else if (type === 'jardin') {
                 title.innerText = 'Jardín';
@@ -3637,17 +3637,61 @@
         }
 
         // ---- TIENDA ----
+        const TREE_TYPES = {
+            roble:  { name: 'Roble',  stages: ['🌱','🌿','🌳','🌳','🌳'] },
+            pino:   { name: 'Pino',   stages: ['🌱','🌿','🌲','🌲','🌲'] },
+            cerezo: { name: 'Cerezo', stages: ['🌱','🌿','🌸','🌸','🌸'] },
+            cactus: { name: 'Cactus', stages: ['🌱','🪴','🌵','🌵','🌵'] },
+            bambu:  { name: 'Bambú',  stages: ['🌱','🌿','🎋','🎋','🎋'] },
+        };
+        const TREE_THRESHOLDS = [0, 10, 30, 60, 100];
+        const TREE_SIZES      = ['1.4rem','2rem','2.8rem','3.5rem','4.5rem'];
+        const STAGE_NAMES     = ['Semilla','Brote','Joven','Adulto','Grande'];
+
+        function getTreeStageIndex(growth) {
+            let s = 0;
+            for (let i = 1; i < TREE_THRESHOLDS.length; i++) {
+                if ((growth||0) >= TREE_THRESHOLDS[i]) s = i;
+            }
+            return s;
+        }
+
+        function growTrees() {
+            if (!state.settings.garden || !state.settings.garden.trees) return;
+            state.settings.garden.trees.forEach(t => { t.growth = (t.growth || 0) + 1; });
+            saveData();
+        }
+
+        function plantSeed(type, price) {
+            if (!state.settings.profile) state.settings.profile = { xp: 0, coins: 0 };
+            if ((state.settings.profile.coins || 0) < price) { showToast('No tenés suficientes monedas 🪙'); return; }
+            if (!state.settings.garden.trees) state.settings.garden.trees = [];
+            if (state.settings.garden.trees.length >= 3) { showToast('El jardín está lleno — máx. 3 árboles'); return; }
+            state.settings.profile.coins -= price;
+            state.settings.garden.trees.push({ type, growth: 0 });
+            saveData();
+            showToast('¡Semilla plantada! 🌱');
+            renderTienda();
+        }
+
+        function removeTree(idx) {
+            if (!state.settings.garden || !state.settings.garden.trees) return;
+            state.settings.garden.trees.splice(idx, 1);
+            saveData();
+            renderJardin();
+        }
+
         const STORE_ITEMS = {
-            mascotas: [
-                { id: 'cat',    name: 'Gato',   emoji: '🐱', price: 0,   desc: 'Tu mascota inicial' },
-                { id: 'dog',    name: 'Perro',  emoji: '🐶', price: 100, desc: 'Fiel y cariñoso' },
-                { id: 'rabbit', name: 'Conejo', emoji: '🐰', price: 200, desc: 'Rápido y curioso' },
-                { id: 'fox',    name: 'Zorro',  emoji: '🦊', price: 400, desc: 'Astuto y elegante' },
-                { id: 'dragon', name: 'Dragón', emoji: '🐲', price: 800, desc: 'El guardián del jardín' },
+            semillas: [
+                { id: 'roble',  name: 'Roble',  emoji: '🌰', price: 50,  desc: 'Fuerte y duradero — crece hasta 🌳' },
+                { id: 'pino',   name: 'Pino',   emoji: '🌲', price: 80,  desc: 'Siempre verde, siempre firme' },
+                { id: 'cerezo', name: 'Cerezo', emoji: '🌸', price: 120, desc: 'Florece con dedicación' },
+                { id: 'cactus', name: 'Cactus', emoji: '🌵', price: 60,  desc: 'Resiste todo' },
+                { id: 'bambu',  name: 'Bambú',  emoji: '🎋', price: 100, desc: 'Crece rápido y alto' },
             ],
             decoraciones: [
                 { id: 'flowers',  name: 'Flores',  emoji: '🌸', price: 50,  desc: 'Coloridas y alegres' },
-                { id: 'tree',     name: 'Árbol',   emoji: '🌲', price: 100, desc: 'Sombra para la mascota' },
+                { id: 'rock',     name: 'Piedra',  emoji: '🪨', price: 80,  desc: 'Detalle natural' },
                 { id: 'fountain', name: 'Fuente',  emoji: '⛲', price: 200, desc: 'El lujo del jardín' },
             ],
             fondos: [
@@ -3660,79 +3704,83 @@
         function renderTienda() {
             const container = document.getElementById('customSectionBody');
             const profile = state.settings.profile || { coins: 0 };
-            const garden = state.settings.garden || { ownedPets: ['cat'], ownedBgs: ['default'], ownedDecos: [], petId: 'cat', activeBg: 'default' };
+            const garden = state.settings.garden || { trees: [], ownedBgs: ['default'], ownedDecos: [], activeBg: 'default' };
             const coins = profile.coins || 0;
-            const activeTab = window._storeTab || 'mascotas';
-            const items = STORE_ITEMS[activeTab];
+            const activeTab = window._storeTab || 'semillas';
+            const items = STORE_ITEMS[activeTab] || [];
+            const treeCount = (garden.trees || []).length;
 
             const tabs = [
-                { id: 'mascotas',    label: '🐾 Mascotas' },
+                { id: 'semillas',     label: '🌱 Semillas' },
                 { id: 'decoraciones', label: '🏡 Decos' },
-                { id: 'fondos',      label: '🌅 Fondos' },
+                { id: 'fondos',       label: '🌅 Fondos' },
             ];
+
+            let slotHTML = '';
+            if (activeTab === 'semillas') {
+                const slots = [0,1,2].map(i =>
+                    '<div style="width:26px;height:26px;border-radius:50%;border:2px solid ' +
+                    (i < treeCount ? 'var(--success)' : 'var(--border-color)') +
+                    ';background:' + (i < treeCount ? 'rgba(52,199,89,0.15)' : 'var(--bg-body)') +
+                    ';display:flex;align-items:center;justify-content:center;font-size:0.8rem;">' +
+                    (i < treeCount ? '🌱' : '') + '</div>'
+                ).join('');
+                slotHTML = '<div style="background:var(--bg-surface);border:1px solid var(--border-color);border-radius:12px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;">' +
+                    '<span style="font-size:0.8rem;color:var(--text-muted);font-weight:600;">Espacios del jardín (' + treeCount + '/3)</span>' +
+                    '<div style="display:flex;gap:6px;">' + slots + '</div></div>';
+            }
 
             let itemsHTML = '';
             items.forEach(item => {
-                const isOwned = activeTab === 'mascotas'
-                    ? garden.ownedPets.includes(item.id)
-                    : activeTab === 'decoraciones'
-                    ? garden.ownedDecos.includes(item.id)
-                    : garden.ownedBgs.includes(item.id);
-
-                const isActive = activeTab === 'mascotas'
-                    ? garden.petId === item.id
-                    : activeTab === 'fondos'
-                    ? garden.activeBg === item.id
-                    : false;
-
                 let actionBtn = '';
-                if (isOwned) {
-                    if (activeTab === 'mascotas' || activeTab === 'fondos') {
-                        actionBtn = isActive
-                            ? `<div style="padding:8px 16px; border-radius:99px; background:var(--success); color:#fff; font-size:0.8rem; font-weight:700; flex-shrink:0;">✓ Activo</div>`
-                            : `<button onclick="activateStoreItem('${activeTab}','${item.id}')" style="padding:8px 16px; border-radius:99px; background:var(--bg-body); border:1px solid var(--border-color); color:var(--text-main); font-size:0.8rem; font-weight:700; cursor:pointer; flex-shrink:0;">Usar</button>`;
+                if (activeTab === 'semillas') {
+                    if (treeCount >= 3) {
+                        actionBtn = '<div style="padding:7px 12px;border-radius:99px;background:var(--bg-surface-hover);color:var(--text-muted);font-size:0.76rem;font-weight:600;flex-shrink:0;">Jardín lleno</div>';
+                    } else if (coins >= item.price) {
+                        actionBtn = '<button onclick="plantSeed(\'' + item.id + '\',' + item.price + ')" style="padding:7px 12px;border-radius:99px;background:var(--primary);color:#fff;font-size:0.76rem;font-weight:700;cursor:pointer;flex-shrink:0;border:none;">🌱 Plantar</button>';
                     } else {
-                        actionBtn = `<div style="padding:8px 16px; border-radius:99px; background:var(--success); color:#fff; font-size:0.8rem; font-weight:700; flex-shrink:0;">✓ En jardín</div>`;
+                        actionBtn = '<div style="padding:7px 12px;border-radius:99px;background:var(--bg-surface-hover);color:var(--text-muted);font-size:0.76rem;font-weight:600;flex-shrink:0;">🪙 ' + item.price + '</div>';
                     }
-                } else if (coins >= item.price) {
-                    actionBtn = `<button onclick="buyStoreItem('${activeTab}','${item.id}',${item.price})" style="padding:8px 16px; border-radius:99px; background:var(--primary); color:#fff; font-size:0.8rem; font-weight:700; cursor:pointer; flex-shrink:0; border:none;">🪙 ${item.price}</button>`;
                 } else {
-                    actionBtn = `<div style="padding:8px 16px; border-radius:99px; background:var(--bg-surface-hover); color:var(--text-muted); font-size:0.8rem; font-weight:600; flex-shrink:0;">🪙 ${item.price}</div>`;
+                    const isOwned = activeTab === 'decoraciones' ? garden.ownedDecos.includes(item.id) : garden.ownedBgs.includes(item.id);
+                    const isActive = activeTab === 'fondos' && garden.activeBg === item.id;
+                    if (isOwned) {
+                        if (activeTab === 'fondos') {
+                            actionBtn = isActive
+                                ? '<div style="padding:7px 12px;border-radius:99px;background:var(--success);color:#fff;font-size:0.76rem;font-weight:700;flex-shrink:0;">✓ Activo</div>'
+                                : '<button onclick="activateStoreItem(\'fondos\',\'' + item.id + '\')" style="padding:7px 12px;border-radius:99px;background:var(--bg-body);border:1px solid var(--border-color);color:var(--text-main);font-size:0.76rem;font-weight:700;cursor:pointer;flex-shrink:0;">Usar</button>';
+                        } else {
+                            actionBtn = '<div style="padding:7px 12px;border-radius:99px;background:var(--success);color:#fff;font-size:0.76rem;font-weight:700;flex-shrink:0;">✓ Activo</div>';
+                        }
+                    } else if (coins >= item.price) {
+                        actionBtn = '<button onclick="buyStoreItem(\'' + activeTab + '\',\'' + item.id + '\',' + item.price + ')" style="padding:7px 12px;border-radius:99px;background:var(--primary);color:#fff;font-size:0.76rem;font-weight:700;cursor:pointer;flex-shrink:0;border:none;">🪙 ' + item.price + '</button>';
+                    } else {
+                        actionBtn = '<div style="padding:7px 12px;border-radius:99px;background:var(--bg-surface-hover);color:var(--text-muted);font-size:0.76rem;font-weight:600;flex-shrink:0;">🪙 ' + item.price + '</div>';
+                    }
                 }
-
-                itemsHTML += `
-                    <div style="background:var(--bg-surface); border:${isActive ? '2px solid var(--primary)' : '1px solid var(--border-color)'}; border-radius:16px; padding:16px; display:flex; align-items:center; gap:14px;">
-                        <div style="font-size:2.2rem; width:52px; height:52px; display:flex; align-items:center; justify-content:center; background:var(--bg-body); border-radius:12px; flex-shrink:0;">${item.emoji}</div>
-                        <div style="flex:1; min-width:0;">
-                            <div style="font-weight:700; font-size:0.95rem; color:var(--text-main);">${item.name}</div>
-                            <div style="font-size:0.78rem; color:var(--text-muted); margin-top:2px;">${item.desc}</div>
-                        </div>
-                        ${actionBtn}
-                    </div>
-                `;
+                itemsHTML += '<div style="background:var(--bg-surface);border:1px solid var(--border-color);border-radius:14px;padding:14px;display:flex;align-items:center;gap:12px;">' +
+                    '<div style="font-size:2rem;width:46px;height:46px;display:flex;align-items:center;justify-content:center;background:var(--bg-body);border-radius:10px;flex-shrink:0;">' + item.emoji + '</div>' +
+                    '<div style="flex:1;min-width:0;"><div style="font-weight:700;font-size:0.9rem;color:var(--text-main);">' + item.name + '</div><div style="font-size:0.75rem;color:var(--text-muted);margin-top:2px;">' + item.desc + '</div></div>' +
+                    actionBtn + '</div>';
             });
 
-            container.innerHTML = `
-                <div style="padding:20px; max-width:480px; margin:0 auto; display:flex; flex-direction:column; gap:16px; padding-bottom:40px;">
-                    <div style="background:linear-gradient(135deg, #2d1f00, #1a1000); border:1px solid rgba(245,158,11,0.3); border-radius:16px; padding:14px 20px; display:flex; align-items:center; justify-content:space-between;">
-                        <span style="color:#f59e0b; font-weight:700;">Tu saldo</span>
-                        <span style="color:#f59e0b; font-weight:900; font-size:1.3rem;">🪙 ${coins}</span>
-                    </div>
-                    <div style="display:flex; gap:6px; background:var(--bg-surface); padding:4px; border-radius:12px; border:1px solid var(--border-color);">
-                        ${tabs.map(t => `<button onclick="window._storeTab='${t.id}'; renderTienda();" style="flex:1; padding:8px 4px; border-radius:8px; font-weight:700; font-size:0.72rem; background:${activeTab===t.id?'var(--primary)':'transparent'}; color:${activeTab===t.id?'#fff':'var(--text-muted)'}; transition:all 0.2s; border:none; cursor:pointer;">${t.label}</button>`).join('')}
-                    </div>
-                    <div style="display:flex; flex-direction:column; gap:10px;">${itemsHTML}</div>
-                </div>
-            `;
+            container.innerHTML =
+                '<div style="padding:18px;max-width:480px;margin:0 auto;display:flex;flex-direction:column;gap:12px;padding-bottom:40px;">' +
+                '<div style="background:linear-gradient(135deg,#2d1f00,#1a1000);border:1px solid rgba(245,158,11,0.3);border-radius:14px;padding:12px 18px;display:flex;align-items:center;justify-content:space-between;">' +
+                '<span style="color:#f59e0b;font-weight:700;">Tu saldo</span>' +
+                '<span style="color:#f59e0b;font-weight:900;font-size:1.3rem;">🪙 ' + coins + '</span></div>' +
+                '<div style="display:flex;gap:5px;background:var(--bg-surface);padding:4px;border-radius:12px;border:1px solid var(--border-color);">' +
+                tabs.map(t => '<button onclick="window._storeTab=\'' + t.id + '\'; renderTienda();" style="flex:1;padding:8px 4px;border-radius:8px;font-weight:700;font-size:0.72rem;background:' + (activeTab===t.id?'var(--primary)':'transparent') + ';color:' + (activeTab===t.id?'#fff':'var(--text-muted)') + ';border:none;cursor:pointer;">' + t.label + '</button>').join('') +
+                '</div>' + slotHTML +
+                '<div style="display:flex;flex-direction:column;gap:9px;">' + itemsHTML + '</div></div>';
         }
 
         function buyStoreItem(category, itemId, price) {
             if(!state.settings.profile) state.settings.profile = { xp: 0, coins: 0 };
-            if ((state.settings.profile.coins || 0) < price) { showToast('No tienes suficientes monedas 🪙'); return; }
+            if ((state.settings.profile.coins || 0) < price) { showToast('No tenés suficientes monedas 🪙'); return; }
             state.settings.profile.coins -= price;
             const garden = state.settings.garden;
-            if (category === 'mascotas') { if (!garden.ownedPets.includes(itemId)) garden.ownedPets.push(itemId); }
-            else if (category === 'fondos') { if (!garden.ownedBgs.includes(itemId)) garden.ownedBgs.push(itemId); }
+            if (category === 'fondos') { if (!garden.ownedBgs.includes(itemId)) garden.ownedBgs.push(itemId); }
             else if (category === 'decoraciones') { if (!garden.ownedDecos.includes(itemId)) garden.ownedDecos.push(itemId); }
             saveData();
             showToast('¡Comprado!');
@@ -3740,27 +3788,19 @@
         }
 
         function activateStoreItem(category, itemId) {
-            const garden = state.settings.garden;
-            if (category === 'mascotas') garden.petId = itemId;
-            else if (category === 'fondos') garden.activeBg = itemId;
+            if (category === 'fondos') state.settings.garden.activeBg = itemId;
             saveData();
             renderTienda();
         }
 
         // ---- JARDÍN ----
-        const GARDEN_BG = {
-            default:   { sky: 'linear-gradient(180deg,#4caf50 0%,#388e3c 100%)', extra: '' },
-            mountains: { sky: 'linear-gradient(180deg,#546e7a 0%,#78909c 100%)', extra: '' },
-            beach:     { sky: 'linear-gradient(180deg,#0288d1 0%,#26c6da 100%)', extra: '' },
-        };
-
-        const PET_EMOJIS = { cat:'🐱', dog:'🐶', rabbit:'🐰', fox:'🦊', dragon:'🐲' };
-        const DECO_EMOJIS = { flowers:'🌸', tree:'🌲', fountain:'⛲' };
+        const DECO_EMOJIS = { flowers:'🌸', rock:'🪨', fountain:'⛲' };
 
         function renderJardin() {
             const container = document.getElementById('customSectionBody');
-            const garden = state.settings.garden || { petId:'cat', ownedPets:['cat'], ownedBgs:['default'], ownedDecos:[], activeBg:'default' };
+            const garden = state.settings.garden || { trees:[], ownedBgs:['default'], ownedDecos:[], activeBg:'default' };
             const hour = new Date().getHours();
+            const trees = garden.trees || [];
 
             let skyGrad, timeLabel, sunMoon, hasClouds, hasStars;
             if (hour >= 5 && hour < 7) {
@@ -3784,44 +3824,79 @@
                 ? 'linear-gradient(180deg,#78909c 0%,#546e7a 100%)'
                 : 'linear-gradient(180deg,#4caf50 0%,#2e7d32 100%)';
 
-            const petEmoji = PET_EMOJIS[garden.petId] || '🐱';
-            const petName = (STORE_ITEMS.mascotas.find(p=>p.id===garden.petId)||{name:'Mascota'}).name;
-
             let starsHTML = '';
             if (hasStars) {
-                const starPositions = [[8,12],[22,35],[45,8],[65,20],[80,5],[35,48],[55,30],[90,40],[15,55],[70,15]];
-                starPositions.forEach(([t,l]) => {
-                    starsHTML += `<div style="position:absolute;top:${t}%;left:${l}%;font-size:0.5rem;opacity:0.8;">⭐</div>`;
+                [[8,12],[22,35],[45,8],[65,20],[80,5],[35,48],[55,30],[90,40],[15,55],[70,15]].forEach(function(pos) {
+                    starsHTML += '<div style="position:absolute;top:' + pos[0] + '%;left:' + pos[1] + '%;font-size:0.5rem;opacity:0.8;">⭐</div>';
                 });
             }
 
-            const decoHTML = (garden.ownedDecos || []).map(d => `<span style="font-size:1.8rem;">${DECO_EMOJIS[d]||''}</span>`).join('');
+            const decoHTML = (garden.ownedDecos || []).map(function(d) { return '<span style="font-size:1.5rem;">' + (DECO_EMOJIS[d]||'') + '</span>'; }).join('');
 
-            container.innerHTML = `
-                <div style="display:flex; flex-direction:column; height:100%; min-height:460px; overflow:hidden;">
-                    <div style="position:relative; flex:1; min-height:360px; background:${skyGrad}; overflow:hidden;">
-                        ${starsHTML}
-                        <div style="position:absolute;top:14px;right:14px;background:rgba(0,0,0,0.3);backdrop-filter:blur(8px);border-radius:20px;padding:5px 12px;color:#fff;font-size:0.78rem;font-weight:700;">${sunMoon} ${timeLabel}</div>
-                        ${hasClouds ? `<div style="position:absolute;top:18%;left:8%;font-size:2.2rem;opacity:0.75;animation:gardenFloat 7s ease-in-out infinite;">☁️</div><div style="position:absolute;top:12%;left:52%;font-size:1.8rem;opacity:0.55;animation:gardenFloat 9s ease-in-out infinite 3s;">☁️</div>` : ''}
-                        <div style="position:absolute;bottom:0;left:0;right:0;height:38%;background:${grassGrad};border-radius:60% 60% 0 0 / 28% 28% 0 0;">
-                            <div style="position:absolute;top:4px;right:16px;display:flex;gap:10px;align-items:flex-end;">${decoHTML}</div>
-                            <div style="position:absolute;bottom:16px;left:50%;transform:translateX(-50%);font-size:3.2rem;animation:petBounce 2.2s ease-in-out infinite;cursor:pointer;" onclick="showToast('¡${petEmoji} está feliz!');" title="${petName}">${petEmoji}</div>
-                        </div>
-                    </div>
-                    <div style="padding:14px 20px;background:var(--bg-surface);border-top:1px solid var(--border-color);display:flex;gap:12px;align-items:center;flex-shrink:0;">
-                        <div style="font-size:1.4rem;">${petEmoji}</div>
-                        <div>
-                            <div style="font-weight:700;font-size:0.9rem;color:var(--text-main);">${petName}</div>
-                            <div style="font-size:0.75rem;color:var(--text-muted);">Completá hábitos para ganar monedas</div>
-                        </div>
-                        <button onclick="openSection('tienda')" style="margin-left:auto;background:var(--primary);color:#fff;border-radius:12px;padding:9px 14px;font-weight:700;font-size:0.8rem;border:none;cursor:pointer;">🏪 Tienda</button>
-                    </div>
-                </div>
-                <style>
-                    @keyframes petBounce { 0%,100%{transform:translateX(-50%) translateY(0);} 50%{transform:translateX(-50%) translateY(-14px);} }
-                    @keyframes gardenFloat { 0%,100%{transform:translateX(0);} 50%{transform:translateX(18px);} }
-                </style>
-            `;
+            const positions = trees.length === 1 ? [50] : trees.length === 2 ? [28,72] : [18,50,82];
+            let treesOnGrassHTML = '';
+            trees.forEach(function(tree, idx) {
+                const si = getTreeStageIndex(tree.growth || 0);
+                const tt = TREE_TYPES[tree.type] || TREE_TYPES['roble'];
+                const emoji = tt.stages[si];
+                const sz = TREE_SIZES[si];
+                const nt = TREE_THRESHOLDS[si+1] || null;
+                const ct = TREE_THRESHOLDS[si];
+                const pct = nt ? Math.round(((tree.growth-ct)/(nt-ct))*100) : 100;
+                const posL = positions[idx];
+                treesOnGrassHTML +=
+                    '<div style="position:absolute;bottom:24px;left:' + posL + '%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:3px;">' +
+                    '<div style="font-size:' + sz + ';line-height:1;transition:font-size 0.5s;">' + emoji + '</div>' +
+                    '<div style="background:rgba(0,0,0,0.45);border-radius:6px;padding:2px 5px;font-size:0.55rem;font-weight:700;color:#fff;white-space:nowrap;">' + STAGE_NAMES[si] + '</div>' +
+                    '<div style="width:36px;height:3px;background:rgba(255,255,255,0.2);border-radius:99px;overflow:hidden;"><div style="height:100%;width:' + pct + '%;background:#4caf50;border-radius:99px;"></div></div>' +
+                    '</div>';
+            });
+
+            const emptyMsg = trees.length === 0
+                ? '<div style="position:absolute;top:30%;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.45);backdrop-filter:blur(8px);border-radius:12px;padding:10px 16px;color:rgba(255,255,255,0.9);font-size:0.8rem;font-weight:600;white-space:nowrap;">Jardín vacío — comprá semillas 🌱</div>'
+                : '';
+
+            let treeListHTML = '';
+            if (trees.length > 0) {
+                treeListHTML = '<div style="padding:0 14px 14px;background:var(--bg-surface);display:flex;flex-direction:column;gap:7px;">';
+                trees.forEach(function(tree, idx) {
+                    const si = getTreeStageIndex(tree.growth||0);
+                    const tt = TREE_TYPES[tree.type]||TREE_TYPES['roble'];
+                    const nt = TREE_THRESHOLDS[si+1]||null;
+                    const ct = TREE_THRESHOLDS[si];
+                    const pct2 = nt ? Math.round(((tree.growth-ct)/(nt-ct))*100) : 100;
+                    const nextInfo = nt ? ((nt-(tree.growth||0)) + ' hábitos para ' + STAGE_NAMES[si+1]) : '¡Árbol en máxima etapa!';
+                    treeListHTML +=
+                        '<div style="display:flex;align-items:center;gap:10px;background:var(--bg-body);border-radius:10px;padding:9px 11px;">' +
+                        '<span style="font-size:' + TREE_SIZES[si] + ';line-height:1;flex-shrink:0;">' + tt.stages[si] + '</span>' +
+                        '<div style="flex:1;min-width:0;">' +
+                        '<div style="display:flex;justify-content:space-between;margin-bottom:4px;">' +
+                        '<span style="font-weight:700;font-size:0.8rem;color:var(--text-main);">' + tt.name + ' — ' + STAGE_NAMES[si] + '</span>' +
+                        '<span style="font-size:0.7rem;color:var(--text-muted);">' + nextInfo + '</span></div>' +
+                        '<div style="background:var(--bg-surface);border-radius:99px;height:5px;overflow:hidden;">' +
+                        '<div style="height:100%;width:' + pct2 + '%;background:var(--success);border-radius:99px;transition:width 0.4s;"></div></div></div>' +
+                        '<button onclick="removeTree(' + idx + ')" style="color:var(--text-muted);font-size:0.9rem;padding:4px;border:none;background:none;cursor:pointer;flex-shrink:0;" title="Talar árbol">✂️</button></div>';
+                });
+                treeListHTML += '</div>';
+            }
+
+            container.innerHTML =
+                '<div style="display:flex;flex-direction:column;height:100%;min-height:460px;overflow:hidden;">' +
+                '<div style="position:relative;flex:1;min-height:320px;background:' + skyGrad + ';overflow:hidden;">' +
+                starsHTML +
+                '<div style="position:absolute;top:12px;right:12px;background:rgba(0,0,0,0.3);backdrop-filter:blur(8px);border-radius:20px;padding:5px 11px;color:#fff;font-size:0.76rem;font-weight:700;">' + sunMoon + ' ' + timeLabel + '</div>' +
+                (hasClouds ? '<div style="position:absolute;top:16%;left:7%;font-size:2rem;opacity:0.7;animation:gardenFloat 7s ease-in-out infinite;">☁️</div><div style="position:absolute;top:11%;left:50%;font-size:1.6rem;opacity:0.5;animation:gardenFloat 9s ease-in-out infinite 3s;">☁️</div>' : '') +
+                emptyMsg +
+                '<div style="position:absolute;bottom:0;left:0;right:0;height:42%;background:' + grassGrad + ';border-radius:60% 60% 0 0 / 28% 28% 0 0;">' +
+                '<div style="position:absolute;top:4px;right:12px;display:flex;gap:6px;align-items:flex-end;">' + decoHTML + '</div>' +
+                treesOnGrassHTML + '</div></div>' +
+                '<div style="padding:12px 18px;background:var(--bg-surface);border-top:1px solid var(--border-color);display:flex;gap:12px;align-items:center;flex-shrink:0;">' +
+                '<div style="font-size:1.2rem;">🌱</div>' +
+                '<div><div style="font-weight:700;font-size:0.88rem;color:var(--text-main);">Tu jardín (' + trees.length + '/3 árboles)</div>' +
+                '<div style="font-size:0.73rem;color:var(--text-muted);">Los árboles crecen con cada hábito completado</div></div>' +
+                '<button onclick="openSection(\'tienda\')" style="margin-left:auto;background:var(--primary);color:#fff;border-radius:11px;padding:8px 13px;font-weight:700;font-size:0.78rem;border:none;cursor:pointer;">🏪 Tienda</button></div>' +
+                treeListHTML + '</div>' +
+                '<style>@keyframes gardenFloat{0%,100%{transform:translateX(0);}50%{transform:translateX(16px);}}</style>';
         }
 
         (function autoRecoverApril() {
