@@ -1365,8 +1365,17 @@
             applyTheme(); renderCalendar(); renderQuote();
             window.addEventListener('resize', syncHeaderWidth);
             document.getElementById('btnConfirmAction').onclick = () => { if(confirmCallback) confirmCallback(); closeConfirm(); };
-            
-            pagosViewDate.setDate(1); 
+
+            pagosViewDate.setDate(1);
+
+            // Sync menu avatar with current profile state
+            if (state.settings && state.settings.profile) {
+                const p = state.settings.profile;
+                const name = p.name || (currentUser && currentUser.displayName) || 'Usuario';
+                const photo = p.photoDataUrl || (currentUser && currentUser.photoURL) || '';
+                refreshMenuAvatar(name, photo);
+                if (name !== 'Usuario') document.getElementById('menuUserName').innerText = name;
+            }
         }
 
         let syncTimeout = null;
@@ -3593,10 +3602,10 @@
             if (!avatarEl || !initialEl) return;
             initialEl.innerText = (name || 'U').charAt(0).toUpperCase();
             if (photo) {
-                avatarEl.style.backgroundImage = `url("${photo.replace(/"/g, '\\"')}")`;
+                avatarEl.style.background = `url("${photo.replace(/"/g, '\\"')}") center/cover no-repeat`;
                 initialEl.style.display = 'none';
             } else {
-                avatarEl.style.backgroundImage = '';
+                avatarEl.style.background = 'var(--primary)';
                 initialEl.style.display = '';
             }
         }
