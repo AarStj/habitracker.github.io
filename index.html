@@ -814,6 +814,26 @@
                 <div class="menu-row" onclick="logout()" style="color:var(--danger)"><span>Cerrar Sesión</span></div>
             </div>
 
+            <!-- Círculos de acceso rápido -->
+            <div style="display:flex;justify-content:space-around;padding:16px 8px 8px 8px;">
+                <div style="display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;" onclick="window.open('https://evolucionaar.blogspot.com','_blank')">
+                    <div style="width:48px;height:48px;border-radius:50%;background:var(--bg-surface);border:1px solid var(--border-color);display:flex;align-items:center;justify-content:center;font-size:1.3rem;active:opacity:0.7;">🌐</div>
+                    <span style="font-size:0.65rem;color:var(--text-muted);font-weight:600;">Blog</span>
+                </div>
+                <div style="display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;" onclick="shareApp()">
+                    <div style="width:48px;height:48px;border-radius:50%;background:var(--bg-surface);border:1px solid var(--border-color);display:flex;align-items:center;justify-content:center;font-size:1.3rem;">📤</div>
+                    <span style="font-size:0.65rem;color:var(--text-muted);font-weight:600;">Compartir</span>
+                </div>
+                <div style="display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;" onclick="window.open('https://cafecito.app/evolucionaar','_blank')">
+                    <div style="width:48px;height:48px;border-radius:50%;background:var(--bg-surface);border:1px solid var(--border-color);display:flex;align-items:center;justify-content:center;font-size:1.3rem;">☕</div>
+                    <span style="font-size:0.65rem;color:var(--text-muted);font-weight:600;">Cafecito</span>
+                </div>
+                <div style="display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;" onclick="logout(); window.toggleMenu(false)">
+                    <div style="width:48px;height:48px;border-radius:50%;background:var(--bg-surface);border:1px solid rgba(255,59,48,0.4);display:flex;align-items:center;justify-content:center;font-size:1.3rem;">🚪</div>
+                    <span style="font-size:0.65rem;color:var(--danger);font-weight:600;">Salir</span>
+                </div>
+            </div>
+
         </div>
     </div>
 
@@ -862,12 +882,13 @@
             </div>
 
             <div style="font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);margin-bottom:8px;">Jardín</div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
                 <button onclick="adminFillGarden()" style="background:var(--bg-body);border:1px solid var(--border-color);border-radius:10px;padding:10px;font-size:0.85rem;font-weight:600;color:var(--text-main);cursor:pointer;">🌱 Llenar jardín</button>
-                <button onclick="adminMaxTrees()" style="background:var(--bg-body);border:1px solid var(--border-color);border-radius:10px;padding:10px;font-size:0.85rem;font-weight:600;color:var(--text-main);cursor:pointer;">🌳 Árboles al máx</button>
                 <button onclick="adminClearGarden()" style="background:var(--bg-body);border:1px solid var(--border-color);border-radius:10px;padding:10px;font-size:0.85rem;font-weight:600;color:var(--text-main);cursor:pointer;">🗑️ Vaciar jardín</button>
                 <button onclick="adminUnlockStore()" style="background:var(--bg-body);border:1px solid var(--border-color);border-radius:10px;padding:10px;font-size:0.85rem;font-weight:600;color:var(--text-main);cursor:pointer;">🏪 Unlock tienda</button>
             </div>
+            <div style="font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);margin-bottom:8px;">Árbol al máximo</div>
+            <div id="adminTreeBtns" style="display:flex;flex-direction:column;gap:6px;margin-bottom:16px;"></div>
 
             <button onclick="adminReset()" style="width:100%;background:var(--bg-body);border:1px solid var(--danger);border-radius:10px;padding:10px;font-size:0.85rem;font-weight:600;color:var(--danger);cursor:pointer;">🔄 Reset recursos</button>
         </div>
@@ -1391,6 +1412,7 @@
             
             document.getElementById('appYearTitle').innerText = new Date().getFullYear();
 
+            updateTreeGrowthFromTime();
             applyTheme(); renderCalendar(); renderQuote();
             window.addEventListener('resize', syncHeaderWidth);
             document.getElementById('btnConfirmAction').onclick = () => { if(confirmCallback) confirmCallback(); closeConfirm(); };
@@ -3691,13 +3713,31 @@
             saveData();
         }
 
+        function updateTreeGrowthFromTime() {
+            const garden = state.settings.garden;
+            if (!garden || !garden.trees || !garden.trees.length) return;
+            const now = Date.now();
+            const MS_PER_DAY = 24 * 60 * 60 * 1000;
+            let changed = false;
+            garden.trees.forEach(function(tree) {
+                if (!tree.lastTimeGrow) { tree.lastTimeGrow = now; return; }
+                const daysPassed = Math.floor((now - tree.lastTimeGrow) / MS_PER_DAY);
+                if (daysPassed > 0) {
+                    tree.growth = Math.min(100, (tree.growth || 0) + daysPassed);
+                    tree.lastTimeGrow += daysPassed * MS_PER_DAY;
+                    changed = true;
+                }
+            });
+            if (changed) saveData();
+        }
+
         function plantSeed(type, price) {
             if (!state.settings.profile) state.settings.profile = { xp: 0, coins: 0 };
             if ((state.settings.profile.coins || 0) < price) { showToast('No tenés suficientes monedas 🪙'); return; }
             if (!state.settings.garden.trees) state.settings.garden.trees = [];
             if (state.settings.garden.trees.length >= 3) { showToast('El jardín está lleno — máx. 3 árboles'); return; }
             state.settings.profile.coins -= price;
-            state.settings.garden.trees.push({ type, growth: 0 });
+            state.settings.garden.trees.push({ type, growth: 0, lastTimeGrow: Date.now() });
             saveData();
             showToast('¡Semilla plantada! 🌱');
             renderTienda();
@@ -3717,6 +3757,10 @@
                 { id: 'cerezo', name: 'Cerezo', emoji: '🌸', price: 120, desc: 'Florece con dedicación' },
                 { id: 'cactus', name: 'Cactus', emoji: '🌵', price: 60,  desc: 'Resiste todo' },
                 { id: 'bambu',  name: 'Bambú',  emoji: '🎋', price: 100, desc: 'Crece rápido y alto' },
+            ],
+            fertilizantes: [
+                { id: 'fert_basic', name: 'Fertilizante',       emoji: '🧪', price: 80,  desc: '+20 puntos de crecimiento a un árbol', grow: 20 },
+                { id: 'fert_super', name: 'Super Fertilizante', emoji: '💊', price: 200, desc: '+50 puntos de crecimiento a un árbol', grow: 50 },
             ],
             decoraciones: [
                 { id: 'flowers',  name: 'Flores',  emoji: '🌸', price: 50,  desc: 'Coloridas y alegres' },
@@ -3740,9 +3784,10 @@
             const treeCount = (garden.trees || []).length;
 
             const tabs = [
-                { id: 'semillas',     label: '🌱 Semillas' },
-                { id: 'decoraciones', label: '🏡 Decos' },
-                { id: 'fondos',       label: '🌅 Fondos' },
+                { id: 'semillas',      label: '🌱 Semillas' },
+                { id: 'fertilizantes', label: '🧪 Fertiliz.' },
+                { id: 'decoraciones',  label: '🏡 Decos' },
+                { id: 'fondos',        label: '🌅 Fondos' },
             ];
 
             let slotHTML = '';
@@ -3767,6 +3812,14 @@
                         actionBtn = '<div style="padding:7px 12px;border-radius:99px;background:var(--bg-surface-hover);color:var(--text-muted);font-size:0.76rem;font-weight:600;flex-shrink:0;">Jardín lleno</div>';
                     } else if (coins >= item.price) {
                         actionBtn = '<button onclick="plantSeed(\'' + item.id + '\',' + item.price + ')" style="padding:7px 12px;border-radius:99px;background:var(--primary);color:#fff;font-size:0.76rem;font-weight:700;cursor:pointer;flex-shrink:0;border:none;">🌱 Plantar</button>';
+                    } else {
+                        actionBtn = '<div style="padding:7px 12px;border-radius:99px;background:var(--bg-surface-hover);color:var(--text-muted);font-size:0.76rem;font-weight:600;flex-shrink:0;">🪙 ' + item.price + '</div>';
+                    }
+                } else if (activeTab === 'fertilizantes') {
+                    if (!treeCount) {
+                        actionBtn = '<div style="padding:7px 12px;border-radius:99px;background:var(--bg-surface-hover);color:var(--text-muted);font-size:0.76rem;font-weight:600;flex-shrink:0;">Sin árboles</div>';
+                    } else if (coins >= item.price) {
+                        actionBtn = '<button onclick="buyFertilizante(' + item.grow + ',' + item.price + ')" style="padding:7px 12px;border-radius:99px;background:var(--primary);color:#fff;font-size:0.76rem;font-weight:700;cursor:pointer;flex-shrink:0;border:none;">🧪 Usar</button>';
                     } else {
                         actionBtn = '<div style="padding:7px 12px;border-radius:99px;background:var(--bg-surface-hover);color:var(--text-muted);font-size:0.76rem;font-weight:600;flex-shrink:0;">🪙 ' + item.price + '</div>';
                     }
@@ -3822,10 +3875,46 @@
             renderTienda();
         }
 
+        function buyFertilizante(growAmount, price) {
+            if (!state.settings.profile) return;
+            if ((state.settings.profile.coins || 0) < price) { showToast('No tenés suficientes monedas 🪙'); return; }
+            const trees = (state.settings.garden && state.settings.garden.trees) || [];
+            if (!trees.length) { showToast('No hay árboles en el jardín 🌱'); return; }
+            if (trees.length === 1) {
+                applyFertilizante(0, growAmount, price);
+            } else {
+                let bodyHTML = '<div style="display:flex;flex-direction:column;gap:8px;">';
+                trees.forEach(function(tree, idx) {
+                    const tt = TREE_TYPES[tree.type] || TREE_TYPES['roble'];
+                    const si = getTreeStageIndex(tree.growth || 0);
+                    bodyHTML += '<button onclick="applyFertilizante(' + idx + ',' + growAmount + ',' + price + ');closeGenericModal();" style="background:var(--bg-body);border:1px solid var(--border-color);border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:10px;cursor:pointer;text-align:left;width:100%;">' +
+                        '<span style="font-size:1.5rem;">' + tt.stages[si] + '</span>' +
+                        '<div><div style="font-weight:700;color:var(--text-main);font-size:0.9rem;">' + tt.name + '</div>' +
+                        '<div style="font-size:0.72rem;color:var(--text-muted);">' + STAGE_NAMES[si] + ' — ' + (tree.growth||0) + '/100</div></div></button>';
+                });
+                bodyHTML += '</div>';
+                document.getElementById('gModalTitle').innerHTML = '🧪 ¿A qué árbol aplicar?';
+                document.getElementById('gModalBody').innerHTML = bodyHTML;
+                document.getElementById('genericModal').classList.remove('hidden');
+            }
+        }
+
+        function applyFertilizante(treeIdx, growAmount, price) {
+            state.settings.profile.coins -= price;
+            const tree = state.settings.garden.trees[treeIdx];
+            tree.growth = Math.min(100, (tree.growth || 0) + growAmount);
+            if (!tree.lastTimeGrow) tree.lastTimeGrow = Date.now();
+            tree.lastTimeGrow = Math.min(Date.now(), tree.lastTimeGrow + growAmount * 24 * 60 * 60 * 1000);
+            saveData();
+            showToast('🌱 +' + growAmount + ' crecimiento aplicado');
+            renderTienda();
+        }
+
         // ---- JARDÍN ----
         const DECO_EMOJIS = { flowers:'🌸', rock:'🪨', fountain:'⛲' };
 
         function renderJardin() {
+            updateTreeGrowthFromTime();
             const container = document.getElementById('customSectionBody');
             const garden = state.settings.garden || { trees:[], ownedBgs:['default'], ownedDecos:[], activeBg:'default' };
             const hour = new Date().getHours();
@@ -3878,6 +3967,7 @@
                     '<div style="font-size:' + sz + ';line-height:1;transition:font-size 0.5s;">' + emoji + '</div>' +
                     '<div style="background:rgba(0,0,0,0.45);border-radius:6px;padding:2px 5px;font-size:0.55rem;font-weight:700;color:#fff;white-space:nowrap;">' + STAGE_NAMES[si] + '</div>' +
                     '<div style="width:36px;height:3px;background:rgba(255,255,255,0.2);border-radius:99px;overflow:hidden;"><div style="height:100%;width:' + pct + '%;background:#4caf50;border-radius:99px;"></div></div>' +
+                    '<button onclick="removeTree(' + idx + ')" style="margin-top:2px;font-size:0.55rem;background:rgba(0,0,0,0.4);color:rgba(255,255,255,0.6);border:none;border-radius:4px;padding:2px 5px;cursor:pointer;line-height:1;">✂️</button>' +
                     '</div>';
             });
 
@@ -3885,33 +3975,8 @@
                 ? '<div style="position:absolute;top:30%;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.45);backdrop-filter:blur(8px);border-radius:12px;padding:10px 16px;color:rgba(255,255,255,0.9);font-size:0.8rem;font-weight:600;white-space:nowrap;">Jardín vacío — comprá semillas 🌱</div>'
                 : '';
 
-            let treeListHTML = '';
-            if (trees.length > 0) {
-                treeListHTML = '<div style="padding:0 14px 14px;background:var(--bg-surface);display:flex;flex-direction:column;gap:7px;">';
-                trees.forEach(function(tree, idx) {
-                    const si = getTreeStageIndex(tree.growth||0);
-                    const tt = TREE_TYPES[tree.type]||TREE_TYPES['roble'];
-                    const nt = TREE_THRESHOLDS[si+1]||null;
-                    const ct = TREE_THRESHOLDS[si];
-                    const pct2 = nt ? Math.round(((tree.growth-ct)/(nt-ct))*100) : 100;
-                    const nextInfo = nt ? ((nt-(tree.growth||0)) + ' hábitos para ' + STAGE_NAMES[si+1]) : '¡Árbol en máxima etapa!';
-                    treeListHTML +=
-                        '<div style="display:flex;align-items:center;gap:10px;background:var(--bg-body);border-radius:10px;padding:9px 11px;">' +
-                        '<span style="font-size:' + TREE_SIZES[si] + ';line-height:1;flex-shrink:0;">' + tt.stages[si] + '</span>' +
-                        '<div style="flex:1;min-width:0;">' +
-                        '<div style="display:flex;justify-content:space-between;margin-bottom:4px;">' +
-                        '<span style="font-weight:700;font-size:0.8rem;color:var(--text-main);">' + tt.name + ' — ' + STAGE_NAMES[si] + '</span>' +
-                        '<span style="font-size:0.7rem;color:var(--text-muted);">' + nextInfo + '</span></div>' +
-                        '<div style="background:var(--bg-surface);border-radius:99px;height:5px;overflow:hidden;">' +
-                        '<div style="height:100%;width:' + pct2 + '%;background:var(--success);border-radius:99px;transition:width 0.4s;"></div></div></div>' +
-                        '<button onclick="removeTree(' + idx + ')" style="color:var(--text-muted);font-size:0.9rem;padding:4px;border:none;background:none;cursor:pointer;flex-shrink:0;" title="Talar árbol">✂️</button></div>';
-                });
-                treeListHTML += '</div>';
-            }
-
             container.innerHTML =
-                '<div style="display:flex;flex-direction:column;height:100%;min-height:460px;overflow:hidden;">' +
-                '<div style="position:relative;flex:1;min-height:320px;background:' + skyGrad + ';overflow:hidden;">' +
+                '<div style="position:relative;width:100%;height:100%;min-height:460px;background:' + skyGrad + ';overflow:hidden;">' +
                 starsHTML +
                 '<div style="position:absolute;top:12px;right:12px;background:rgba(0,0,0,0.3);backdrop-filter:blur(8px);border-radius:20px;padding:5px 11px;color:#fff;font-size:0.76rem;font-weight:700;">' + sunMoon + ' ' + timeLabel + '</div>' +
                 (hasClouds ? '<div style="position:absolute;top:16%;left:7%;font-size:2rem;opacity:0.7;animation:gardenFloat 7s ease-in-out infinite;">☁️</div><div style="position:absolute;top:11%;left:50%;font-size:1.6rem;opacity:0.5;animation:gardenFloat 9s ease-in-out infinite 3s;">☁️</div>' : '') +
@@ -3919,12 +3984,6 @@
                 '<div style="position:absolute;bottom:0;left:0;right:0;height:42%;background:' + grassGrad + ';border-radius:60% 60% 0 0 / 28% 28% 0 0;">' +
                 '<div style="position:absolute;top:4px;right:12px;display:flex;gap:6px;align-items:flex-end;">' + decoHTML + '</div>' +
                 treesOnGrassHTML + '</div></div>' +
-                '<div style="padding:12px 18px;background:var(--bg-surface);border-top:1px solid var(--border-color);display:flex;gap:12px;align-items:center;flex-shrink:0;">' +
-                '<div style="font-size:1.2rem;">🌱</div>' +
-                '<div><div style="font-weight:700;font-size:0.88rem;color:var(--text-main);">Tu jardín (' + trees.length + '/3 árboles)</div>' +
-                '<div style="font-size:0.73rem;color:var(--text-muted);">Los árboles crecen con cada hábito completado</div></div>' +
-                '<button onclick="openSection(\'tienda\')" style="margin-left:auto;background:var(--primary);color:#fff;border-radius:11px;padding:8px 13px;font-weight:700;font-size:0.78rem;border:none;cursor:pointer;">🏪 Tienda</button></div>' +
-                treeListHTML + '</div>' +
                 '<style>@keyframes gardenFloat{0%,100%{transform:translateX(0);}50%{transform:translateX(16px);}}</style>';
         }
 
@@ -3969,6 +4028,15 @@
             }
         })();
 
+        function shareApp() {
+            const url = 'https://evolucionaar.github.io/habitracker.github.io/';
+            if (navigator.share) {
+                navigator.share({ title: 'Habit Tracker — EvolucionAAR', text: 'Trackeá tus hábitos y crecé.', url });
+            } else {
+                navigator.clipboard.writeText(url).then(() => showToast('Link copiado al portapapeles'));
+            }
+        }
+
         // ---- ADMIN PANEL (sudo) ----
         (function() {
             let buf = '';
@@ -3982,8 +4050,21 @@
 
         function openAdminPanel() {
             const p = (state.settings && state.settings.profile) || {};
+            const trees = (state.settings.garden && state.settings.garden.trees) || [];
             document.getElementById('adminStats').innerText =
-                `🪙 ${p.coins || 0}  ⚡ ${p.xp || 0} XP  🌿 ${(state.settings.garden && state.settings.garden.trees && state.settings.garden.trees.length) || 0}/3 árboles`;
+                `🪙 ${p.coins || 0}  ⚡ ${p.xp || 0} XP  🌿 ${trees.length}/3 árboles`;
+            const btns = document.getElementById('adminTreeBtns');
+            if (!trees.length) {
+                btns.innerHTML = '<div style="color:var(--text-muted);font-size:0.8rem;padding:4px 0;">No hay árboles en el jardín</div>';
+            } else {
+                btns.innerHTML = trees.map(function(tree, idx) {
+                    const tt = TREE_TYPES[tree.type] || TREE_TYPES['roble'];
+                    const si = getTreeStageIndex(tree.growth || 0);
+                    return '<button onclick="adminMaxTree(' + idx + ')" style="background:var(--bg-body);border:1px solid var(--border-color);border-radius:10px;padding:9px 12px;font-size:0.82rem;font-weight:600;color:var(--text-main);cursor:pointer;display:flex;align-items:center;gap:8px;text-align:left;width:100%;">' +
+                        '<span>' + tt.stages[si] + '</span><span>' + tt.name + '</span>' +
+                        '<span style="margin-left:auto;color:var(--text-muted);font-size:0.75rem;">' + (tree.growth||0) + '/100</span></button>';
+                }).join('');
+            }
             document.getElementById('adminPanel').classList.remove('hidden');
         }
 
@@ -4011,25 +4092,26 @@
 
         function adminFillGarden() {
             if (!state.settings.garden) state.settings.garden = { trees: [], ownedBgs: ['default'], ownedDecos: [], activeBg: 'default' };
+            const now = Date.now();
             state.settings.garden.trees = [
-                { type: 'roble', growth: 0 },
-                { type: 'cerezo', growth: 0 },
-                { type: 'bambu', growth: 0 },
+                { type: 'roble',  growth: 0, lastTimeGrow: now },
+                { type: 'cerezo', growth: 0, lastTimeGrow: now },
+                { type: 'bambu',  growth: 0, lastTimeGrow: now },
             ];
             saveData();
-            document.getElementById('adminStats').innerText =
-                `🪙 ${state.settings.profile.coins}  ⚡ ${state.settings.profile.xp} XP  🌿 ${state.settings.garden.trees.length}/3 árboles`;
+            openAdminPanel();
             showToast('🌱 Jardín llenado con 3 semillas');
         }
 
-        function adminMaxTrees() {
-            if (!state.settings.garden || !state.settings.garden.trees || !state.settings.garden.trees.length) {
-                showToast('No hay árboles en el jardín');
-                return;
-            }
-            state.settings.garden.trees.forEach(t => { t.growth = 100; });
+        function adminMaxTree(idx) {
+            const tree = state.settings.garden && state.settings.garden.trees && state.settings.garden.trees[idx];
+            if (!tree) return;
+            tree.growth = 100;
+            tree.lastTimeGrow = Date.now();
             saveData();
-            showToast('🌳 Árboles al máximo');
+            openAdminPanel();
+            const tt = TREE_TYPES[tree.type] || TREE_TYPES['roble'];
+            showToast('🌳 ' + tt.name + ' al máximo');
         }
 
         function adminClearGarden() {
