@@ -769,69 +769,49 @@
 
     <div id="menuOverlay" onclick="window.toggleMenu(false)" class="hidden opacity-0 fixed inset-0"></div>
     <div id="menuContent">
-        <!-- Header: avatar + close -->
-        <div style="padding: 20px 20px 0 20px; display: flex; justify-content: space-between; align-items: center;">
-            <div id="menuUserProfile" style="display:none; align-items:center; gap:10px; cursor:pointer;" onclick="openSection('perfil'); window.toggleMenu(false);">
-                <img id="menuUserPhoto" src="" style="width:42px; height:42px; border-radius:50%; object-fit:cover; background:var(--bg-surface-hover);">
+        <div class="menu-header">
+            <div id="menuUserProfile" style="display:none; align-items:center; gap:10px;">
+                <img id="menuUserPhoto" src="" style="width:38px; height:38px; border-radius:50%; object-fit:cover; background:var(--bg-surface-hover);">
                 <div style="overflow:hidden;">
-                    <div id="menuUserName" style="font-weight:700; font-size:0.95rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:160px;">Usuario</div>
-                    <div id="menuUserEmail" style="font-size:0.72rem; color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:160px;"></div>
+                    <div id="menuUserName" style="font-weight:700; font-size:0.9rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:160px;">Usuario</div>
+                    <div id="menuUserEmail" style="font-size:0.7rem; color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:160px;"></div>
                 </div>
             </div>
-            <button onclick="window.toggleMenu(false)" style="background:var(--bg-surface-hover); border:none; border-radius:50%; width:32px; height:32px; display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--text-muted); font-size:1rem; margin-left:auto;">✕</button>
+            <button onclick="window.toggleMenu(false)" class="btn-icon" style="background:var(--bg-surface-hover); border-radius:50%; width:32px; height:32px; margin-left:auto;">✕</button>
         </div>
+        <div class="menu-scroll-area">
 
-        <!-- Nav grid -->
-        <div style="padding: 20px 16px 0 16px;">
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-                <button onclick="openSection('metas')" style="background:var(--bg-surface); border:1px solid var(--border-color); border-radius:16px; padding:18px 14px; text-align:left; cursor:pointer; display:flex; flex-direction:column; gap:8px; transition:background 0.15s;" onmousedown="this.style.background='var(--bg-surface-hover)'" onmouseup="this.style.background='var(--bg-surface)'">
-                    <span style="font-size:1.4rem;">🎯</span>
-                    <span style="font-weight:700; font-size:0.9rem; color:var(--text-main);">Metas</span>
-                </button>
-                <button onclick="openSection('progreso')" style="background:var(--bg-surface); border:1px solid var(--border-color); border-radius:16px; padding:18px 14px; text-align:left; cursor:pointer; display:flex; flex-direction:column; gap:8px; transition:background 0.15s;" onmousedown="this.style.background='var(--bg-surface-hover)'" onmouseup="this.style.background='var(--bg-surface)'">
-                    <span style="font-size:1.4rem;">📈</span>
-                    <span style="font-weight:700; font-size:0.9rem; color:var(--text-main);">Progreso</span>
-                </button>
-                <button onclick="openSection('pagos')" style="background:var(--bg-surface); border:1px solid var(--border-color); border-radius:16px; padding:18px 14px; text-align:left; cursor:pointer; display:flex; flex-direction:column; gap:8px; transition:background 0.15s;" onmousedown="this.style.background='var(--bg-surface-hover)'" onmouseup="this.style.background='var(--bg-surface)'">
-                    <span style="font-size:1.4rem;">💳</span>
-                    <span style="font-weight:700; font-size:0.9rem; color:var(--text-main);">Pagos</span>
-                </button>
-                <button onclick="openSection('tienda')" style="background:var(--bg-surface); border:1px solid var(--border-color); border-radius:16px; padding:18px 14px; text-align:left; cursor:pointer; display:flex; flex-direction:column; gap:8px; transition:background 0.15s;" onmousedown="this.style.background='var(--bg-surface-hover)'" onmouseup="this.style.background='var(--bg-surface)'">
-                    <span style="font-size:1.4rem;">🏪</span>
-                    <span style="font-weight:700; font-size:0.9rem; color:var(--text-main);">Tienda</span>
-                </button>
-                <button onclick="openSection('jardin')" style="background:var(--bg-surface); border:1px solid var(--border-color); border-radius:16px; padding:18px 14px; text-align:left; cursor:pointer; display:flex; flex-direction:column; gap:8px; transition:background 0.15s;" onmousedown="this.style.background='var(--bg-surface-hover)'" onmouseup="this.style.background='var(--bg-surface)'">
-                    <span style="font-size:1.4rem;">🌿</span>
-                    <span style="font-weight:700; font-size:0.9rem; color:var(--text-main);">Jardín</span>
-                </button>
-                <button onclick="openSection('perfil')" style="background:var(--bg-surface); border:1px solid var(--border-color); border-radius:16px; padding:18px 14px; text-align:left; cursor:pointer; display:flex; flex-direction:column; gap:8px; transition:background 0.15s;" onmousedown="this.style.background='var(--bg-surface-hover)'" onmouseup="this.style.background='var(--bg-surface)'">
-                    <span style="font-size:1.4rem;">🧑</span>
-                    <span style="font-weight:700; font-size:0.9rem; color:var(--text-main);">Perfil</span>
-                </button>
+            <!-- Secciones principales -->
+            <div class="menu-card" style="margin-bottom:8px;">
+                <div class="menu-row" onclick="openSection('perfil')"><span>🧑 Perfil</span></div>
+                <div class="menu-row" onclick="openSection('metas')"><span>🎯 Metas</span></div>
+                <div class="menu-row" onclick="openSection('progreso')"><span>📈 Progreso</span></div>
+                <div class="menu-row" onclick="openSection('pagos')"><span>💳 Pagos</span></div>
+                <div class="menu-row" onclick="openSection('tienda')"><span>🏪 Tienda</span></div>
+                <div class="menu-row" onclick="openSection('jardin')"><span>🌿 Jardín</span></div>
             </div>
-        </div>
 
-        <!-- Utility row -->
-        <div style="padding: 14px 16px 0 16px; display:flex; gap:8px;">
-            <button onclick="openSection('apariencia')" style="flex:1; background:var(--bg-surface); border:1px solid var(--border-color); border-radius:12px; padding:10px 8px; font-size:0.78rem; font-weight:600; color:var(--text-muted); cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;">🎨 Apariencia</button>
-            <button onclick="openCategoryManager()" style="flex:1; background:var(--bg-surface); border:1px solid var(--border-color); border-radius:12px; padding:10px 8px; font-size:0.78rem; font-weight:600; color:var(--text-muted); cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;">📂 Categorías</button>
-            <button onclick="toggleDatosMenu()" style="flex:1; background:var(--bg-surface); border:1px solid var(--border-color); border-radius:12px; padding:10px 8px; font-size:0.78rem; font-weight:600; color:var(--text-muted); cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;">📦 Datos</button>
-        </div>
-
-        <!-- Datos submenu -->
-        <div id="datosMenuOptions" style="display:none; flex-direction:column; margin:10px 16px 0 16px; background:var(--bg-surface); border:1px solid var(--border-color); border-radius:12px; overflow:hidden;">
-            <button onclick="exportData()" style="padding:12px 16px; text-align:left; font-size:0.88rem; font-weight:500; color:var(--text-main); background:none; border:none; border-bottom:1px solid var(--border-color); cursor:pointer;">📤 Exportar</button>
-            <button onclick="importData()" style="padding:12px 16px; text-align:left; font-size:0.88rem; font-weight:500; color:var(--text-main); background:none; border:none; border-bottom:1px solid var(--border-color); cursor:pointer;">📥 Importar</button>
-            <button onclick="resetData()" style="padding:12px 16px; text-align:left; font-size:0.88rem; font-weight:500; color:var(--danger); background:none; border:none; border-bottom:1px solid var(--border-color); cursor:pointer;">🗑️ Eliminar datos</button>
-            <div style="padding:12px 16px; display:flex; justify-content:space-between; align-items:center;">
-                <span style="font-size:0.85rem; font-weight:500; color:var(--text-main);">Auto-Backup</span>
-                <div id="autoBackupToggle" class="switch-toggle active" onclick="toggleAutoBackupSetting()"></div>
+            <!-- Configuración -->
+            <div class="menu-card" style="margin-bottom:8px;">
+                <div class="menu-row" onclick="openSection('apariencia')"><span>🎨 Apariencia</span></div>
+                <div class="menu-row" onclick="openCategoryManager()"><span>📂 Categorías</span></div>
+                <div class="menu-row" onclick="toggleDatosMenu()"><span>📦 Datos</span></div>
+                <div id="datosMenuOptions" style="display:none; flex-direction:column; background:var(--bg-body); border-top:1px solid var(--border-color);">
+                    <div class="menu-row" onclick="exportData()" style="padding:10px 16px; font-size:0.88rem;">📤 Exportar</div>
+                    <div class="menu-row" onclick="importData()" style="padding:10px 16px; font-size:0.88rem;">📥 Importar</div>
+                    <div class="menu-row" onclick="resetData()" style="padding:10px 16px; font-size:0.88rem; color:var(--danger);">🗑️ Eliminar datos</div>
+                    <div class="menu-row" style="padding:10px 16px; font-size:0.88rem;">
+                        <span>💾 Auto-Backup</span>
+                        <div id="autoBackupToggle" class="switch-toggle active" onclick="event.stopPropagation(); toggleAutoBackupSetting()"></div>
+                    </div>
+                </div>
             </div>
-        </div>
 
-        <!-- Logout -->
-        <div style="padding: 14px 16px;" id="authMenuAction">
-            <button onclick="logout()" style="width:100%; background:none; border:1px solid var(--border-color); border-radius:12px; padding:11px; font-size:0.88rem; font-weight:600; color:var(--danger); cursor:pointer;">Cerrar Sesión</button>
+            <!-- Sesión -->
+            <div class="menu-card" id="authMenuAction">
+                <div class="menu-row" onclick="logout()" style="color:var(--danger)"><span>Cerrar Sesión</span></div>
+            </div>
+
         </div>
     </div>
 
@@ -1035,7 +1015,7 @@
                         document.getElementById('authLoader').style.display = 'flex';
                     }
 
-                    document.getElementById('authMenuAction').innerHTML = `<button onclick="logout()" style="width:100%;background:none;border:1px solid var(--border-color);border-radius:12px;padding:11px;font-size:0.88rem;font-weight:600;color:var(--danger);cursor:pointer;">Cerrar Sesión</button>`;
+                    document.getElementById('authMenuAction').innerHTML = `<div class="menu-row" onclick="logout()" style="color:var(--danger)"><span>Cerrar Sesión</span></div>`;
 
                     if (unsubscribeSync) unsubscribeSync();
 
@@ -1109,7 +1089,7 @@
                     currentUser = null;
                     if (unsubscribeSync) { unsubscribeSync(); unsubscribeSync = null; }
                     
-                    document.getElementById('authMenuAction').innerHTML = `<button onclick="showLogin()" style="width:100%;background:var(--primary);border:none;border-radius:12px;padding:11px;font-size:0.88rem;font-weight:600;color:#fff;cursor:pointer;">Iniciar Sesión</button>`;
+                    document.getElementById('authMenuAction').innerHTML = `<div class="menu-row" onclick="showLogin()" style="color:var(--primary)"><span>Iniciar Sesión</span></div>`;
 
                     // Mostrar login si NO hay datos locales guardados, o si explícitamente se cerró sesión (habitTrackerUser != true)
                     const hasStoredData = !!localStorage.getItem(getStorageKey());
