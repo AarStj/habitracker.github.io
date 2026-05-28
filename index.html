@@ -881,6 +881,15 @@
                 <button onclick="adminGiveXP()" style="background:var(--bg-body);border:1px solid var(--border-color);border-radius:10px;padding:10px;font-size:0.85rem;font-weight:600;color:var(--text-main);cursor:pointer;">⚡ +9999 XP</button>
             </div>
 
+            <div style="font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);margin-bottom:8px;">Plantar semilla</div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;">
+                <button onclick="adminPlantSeed('roble')"  style="background:var(--bg-body);border:1px solid var(--border-color);border-radius:10px;padding:8px 10px;font-size:1rem;cursor:pointer;" title="Roble">🌰</button>
+                <button onclick="adminPlantSeed('pino')"   style="background:var(--bg-body);border:1px solid var(--border-color);border-radius:10px;padding:8px 10px;font-size:1rem;cursor:pointer;" title="Pino">🌲</button>
+                <button onclick="adminPlantSeed('cerezo')" style="background:var(--bg-body);border:1px solid var(--border-color);border-radius:10px;padding:8px 10px;font-size:1rem;cursor:pointer;" title="Cerezo">🌸</button>
+                <button onclick="adminPlantSeed('cactus')" style="background:var(--bg-body);border:1px solid var(--border-color);border-radius:10px;padding:8px 10px;font-size:1rem;cursor:pointer;" title="Cactus">🌵</button>
+                <button onclick="adminPlantSeed('bambu')"  style="background:var(--bg-body);border:1px solid var(--border-color);border-radius:10px;padding:8px 10px;font-size:1rem;cursor:pointer;" title="Bambú">🎋</button>
+            </div>
+
             <div style="font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);margin-bottom:8px;">Jardín</div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
                 <button onclick="adminFillGarden()" style="background:var(--bg-body);border:1px solid var(--border-color);border-radius:10px;padding:10px;font-size:0.85rem;font-weight:600;color:var(--text-main);cursor:pointer;">🌱 Llenar jardín</button>
@@ -3696,7 +3705,7 @@
             bambu:  { name: 'Bambú',  stages: ['🌱','🌿','🎋','🎋','🎋'] },
         };
         const TREE_THRESHOLDS = [0, 10, 30, 60, 100];
-        const TREE_SIZES      = ['1.4rem','2rem','2.8rem','3.5rem','4.5rem'];
+        const TREE_SIZES      = ['1.8rem','4rem','9rem','18rem','min(30rem,65vh)'];
         const STAGE_NAMES     = ['Semilla','Brote','Joven','Adulto','Grande'];
 
         function getTreeStageIndex(growth) {
@@ -3771,12 +3780,15 @@
 
         function finalizePlant(xPct) {
             const type = window._plantingType;
-            const price = window._plantingPrice;
+            const price = window._plantingPrice || 0;
+            const isAdmin = window._plantingIsAdmin || false;
             window._plantingType = null;
             window._plantingPrice = null;
+            window._plantingIsAdmin = null;
             if (!type) return;
-            state.settings.profile.coins -= price;
+            if (!isAdmin) state.settings.profile.coins -= price;
             const now = Date.now();
+            if (!state.settings.garden.trees) state.settings.garden.trees = [];
             state.settings.garden.trees.push({ type, growth: 0, lastTimeGrow: now, water: 50, lastWaterCheck: now, x: xPct });
             saveData();
             showToast('🌱 ¡Semilla plantada!');
@@ -3997,7 +4009,8 @@
 
             const decoHTML = (garden.ownedDecos || []).map(function(d) { return '<span style="font-size:1.5rem;">' + (DECO_EMOJIS[d]||'') + '</span>'; }).join('');
 
-            let treesOnGrassHTML = '';
+            // Trees are in the OUTER container so they can overflow into the sky
+            let treesHTML = '';
             trees.forEach(function(tree, idx) {
                 const si = getTreeStageIndex(tree.growth || 0);
                 const tt = TREE_TYPES[tree.type] || TREE_TYPES['roble'];
@@ -4010,35 +4023,49 @@
                 const water = tree.water !== undefined ? tree.water : 50;
                 const waterColor = water < 20 ? '#f44336' : water < 40 ? '#ff9800' : water <= 70 ? '#4caf50' : water <= 85 ? '#2196f3' : '#9c27b0';
                 const waterEmoji = water < 20 ? '🏜️' : water < 40 ? '🌡️' : water <= 70 ? '💧' : water <= 85 ? '🚿' : '🌊';
-                treesOnGrassHTML +=
-                    '<div style="position:absolute;bottom:28px;left:' + xPos + '%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:2px;z-index:1;">' +
-                    '<div style="font-size:' + sz + ';line-height:1;transition:font-size 0.5s;">' + emoji + '</div>' +
-                    '<div style="background:rgba(0,0,0,0.5);border-radius:6px;padding:2px 5px;font-size:0.5rem;font-weight:700;color:#fff;white-space:nowrap;">' + STAGE_NAMES[si] + '</div>' +
-                    '<div style="width:36px;height:3px;background:rgba(255,255,255,0.2);border-radius:99px;overflow:hidden;"><div style="height:100%;width:' + pct + '%;background:#4caf50;border-radius:99px;"></div></div>' +
+                treesHTML +=
+                    '<div style="position:absolute;bottom:28px;left:' + xPos + '%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:2px;z-index:2;pointer-events:auto;">' +
+                    '<div style="font-size:' + sz + ';line-height:1;transition:font-size 0.6s ease;">' + emoji + '</div>' +
+                    '<div style="background:rgba(0,0,0,0.55);border-radius:6px;padding:2px 6px;font-size:0.5rem;font-weight:700;color:#fff;white-space:nowrap;">' + STAGE_NAMES[si] + '</div>' +
+                    '<div style="width:40px;height:3px;background:rgba(255,255,255,0.2);border-radius:99px;overflow:hidden;"><div style="height:100%;width:' + pct + '%;background:#4caf50;border-radius:99px;"></div></div>' +
                     '<div style="display:flex;gap:3px;margin-top:2px;">' +
-                    '<button onclick="event.stopPropagation();waterTree(' + idx + ')" style="font-size:0.6rem;background:rgba(0,0,0,0.5);color:' + waterColor + ';border:none;border-radius:4px;padding:2px 6px;cursor:pointer;line-height:1.4;font-weight:700;">' + waterEmoji + '</button>' +
-                    '<button onclick="event.stopPropagation();removeTree(' + idx + ')" style="font-size:0.6rem;background:rgba(0,0,0,0.4);color:rgba(255,255,255,0.55);border:none;border-radius:4px;padding:2px 5px;cursor:pointer;line-height:1.4;">✂️</button>' +
+                    '<button onclick="event.stopPropagation();waterTree(' + idx + ')" style="font-size:0.65rem;background:rgba(0,0,0,0.55);color:' + waterColor + ';border:none;border-radius:4px;padding:2px 7px;cursor:pointer;line-height:1.5;font-weight:700;">' + waterEmoji + '</button>' +
+                    '<button onclick="event.stopPropagation();removeTree(' + idx + ')" style="font-size:0.65rem;background:rgba(0,0,0,0.4);color:rgba(255,255,255,0.55);border:none;border-radius:4px;padding:2px 6px;cursor:pointer;line-height:1.5;">✂️</button>' +
                     '</div></div>';
             });
 
             const plantHint = isPlanting
-                ? '<div style="position:absolute;top:12px;left:50%;transform:translateX(-50%);background:rgba(0,150,0,0.8);backdrop-filter:blur(8px);border-radius:12px;padding:8px 16px;color:#fff;font-size:0.82rem;font-weight:700;pointer-events:none;white-space:nowrap;z-index:5;">🌱 Tocá el pasto para plantar</div>'
+                ? '<div style="position:absolute;top:12px;left:50%;transform:translateX(-50%);background:rgba(0,140,0,0.85);backdrop-filter:blur(8px);border-radius:12px;padding:8px 18px;color:#fff;font-size:0.82rem;font-weight:700;pointer-events:none;white-space:nowrap;z-index:10;">🌱 Tocá el pasto para plantar</div>'
                 : '';
 
             const emptyMsg = (!trees.length && !isPlanting)
-                ? '<div style="position:absolute;top:30%;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.45);backdrop-filter:blur(8px);border-radius:12px;padding:10px 16px;color:rgba(255,255,255,0.9);font-size:0.8rem;font-weight:600;white-space:nowrap;">Jardín vacío — comprá semillas 🌱</div>'
+                ? '<div style="position:absolute;top:30%;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.45);backdrop-filter:blur(8px);border-radius:12px;padding:10px 16px;color:rgba(255,255,255,0.9);font-size:0.8rem;font-weight:600;white-space:nowrap;z-index:3;">Jardín vacío — comprá semillas 🌱</div>'
                 : '';
 
             container.innerHTML =
-                '<div style="position:relative;width:100%;height:100%;min-height:460px;background:' + skyGrad + ';overflow:hidden;">' +
+                // Outer wrapper — no overflow clip, trees grow freely
+                '<div style="position:relative;width:100%;height:100%;min-height:500px;">' +
+
+                // Sky + ground layer (overflow:hidden to clip stars & clouds)
+                '<div style="position:absolute;inset:0;overflow:hidden;background:' + skyGrad + ';z-index:1;">' +
                 starsHTML +
-                '<div style="position:absolute;top:12px;right:12px;background:rgba(0,0,0,0.3);backdrop-filter:blur(8px);border-radius:20px;padding:5px 11px;color:#fff;font-size:0.76rem;font-weight:700;">' + sunMoon + ' ' + timeLabel + '</div>' +
-                plantHint +
+                '<div style="position:absolute;top:12px;right:12px;background:rgba(0,0,0,0.3);backdrop-filter:blur(8px);border-radius:20px;padding:5px 11px;color:#fff;font-size:0.76rem;font-weight:700;z-index:2;">' + sunMoon + ' ' + timeLabel + '</div>' +
                 (hasClouds ? '<div style="position:absolute;top:16%;left:7%;font-size:2rem;opacity:0.7;animation:gardenFloat 7s ease-in-out infinite;">☁️</div><div style="position:absolute;top:11%;left:50%;font-size:1.6rem;opacity:0.5;animation:gardenFloat 9s ease-in-out infinite 3s;">☁️</div>' : '') +
-                emptyMsg +
-                '<div id="gardenGrass" onclick="handleGrassClick(event)" style="position:absolute;bottom:0;left:0;right:0;height:42%;background:' + grassGrad + ';border-radius:60% 60% 0 0 / 28% 28% 0 0;' + (isPlanting ? 'cursor:crosshair;' : '') + '">' +
+                // Grass visual only
+                '<div style="position:absolute;bottom:0;left:0;right:0;height:42%;background:' + grassGrad + ';border-radius:60% 60% 0 0/28% 28% 0 0;">' +
                 '<div style="position:absolute;top:4px;right:12px;display:flex;gap:6px;align-items:flex-end;">' + decoHTML + '</div>' +
-                treesOnGrassHTML + '</div></div>' +
+                '</div></div>' +
+
+                // Trees layer — outside overflow:hidden, can grow into sky
+                treesHTML +
+
+                // Overlays
+                emptyMsg + plantHint +
+
+                // Grass click handler (active only in planting mode)
+                '<div onclick="handleGrassClick(event)" style="position:absolute;bottom:0;left:0;right:0;height:42%;z-index:' + (isPlanting?'8':'0') + ';pointer-events:' + (isPlanting?'auto':'none') + ';cursor:' + (isPlanting?'crosshair':'default') + ';"></div>' +
+
+                '</div>' +
                 '<style>@keyframes gardenFloat{0%,100%{transform:translateX(0);}50%{transform:translateX(16px);}}</style>';
         }
 
@@ -4186,6 +4213,14 @@
             state.settings.garden.ownedDecos = ['flowers', 'rock', 'fountain'];
             saveData();
             showToast('🏪 Tienda desbloqueada');
+        }
+
+        function adminPlantSeed(type) {
+            window._plantingType = type;
+            window._plantingPrice = 0;
+            window._plantingIsAdmin = true;
+            closeAdminPanel();
+            openSection('jardin');
         }
 
         function adminReset() {
