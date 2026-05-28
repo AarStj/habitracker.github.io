@@ -866,7 +866,7 @@
 
     <!-- Admin Panel (sudo) -->
     <div id="adminPanel" onclick="closeAdminPanel()" class="hidden" style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:9999;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;">
-        <div onclick="event.stopPropagation()" style="background:var(--bg-surface);border-radius:20px;padding:24px;width:min(320px,90vw);border:1.5px solid #ff0099;box-shadow:0 0 32px rgba(255,0,153,0.3);">
+        <div onclick="event.stopPropagation()" style="background:var(--bg-surface);border-radius:20px;padding:24px;width:min(320px,90vw);border:1.5px solid #ff0099;box-shadow:0 0 32px rgba(255,0,153,0.3);max-height:88vh;overflow-y:auto;">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
                 <div>
                     <div style="font-size:1.1rem;font-weight:800;color:#ff0099;">⚡ Admin</div>
@@ -3773,7 +3773,8 @@
         function handleGrassClick(event) {
             if (!window._plantingType) return;
             if (event.target.tagName === 'BUTTON') return;
-            const rect = event.currentTarget.getBoundingClientRect();
+            const body = document.getElementById('customSectionBody');
+            const rect = body.getBoundingClientRect();
             const xPct = Math.round((event.clientX - rect.left) / rect.width * 100);
             finalizePlant(Math.max(5, Math.min(95, xPct)));
         }
