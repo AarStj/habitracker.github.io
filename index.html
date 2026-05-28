@@ -4182,6 +4182,7 @@
                 { type: 'bambu',  growth: 0, lastTimeGrow: now, water: 50, lastWaterCheck: now, x: 80 },
             ];
             saveData();
+            renderJardin();
             openAdminPanel();
             showToast('🌱 Jardín llenado con 3 semillas');
         }
@@ -4194,6 +4195,7 @@
             tree.lastTimeGrow = Date.now();
             tree.lastWaterCheck = Date.now();
             saveData();
+            renderJardin();
             openAdminPanel();
             const tt = TREE_TYPES[tree.type] || TREE_TYPES['roble'];
             showToast('🌳 ' + tt.name + ' al máximo');
@@ -4203,8 +4205,8 @@
             if (!state.settings.garden) return;
             state.settings.garden.trees = [];
             saveData();
-            document.getElementById('adminStats').innerText =
-                `🪙 ${state.settings.profile.coins}  ⚡ ${state.settings.profile.xp} XP  🌿 0/3 árboles`;
+            renderJardin();
+            openAdminPanel();
             showToast('🗑️ Jardín vaciado');
         }
 
