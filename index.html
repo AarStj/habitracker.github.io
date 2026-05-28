@@ -3713,18 +3713,37 @@
             saveData();
         }
 
+        function getWaterGrowthMult(water) {
+            if (water < 10) return 0;
+            if (water < 25) return 0.5;
+            if (water <= 70) return 1;
+            if (water <= 85) return 0.5;
+            return 0;
+        }
+
         function updateTreeGrowthFromTime() {
             const garden = state.settings.garden;
             if (!garden || !garden.trees || !garden.trees.length) return;
             const now = Date.now();
-            const MS_PER_DAY = 24 * 60 * 60 * 1000;
+            const MS = 86400000;
             let changed = false;
             garden.trees.forEach(function(tree) {
+                // Water decay: -15/day
+                if (tree.water === undefined) tree.water = 50;
+                if (!tree.lastWaterCheck) tree.lastWaterCheck = now;
+                const wDays = Math.floor((now - tree.lastWaterCheck) / MS);
+                if (wDays > 0) {
+                    tree.water = Math.max(0, tree.water - wDays * 15);
+                    tree.lastWaterCheck += wDays * MS;
+                    changed = true;
+                }
+                // Growth with water multiplier
                 if (!tree.lastTimeGrow) { tree.lastTimeGrow = now; return; }
-                const daysPassed = Math.floor((now - tree.lastTimeGrow) / MS_PER_DAY);
-                if (daysPassed > 0) {
-                    tree.growth = Math.min(100, (tree.growth || 0) + daysPassed);
-                    tree.lastTimeGrow += daysPassed * MS_PER_DAY;
+                const gDays = Math.floor((now - tree.lastTimeGrow) / MS);
+                if (gDays > 0) {
+                    const pts = Math.max(0, Math.round(gDays * getWaterGrowthMult(tree.water)));
+                    tree.growth = Math.min(100, (tree.growth || 0) + pts);
+                    tree.lastTimeGrow += gDays * MS;
                     changed = true;
                 }
             });
@@ -3735,12 +3754,45 @@
             if (!state.settings.profile) state.settings.profile = { xp: 0, coins: 0 };
             if ((state.settings.profile.coins || 0) < price) { showToast('No tenés suficientes monedas 🪙'); return; }
             if (!state.settings.garden.trees) state.settings.garden.trees = [];
-            if (state.settings.garden.trees.length >= 3) { showToast('El jardín está lleno — máx. 3 árboles'); return; }
+            if (state.settings.garden.trees.length >= 10) { showToast('Jardín lleno — máx. 10 árboles'); return; }
+            // Enter planting mode — navigate to garden for user to pick spot
+            window._plantingType = type;
+            window._plantingPrice = price;
+            openSection('jardin');
+        }
+
+        function handleGrassClick(event) {
+            if (!window._plantingType) return;
+            if (event.target.tagName === 'BUTTON') return;
+            const rect = event.currentTarget.getBoundingClientRect();
+            const xPct = Math.round((event.clientX - rect.left) / rect.width * 100);
+            finalizePlant(Math.max(5, Math.min(95, xPct)));
+        }
+
+        function finalizePlant(xPct) {
+            const type = window._plantingType;
+            const price = window._plantingPrice;
+            window._plantingType = null;
+            window._plantingPrice = null;
+            if (!type) return;
             state.settings.profile.coins -= price;
-            state.settings.garden.trees.push({ type, growth: 0, lastTimeGrow: Date.now() });
+            const now = Date.now();
+            state.settings.garden.trees.push({ type, growth: 0, lastTimeGrow: now, water: 50, lastWaterCheck: now, x: xPct });
             saveData();
-            showToast('¡Semilla plantada! 🌱');
-            renderTienda();
+            showToast('🌱 ¡Semilla plantada!');
+            renderJardin();
+        }
+
+        function waterTree(idx) {
+            const tree = state.settings.garden && state.settings.garden.trees && state.settings.garden.trees[idx];
+            if (!tree) return;
+            if (tree.water === undefined) tree.water = 50;
+            if (tree.water >= 85) { showToast('⚠️ Ya está muy regado'); return; }
+            tree.water = Math.min(100, tree.water + 30);
+            if (!tree.lastWaterCheck) tree.lastWaterCheck = Date.now();
+            saveData();
+            renderJardin();
+            showToast('💧 Regado');
         }
 
         function removeTree(idx) {
@@ -3792,23 +3844,16 @@
 
             let slotHTML = '';
             if (activeTab === 'semillas') {
-                const slots = [0,1,2].map(i =>
-                    '<div style="width:26px;height:26px;border-radius:50%;border:2px solid ' +
-                    (i < treeCount ? 'var(--success)' : 'var(--border-color)') +
-                    ';background:' + (i < treeCount ? 'rgba(52,199,89,0.15)' : 'var(--bg-body)') +
-                    ';display:flex;align-items:center;justify-content:center;font-size:0.8rem;">' +
-                    (i < treeCount ? '🌱' : '') + '</div>'
-                ).join('');
                 slotHTML = '<div style="background:var(--bg-surface);border:1px solid var(--border-color);border-radius:12px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;">' +
-                    '<span style="font-size:0.8rem;color:var(--text-muted);font-weight:600;">Espacios del jardín (' + treeCount + '/3)</span>' +
-                    '<div style="display:flex;gap:6px;">' + slots + '</div></div>';
+                    '<span style="font-size:0.8rem;color:var(--text-muted);font-weight:600;">Árboles en el jardín</span>' +
+                    '<span style="font-size:0.88rem;font-weight:800;color:var(--text-main);">' + treeCount + ' / 10</span></div>';
             }
 
             let itemsHTML = '';
             items.forEach(item => {
                 let actionBtn = '';
                 if (activeTab === 'semillas') {
-                    if (treeCount >= 3) {
+                    if (treeCount >= 10) {
                         actionBtn = '<div style="padding:7px 12px;border-radius:99px;background:var(--bg-surface-hover);color:var(--text-muted);font-size:0.76rem;font-weight:600;flex-shrink:0;">Jardín lleno</div>';
                     } else if (coins >= item.price) {
                         actionBtn = '<button onclick="plantSeed(\'' + item.id + '\',' + item.price + ')" style="padding:7px 12px;border-radius:99px;background:var(--primary);color:#fff;font-size:0.76rem;font-weight:700;cursor:pointer;flex-shrink:0;border:none;">🌱 Plantar</button>';
@@ -3919,6 +3964,7 @@
             const garden = state.settings.garden || { trees:[], ownedBgs:['default'], ownedDecos:[], activeBg:'default' };
             const hour = new Date().getHours();
             const trees = garden.trees || [];
+            const isPlanting = !!window._plantingType;
 
             let skyGrad, timeLabel, sunMoon, hasClouds, hasStars;
             if (hour >= 5 && hour < 7) {
@@ -3951,7 +3997,6 @@
 
             const decoHTML = (garden.ownedDecos || []).map(function(d) { return '<span style="font-size:1.5rem;">' + (DECO_EMOJIS[d]||'') + '</span>'; }).join('');
 
-            const positions = trees.length === 1 ? [50] : trees.length === 2 ? [28,72] : [18,50,82];
             let treesOnGrassHTML = '';
             trees.forEach(function(tree, idx) {
                 const si = getTreeStageIndex(tree.growth || 0);
@@ -3961,17 +4006,26 @@
                 const nt = TREE_THRESHOLDS[si+1] || null;
                 const ct = TREE_THRESHOLDS[si];
                 const pct = nt ? Math.round(((tree.growth-ct)/(nt-ct))*100) : 100;
-                const posL = positions[idx];
+                const xPos = tree.x !== undefined ? tree.x : (trees.length === 1 ? 50 : 10 + (idx / Math.max(trees.length-1,1)) * 80);
+                const water = tree.water !== undefined ? tree.water : 50;
+                const waterColor = water < 20 ? '#f44336' : water < 40 ? '#ff9800' : water <= 70 ? '#4caf50' : water <= 85 ? '#2196f3' : '#9c27b0';
+                const waterEmoji = water < 20 ? '🏜️' : water < 40 ? '🌡️' : water <= 70 ? '💧' : water <= 85 ? '🚿' : '🌊';
                 treesOnGrassHTML +=
-                    '<div style="position:absolute;bottom:24px;left:' + posL + '%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:3px;">' +
+                    '<div style="position:absolute;bottom:28px;left:' + xPos + '%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:2px;z-index:1;">' +
                     '<div style="font-size:' + sz + ';line-height:1;transition:font-size 0.5s;">' + emoji + '</div>' +
-                    '<div style="background:rgba(0,0,0,0.45);border-radius:6px;padding:2px 5px;font-size:0.55rem;font-weight:700;color:#fff;white-space:nowrap;">' + STAGE_NAMES[si] + '</div>' +
+                    '<div style="background:rgba(0,0,0,0.5);border-radius:6px;padding:2px 5px;font-size:0.5rem;font-weight:700;color:#fff;white-space:nowrap;">' + STAGE_NAMES[si] + '</div>' +
                     '<div style="width:36px;height:3px;background:rgba(255,255,255,0.2);border-radius:99px;overflow:hidden;"><div style="height:100%;width:' + pct + '%;background:#4caf50;border-radius:99px;"></div></div>' +
-                    '<button onclick="removeTree(' + idx + ')" style="margin-top:2px;font-size:0.55rem;background:rgba(0,0,0,0.4);color:rgba(255,255,255,0.6);border:none;border-radius:4px;padding:2px 5px;cursor:pointer;line-height:1;">✂️</button>' +
-                    '</div>';
+                    '<div style="display:flex;gap:3px;margin-top:2px;">' +
+                    '<button onclick="event.stopPropagation();waterTree(' + idx + ')" style="font-size:0.6rem;background:rgba(0,0,0,0.5);color:' + waterColor + ';border:none;border-radius:4px;padding:2px 6px;cursor:pointer;line-height:1.4;font-weight:700;">' + waterEmoji + '</button>' +
+                    '<button onclick="event.stopPropagation();removeTree(' + idx + ')" style="font-size:0.6rem;background:rgba(0,0,0,0.4);color:rgba(255,255,255,0.55);border:none;border-radius:4px;padding:2px 5px;cursor:pointer;line-height:1.4;">✂️</button>' +
+                    '</div></div>';
             });
 
-            const emptyMsg = trees.length === 0
+            const plantHint = isPlanting
+                ? '<div style="position:absolute;top:12px;left:50%;transform:translateX(-50%);background:rgba(0,150,0,0.8);backdrop-filter:blur(8px);border-radius:12px;padding:8px 16px;color:#fff;font-size:0.82rem;font-weight:700;pointer-events:none;white-space:nowrap;z-index:5;">🌱 Tocá el pasto para plantar</div>'
+                : '';
+
+            const emptyMsg = (!trees.length && !isPlanting)
                 ? '<div style="position:absolute;top:30%;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.45);backdrop-filter:blur(8px);border-radius:12px;padding:10px 16px;color:rgba(255,255,255,0.9);font-size:0.8rem;font-weight:600;white-space:nowrap;">Jardín vacío — comprá semillas 🌱</div>'
                 : '';
 
@@ -3979,9 +4033,10 @@
                 '<div style="position:relative;width:100%;height:100%;min-height:460px;background:' + skyGrad + ';overflow:hidden;">' +
                 starsHTML +
                 '<div style="position:absolute;top:12px;right:12px;background:rgba(0,0,0,0.3);backdrop-filter:blur(8px);border-radius:20px;padding:5px 11px;color:#fff;font-size:0.76rem;font-weight:700;">' + sunMoon + ' ' + timeLabel + '</div>' +
+                plantHint +
                 (hasClouds ? '<div style="position:absolute;top:16%;left:7%;font-size:2rem;opacity:0.7;animation:gardenFloat 7s ease-in-out infinite;">☁️</div><div style="position:absolute;top:11%;left:50%;font-size:1.6rem;opacity:0.5;animation:gardenFloat 9s ease-in-out infinite 3s;">☁️</div>' : '') +
                 emptyMsg +
-                '<div style="position:absolute;bottom:0;left:0;right:0;height:42%;background:' + grassGrad + ';border-radius:60% 60% 0 0 / 28% 28% 0 0;">' +
+                '<div id="gardenGrass" onclick="handleGrassClick(event)" style="position:absolute;bottom:0;left:0;right:0;height:42%;background:' + grassGrad + ';border-radius:60% 60% 0 0 / 28% 28% 0 0;' + (isPlanting ? 'cursor:crosshair;' : '') + '">' +
                 '<div style="position:absolute;top:4px;right:12px;display:flex;gap:6px;align-items:flex-end;">' + decoHTML + '</div>' +
                 treesOnGrassHTML + '</div></div>' +
                 '<style>@keyframes gardenFloat{0%,100%{transform:translateX(0);}50%{transform:translateX(16px);}}</style>';
@@ -4094,9 +4149,9 @@
             if (!state.settings.garden) state.settings.garden = { trees: [], ownedBgs: ['default'], ownedDecos: [], activeBg: 'default' };
             const now = Date.now();
             state.settings.garden.trees = [
-                { type: 'roble',  growth: 0, lastTimeGrow: now },
-                { type: 'cerezo', growth: 0, lastTimeGrow: now },
-                { type: 'bambu',  growth: 0, lastTimeGrow: now },
+                { type: 'roble',  growth: 0, lastTimeGrow: now, water: 50, lastWaterCheck: now, x: 20 },
+                { type: 'cerezo', growth: 0, lastTimeGrow: now, water: 50, lastWaterCheck: now, x: 50 },
+                { type: 'bambu',  growth: 0, lastTimeGrow: now, water: 50, lastWaterCheck: now, x: 80 },
             ];
             saveData();
             openAdminPanel();
@@ -4107,7 +4162,9 @@
             const tree = state.settings.garden && state.settings.garden.trees && state.settings.garden.trees[idx];
             if (!tree) return;
             tree.growth = 100;
+            tree.water = 60;
             tree.lastTimeGrow = Date.now();
+            tree.lastWaterCheck = Date.now();
             saveData();
             openAdminPanel();
             const tt = TREE_TYPES[tree.type] || TREE_TYPES['roble'];
